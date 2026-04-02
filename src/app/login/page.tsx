@@ -9,7 +9,7 @@ export default function LoginPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push("/dashboard");
+    router.push("/merchant");
   };
   return (
     <div className="min-h-[100svh] bg-[#f6f7fb]">

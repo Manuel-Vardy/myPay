@@ -6,11 +6,11 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 const sidebarItems = [
-  { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: LayoutGridIcon },
-  { id: "analytics", label: "Analytics", href: "/dashboard/analytics", icon: BarChartIcon },
-  { id: "transactions", label: "Transactions", href: "/dashboard/transactions", icon: ReceiptIcon },
-  { id: "customers", label: "Customers", href: "/dashboard/customers", icon: UsersIcon },
-  { id: "settings", label: "Settings", href: "/dashboard/settings", icon: SettingsIcon },
+  { id: "dashboard", label: "Dashboard", href: "/merchant", icon: LayoutGridIcon },
+  { id: "analytics", label: "Analytics", href: "/merchant/analytics", icon: BarChartIcon },
+  { id: "transactions", label: "Transactions", href: "/merchant/transactions", icon: ReceiptIcon },
+  { id: "customers", label: "Customers", href: "/merchant/customers", icon: UsersIcon },
+  { id: "settings", label: "Settings", href: "/merchant/settings", icon: SettingsIcon },
 ];
 
 type CustomerTier = "institutional" | "enterprise" | "standard";

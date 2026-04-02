@@ -29,17 +29,17 @@ type ActivityItem = {
 };
 
 const sidebarItems = [
-  { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: LayoutGridIcon },
-  { id: "customers", label: "Customers", href: "/dashboard/customers", icon: UsersIcon },
-  { id: "transactions", label: "Transactions", href: "/dashboard/transactions", icon: ReceiptIcon },
-  { id: "kyc", label: "KYC Center", href: "/dashboard/kyc", icon: ShieldCheckIcon },
-  { id: "logs", label: "Logs", href: "/dashboard", icon: FileTextIcon },
-  { id: "roles", label: "Roles", href: "/dashboard", icon: KeyIcon },
-  { id: "support", label: "Support", href: "/dashboard", icon: HelpCircleIcon },
+  { id: "dashboard", label: "Dashboard", href: "/admin", icon: LayoutGridIcon },
+  { id: "customers", label: "Customers", href: "/admin/customers", icon: UsersIcon },
+  { id: "transactions", label: "Transactions", href: "/admin/transactions", icon: ReceiptIcon },
+  { id: "kyc", label: "KYC Center", href: "/admin/kyc", icon: ShieldCheckIcon },
+  { id: "logs", label: "Logs", href: "/admin", icon: FileTextIcon },
+  { id: "roles", label: "Roles", href: "/admin", icon: KeyIcon },
+  { id: "support", label: "Support", href: "/admin", icon: HelpCircleIcon },
 ];
 
 const bottomItems = [
-  { id: "settings", label: "Settings", href: "/dashboard", icon: SettingsIcon },
+  { id: "settings", label: "Settings", href: "/admin", icon: SettingsIcon },
   { id: "logout", label: "Logout", href: "/login", icon: LogOutIcon },
 ];
 
@@ -210,7 +210,7 @@ export default function DashboardKycPage() {
           <div className="flex h-16 items-center justify-between px-6">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => router.push("/dashboard")}
+                onClick={() => router.push("/admin")}
                 className="flex items-center gap-1 text-sm text-[color:var(--trite-muted)] hover:text-[color:var(--trite-ink)]"
               >
                 <ChevronLeftIcon className="h-4 w-4" />

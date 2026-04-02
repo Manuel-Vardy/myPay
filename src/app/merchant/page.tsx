@@ -6,11 +6,11 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const sidebarItems = [
-  { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: LayoutGridIcon },
-  { id: "analytics", label: "Analytics", href: "/dashboard/analytics", icon: BarChartIcon },
-  { id: "transactions", label: "Transactions", href: "/dashboard/transactions", icon: ReceiptIcon },
-  { id: "customers", label: "Customers", href: "/dashboard/customers", icon: UsersIcon },
-  { id: "settings", label: "Settings", href: "/dashboard/settings", icon: SettingsIcon },
+  { id: "dashboard", label: "Dashboard", href: "/merchant", icon: LayoutGridIcon },
+  { id: "analytics", label: "Analytics", href: "/merchant/analytics", icon: BarChartIcon },
+  { id: "transactions", label: "Transactions", href: "/merchant/transactions", icon: ReceiptIcon },
+  { id: "customers", label: "Customers", href: "/merchant/customers", icon: UsersIcon },
+  { id: "settings", label: "Settings", href: "/merchant/settings", icon: SettingsIcon },
 ];
 
 const demoTransactions = [
@@ -103,11 +103,11 @@ export default function DashboardPage() {
                     <button
                       onClick={() => {
                         if (item.id === "analytics") {
-                          router.push("/dashboard/analytics");
+                          router.push("/merchant/analytics");
                         } else if (item.id === "transactions") {
-                          router.push("/dashboard/transactions");
+                          router.push("/merchant/transactions");
                         } else if (item.id === "customers") {
-                          router.push("/dashboard/customers");
+                          router.push("/merchant/customers");
                         } else {
                           setActiveTab(item.id);
                           router.push(item.href);
