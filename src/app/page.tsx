@@ -45,7 +45,7 @@ export default function Home() {
               Sign in
             </Link>
             <Link
-              className="inline-flex h-10 items-center justify-center rounded-full bg-[color:var(--trite-ink)] px-4 text-sm font-semibold text-white hover:bg-black"
+              className="inline-flex h-10 items-center justify-center rounded-full bg-[color:var(--trite-ink)] px-5 text-sm font-semibold text-white hover:bg-black"
               href="/get-started"
             >
               Get Started
@@ -82,16 +82,17 @@ export default function Home() {
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link
-                  className="inline-flex h-12 items-center justify-center rounded-full bg-[color:var(--trite-lime-strong)] px-6 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-[color:var(--trite-lime)]"
-                  href="/get-started"
-                >
-                  Get Started
-                </Link>
-                <Link
-                  className="inline-flex h-12 items-center justify-center rounded-full border border-white/20 bg-white/10 px-6 text-sm font-semibold text-white backdrop-blur hover:bg-white/20"
+                  className="inline-flex h-12 items-center justify-center rounded-full border border-white/20 bg-white/10 px-8 text-sm font-semibold text-white backdrop-blur hover:bg-white/20"
                   href="/login"
                 >
                   Merchant Signup
+                </Link>
+                <Link
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[color:var(--trite-lime-strong)] px-8 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-[color:var(--trite-lime)]"
+                  href="/connect"
+                >
+                  <WalletIcon className="h-5 w-5" />
+                  Connect Wallet
                 </Link>
               </div>
             </div>
@@ -355,5 +356,15 @@ export default function Home() {
         </footer>
       </main>
     </div>
+  );
+}
+
+function WalletIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+      <path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4" />
+      <path d="M4 6v12a2 2 0 0 0 2 2h14v-4" />
+      <path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z" />
+    </svg>
   );
 }

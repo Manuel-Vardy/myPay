@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ShieldCheck, Lock, Shield, Check } from "lucide-react";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -46,7 +47,7 @@ export default function AdminLoginPage() {
           <div className="w-full max-w-md">
             {/* Admin Badge */}
             <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-[color:var(--trite-ink)] px-4 py-1.5">
-              <ShieldCheckIcon className="h-4 w-4 text-white" />
+              <ShieldCheck className="h-4 w-4 text-white" />
               <span className="text-xs font-semibold text-white uppercase tracking-wide">Institutional Access Only</span>
             </div>
 
@@ -76,7 +77,7 @@ export default function AdminLoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm outline-none transition-all placeholder:text-black/30 focus:border-[color:var(--trite-lime-strong)]"
+                  className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm text-[color:var(--trite-ink)] outline-none transition-all placeholder:text-black/30 focus:border-[color:var(--trite-lime-strong)]"
                 />
               </div>
 
@@ -96,7 +97,7 @@ export default function AdminLoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm outline-none transition-all placeholder:text-black/30 focus:border-[color:var(--trite-lime-strong)]"
+                  className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm text-[color:var(--trite-ink)] outline-none transition-all placeholder:text-black/30 focus:border-[color:var(--trite-lime-strong)]"
                 />
               </div>
 
@@ -132,7 +133,7 @@ export default function AdminLoginPage() {
             <div className="mt-8 rounded-2xl border border-black/5 bg-white p-5">
               <div className="flex items-start gap-3">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[color:var(--trite-lime)]">
-                  <LockIcon className="h-4 w-4 text-[color:var(--trite-ink)]" />
+                  <Lock className="h-4 w-4 text-[color:var(--trite-ink)]" />
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-[color:var(--trite-ink)]">Bank of Ghana Regulated</h3>
@@ -146,15 +147,15 @@ export default function AdminLoginPage() {
 
             <div className="mt-6 flex items-center justify-center gap-6 text-xs font-semibold text-[color:var(--trite-muted)]">
               <div className="flex items-center gap-2">
-                <ShieldIcon className="h-4 w-4" />
+                <Shield className="h-4 w-4" />
                 <span>SOC 2 Compliant</span>
               </div>
               <div className="flex items-center gap-2">
-                <LockIcon className="h-4 w-4" />
+                <Lock className="h-4 w-4" />
                 <span>256-bit Encryption</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckIcon className="h-4 w-4" />
+                <Check className="h-4 w-4" />
                 <span>Bank of Ghana Approved</span>
               </div>
             </div>
@@ -165,35 +166,4 @@ export default function AdminLoginPage() {
   );
 }
 
-// Icons
-function ShieldCheckIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.392 4.396 9.78 9.829 9.78 1.645.001 3.26-.337 4.78-1.003.657-.283 1.113-.78 1.333-1.423A9.713 9.713 0 0022.083 12.75c0-1.454-.146-2.87-.453-4.236A11.994 11.994 0 003.745 4.986 11.959 11.959 0 0012.499 2.25z" />
-    </svg>
-  );
-}
-
-function LockIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-    </svg>
-  );
-}
-
-function ShieldIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.392 4.396 9.78 9.829 9.78 1.645.001 3.26-.337 4.78-1.003.657-.283 1.113-.78 1.333-1.423A9.713 9.713 0 0022.083 12.75c0-1.454-.146-2.87-.453-4.236A11.994 11.994 0 003.745 4.986 11.959 11.959 0 0012.499 2.25z" />
-    </svg>
-  );
-}
-
-function CheckIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-    </svg>
-  );
-}
+// Icons imported from Lucide React

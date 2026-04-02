@@ -3,6 +3,29 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import {
+  LayoutGrid,
+  Users,
+  Receipt,
+  ShieldCheck,
+  FileText,
+  Key,
+  HelpCircle,
+  Settings,
+  LogOut,
+  Search,
+  Bell,
+  ShieldPlus,
+  Crown,
+  Headphones,
+  MoreVertical,
+  Plus,
+  Eye,
+  ChevronRight,
+  Pencil,
+  Trash2,
+  Info
+} from "lucide-react";
 
 interface Role {
   id: string;
@@ -24,18 +47,18 @@ interface Permission {
 }
 
 const sidebarItems = [
-  { id: "dashboard", label: "Dashboard", href: "/admin", icon: LayoutGridIcon },
-  { id: "users", label: "Users", href: "/admin/users", icon: UsersIcon },
-  { id: "transactions", label: "Transactions", href: "/admin/transactions", icon: ReceiptIcon },
-  { id: "kyc", label: "KYC Center", href: "/admin/kyc", icon: ShieldCheckIcon },
-  { id: "logs", label: "Logs", href: "/admin/logs", icon: FileTextIcon },
-  { id: "roles", label: "Roles", href: "/admin/roles", icon: KeyIcon },
-  { id: "support", label: "Support", href: "/admin/support", icon: HelpCircleIcon },
+  { id: "dashboard", label: "Dashboard", href: "/admin", icon: LayoutGrid },
+  { id: "users", label: "Users", href: "/admin/users", icon: Users },
+  { id: "transactions", label: "Transactions", href: "/admin/transactions", icon: Receipt },
+  { id: "kyc", label: "KYC Center", href: "/admin/kyc", icon: ShieldCheck },
+  { id: "logs", label: "Logs", href: "/admin/logs", icon: FileText },
+  { id: "roles", label: "Roles", href: "/admin/roles", icon: Key },
+  { id: "support", label: "Support", href: "/admin/support", icon: HelpCircle },
 ];
 
 const bottomItems = [
-  { id: "settings", label: "Settings", href: "/admin/settings", icon: SettingsIcon },
-  { id: "logout", label: "Logout", href: "/admin/login", icon: LogOutIcon },
+  { id: "settings", label: "Settings", href: "/admin/settings", icon: Settings },
+  { id: "logout", label: "Logout", href: "/admin/login", icon: LogOut },
 ];
 
 const roles: Role[] = [
@@ -43,7 +66,7 @@ const roles: Role[] = [
     id: "super-admin",
     name: "Super Admin",
     description: "Unrestricted platform-wide access",
-    icon: CrownIcon,
+    icon: Crown,
     permissions: ["all"],
     createdBy: "System",
     createdDate: "Oct 10, 2023",
@@ -65,7 +88,7 @@ const roles: Role[] = [
     id: "support-agent",
     name: "Support Agent",
     description: "Ticket resolution and transaction view",
-    icon: HeadphonesIcon,
+    icon: Headphones,
     permissions: ["view-users", "view-transactions"],
     createdBy: "James Wilson",
     createdDate: "Oct 15, 2023",
@@ -76,7 +99,7 @@ const roles: Role[] = [
     id: "read-only-audit",
     name: "Read-only Audit",
     description: "Observer access for external auditors",
-    icon: EyeIcon,
+    icon: Eye,
     permissions: ["view-logs", "view-reports"],
     createdBy: "Sarah Jenkins",
     createdDate: "Oct 18, 2023",
@@ -133,11 +156,11 @@ export default function AdminRolesPage() {
           </div>
           <div className="flex items-center gap-3">
             <div className="relative">
-              <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--trite-muted)]" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--trite-muted)]" />
               <input
                 type="text"
                 placeholder="Search roles or permissions..."
-                className="h-10 w-72 rounded-xl border border-black/10 bg-white pl-10 pr-4 text-sm outline-none focus:border-[color:var(--trite-lime-strong)]"
+                className="h-10 w-64 rounded-xl border border-black/10 bg-white pl-10 pr-4 text-sm text-[color:var(--trite-ink)] outline-none focus:border-[color:var(--trite-lime-strong)]"
               />
             </div>
             <button className="h-10 rounded-xl border border-black/10 bg-white px-4 text-sm font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.02]">
@@ -151,10 +174,10 @@ export default function AdminRolesPage() {
             </button>
             <div className="flex items-center gap-3 pl-4 border-l border-black/10">
               <button className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-black/10 bg-white hover:bg-black/[0.02]">
-                <BellIcon className="h-5 w-5 text-[color:var(--trite-ink)]" />
+                <Bell className="h-5 w-5 text-[color:var(--trite-ink)]" />
               </button>
               <button className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-black/10 bg-white hover:bg-black/[0.02]">
-                <HelpCircleIcon className="h-5 w-5 text-[color:var(--trite-ink)]" />
+                <HelpCircle className="h-5 w-5 text-[color:var(--trite-ink)]" />
               </button>
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
@@ -232,7 +255,7 @@ export default function AdminRolesPage() {
                 <p className="mt-1 text-sm text-[color:var(--trite-muted)]">Define and govern institutional access levels. Ensure security through granular permission-based control across all TRITE PSP systems.</p>
               </div>
               <button className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">
-                <ShieldPlusIcon className="h-4 w-4" />
+                <ShieldPlus className="h-4 w-4" />
                 Create New Role
               </button>
             </div>
@@ -270,7 +293,7 @@ export default function AdminRolesPage() {
                               <p className={`font-semibold ${isSelected ? "text-blue-700" : "text-[color:var(--trite-ink)]"}`}>
                                 {role.name}
                               </p>
-                              <ChevronRightIcon className={`h-4 w-4 ${isSelected ? "text-blue-500" : "text-[color:var(--trite-muted)]"}`} />
+                              <ChevronRight className={`h-4 w-4 ${isSelected ? "text-blue-500" : "text-[color:var(--trite-muted)]"}`} />
                             </div>
                             <p className="mt-0.5 text-xs text-[color:var(--trite-muted)]">{role.description}</p>
                           </div>
@@ -312,10 +335,10 @@ export default function AdminRolesPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <button className="flex h-10 w-10 items-center justify-center rounded-xl border border-black/10 bg-white hover:bg-black/[0.02]">
-                        <PencilIcon className="h-4 w-4 text-[color:var(--trite-muted)]" />
+                        <Pencil className="h-4 w-4 text-[color:var(--trite-muted)]" />
                       </button>
                       <button className="flex h-10 w-10 items-center justify-center rounded-xl border border-black/10 bg-white hover:bg-black/[0.02]">
-                        <TrashIcon className="h-4 w-4 text-red-500" />
+                        <Trash2 className="h-4 w-4 text-red-500" />
                       </button>
                     </div>
                   </div>
@@ -344,7 +367,7 @@ export default function AdminRolesPage() {
 
                   <div className="mt-6 flex items-center justify-between border-t border-black/5 pt-4">
                     <div className="flex items-center gap-2">
-                      <InfoIcon className="h-4 w-4 text-blue-500" />
+                      <Info className="h-4 w-4 text-blue-500" />
                       <p className="text-xs text-[color:var(--trite-muted)]">
                         Changes to this role will trigger a system-wide re-authentication for all 12 users currently assigned to "{selectedRole.name}".
                       </p>
@@ -459,92 +482,4 @@ function SettingsIcon({ className }: { className?: string }) {
   );
 }
 
-function LogOutIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
-    </svg>
-  );
-}
-
-function SearchIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-    </svg>
-  );
-}
-
-function BellIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.317.53a3 3 0 01-5.317-.53m5.317.53V12.75A1.5 1.5 0 0014.25 12h-.904a1.5 1.5 0 00-1.5 1.5v2.336c0 .607.197 1.217.573 1.702.242.312.578.53.962.6.46.086.93.032 1.37-.137z" />
-    </svg>
-  );
-}
-
-function ShieldPlusIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.392 4.396 9.78 9.829 9.78 1.645.001 3.26-.337 4.78-1.003.657-.283 1.113-.78 1.333-1.423A9.713 9.713 0 0022.083 12.75c0-1.454-.146-2.87-.453-4.236A11.994 11.994 0 003.745 4.986 11.959 11.959 0 0012.499 2.25z" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 0v4m0-4h4m-4 0H8" />
-    </svg>
-  );
-}
-
-function CrownIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-    </svg>
-  );
-}
-
-function HeadphonesIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
-    </svg>
-  );
-}
-
-function EyeIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-    </svg>
-  );
-}
-
-function ChevronRightIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-    </svg>
-  );
-}
-
-function PencilIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-    </svg>
-  );
-}
-
-function TrashIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-    </svg>
-  );
-}
-
-function InfoIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.831a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
-    </svg>
-  );
-}
+// Icons imported from Lucide React

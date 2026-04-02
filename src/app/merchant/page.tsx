@@ -67,6 +67,10 @@ export default function DashboardPage() {
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [ledgerModalOpen, setLedgerModalOpen] = useState(false);
   const [withdrawMethod, setWithdrawMethod] = useState("bank");
+  const [txFilter, setTxFilter] = useState<"all" | "fiat" | "stablecoin" | "crypto">("all");
+  const [txStatus, setTxStatus] = useState<"all" | "success" | "pending" | "failed">("all");
+  const [txSearch, setTxSearch] = useState("");
+  const [dateRange, setDateRange] = useState<"7d" | "30d" | "90d" | "all">("30d");
   const [ledgerFilter, setLedgerFilter] = useState<"all" | "deposits" | "withdrawals" | "transfers">("all");
 
   const formatGHS = (amount: number) => {
@@ -137,7 +141,9 @@ export default function DashboardPage() {
                 <div className="text-sm font-semibold text-[color:var(--trite-ink)]">
                   Kwame Asante
                 </div>
-                <div className="text-xs text-[color:var(--trite-muted)]">Verified Merchant</div>
+                <div className="text-xs text-[color:var(--trite-muted)]">
+                  Merchant Account
+                </div>
               </div>
             </div>
           </div>
@@ -154,12 +160,14 @@ export default function DashboardPage() {
                 className="w-full bg-transparent outline-none placeholder:text-black/30"
               />
             </div>
-            <Link
-              href="#"
-              className="text-sm font-medium text-blue-600 hover:underline"
-            >
-              Merchant
-            </Link>
+            <div className="flex items-center gap-4">
+              <Link
+                href="#"
+                className="text-sm font-medium text-blue-600 hover:underline"
+              >
+                Merchant
+              </Link>
+            </div>
           </div>
         </header>
 
@@ -210,6 +218,42 @@ export default function DashboardPage() {
             </div>
 
             <div className="space-y-4">
+              {/* Stablecoin Balance Card */}
+              <div className="rounded-2xl bg-gradient-to-br from-green-50 to-teal-50 p-5 ring-1 ring-green-200">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-medium text-green-800">
+                    Stablecoin Holdings
+                  </div>
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100">
+                    <CoinIcon className="h-3 w-3 text-green-600" />
+                  </div>
+                </div>
+                <div className="mt-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-green-700">USDC</span>
+                    <span className="text-sm font-semibold text-green-900">$12,450.00</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-green-700">USDT</span>
+                    <span className="text-sm font-semibold text-green-900">$8,230.50</span>
+                  </div>
+                  <div className="mt-2 border-t border-green-200 pt-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-green-800">Total</span>
+                      <span className="text-lg font-semibold text-green-900">$20,680.50</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3 flex gap-2">
+                  <button className="flex-1 rounded-lg bg-green-600 py-1.5 text-xs font-medium text-white hover:bg-green-700">
+                    Convert to GHS
+                  </button>
+                  <button className="flex-1 rounded-lg border border-green-300 bg-white py-1.5 text-xs font-medium text-green-700 hover:bg-green-50">
+                    Withdraw
+                  </button>
+                </div>
+              </div>
+
               <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
                 <div className="flex items-center justify-between">
                   <div className="text-sm font-medium text-[color:var(--trite-muted)]">
@@ -251,6 +295,50 @@ export default function DashboardPage() {
           </div>
 
           <div className="mt-6 rounded-2xl bg-white p-6 ring-1 ring-black/5">
+            {/* Enhanced Filters */}
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2">
+                <SearchIcon className="h-4 w-4 text-[color:var(--trite-muted)]" />
+                <input
+                  type="text"
+                  value={txSearch}
+                  onChange={(e) => setTxSearch(e.target.value)}
+                  placeholder="Search transactions..."
+                  className="w-48 rounded-lg border border-black/10 px-3 py-1.5 text-sm outline-none focus:border-[color:var(--trite-lime-strong)]"
+                />
+              </div>
+              <select
+                value={txFilter}
+                onChange={(e) => setTxFilter(e.target.value as any)}
+                className="rounded-lg border border-black/10 px-3 py-1.5 text-sm outline-none focus:border-[color:var(--trite-lime-strong)]"
+              >
+                <option value="all">All Currencies</option>
+                <option value="fiat">Fiat (GHS)</option>
+                <option value="stablecoin">Stablecoins (USDC/USDT)</option>
+                <option value="crypto">Crypto (BTC)</option>
+              </select>
+              <select
+                value={txStatus}
+                onChange={(e) => setTxStatus(e.target.value as any)}
+                className="rounded-lg border border-black/10 px-3 py-1.5 text-sm outline-none focus:border-[color:var(--trite-lime-strong)]"
+              >
+                <option value="all">All Status</option>
+                <option value="success">Success</option>
+                <option value="pending">Pending</option>
+                <option value="failed">Failed</option>
+              </select>
+              <select
+                value={dateRange}
+                onChange={(e) => setDateRange(e.target.value as any)}
+                className="rounded-lg border border-black/10 px-3 py-1.5 text-sm outline-none focus:border-[color:var(--trite-lime-strong)]"
+              >
+                <option value="7d">Last 7 days</option>
+                <option value="30d">Last 30 days</option>
+                <option value="90d">Last 90 days</option>
+                <option value="all">All time</option>
+              </select>
+            </div>
+
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-[color:var(--trite-ink)]">
                 Recent Transactions
@@ -280,7 +368,30 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="text-sm">
-                {demoTransactions.map((tx) => (
+                {demoTransactions
+                  .filter((tx) => {
+                    // Search filter
+                    if (txSearch && !tx.id.toLowerCase().includes(txSearch.toLowerCase()) && 
+                        !tx.method.toLowerCase().includes(txSearch.toLowerCase())) {
+                      return false;
+                    }
+                    // Currency filter
+                    if (txFilter === "stablecoin" && !tx.method.includes("USDC") && !tx.method.includes("USDT")) {
+                      return false;
+                    }
+                    if (txFilter === "fiat" && (tx.method.includes("USDC") || tx.method.includes("USDT") || tx.method.includes("BTC"))) {
+                      return false;
+                    }
+                    if (txFilter === "crypto" && !tx.method.includes("BTC")) {
+                      return false;
+                    }
+                    // Status filter
+                    if (txStatus !== "all" && tx.status !== txStatus) {
+                      return false;
+                    }
+                    return true;
+                  })
+                  .map((tx) => (
                   <tr key={tx.id} className="border-b border-black/5 last:border-b-0">
                     <td className="py-4">
                       <div className="font-medium text-[color:var(--trite-ink)]">
@@ -295,10 +406,28 @@ export default function DashboardPage() {
                           <CreditCardIcon className="h-4 w-4 text-blue-500" />
                         ) : tx.method.includes("BTC") ? (
                           <CoinIcon className="h-4 w-4 text-orange-500" />
+                        ) : tx.method.includes("USDC") ? (
+                          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100">
+                            <span className="text-[8px] font-bold text-green-700">$</span>
+                          </div>
+                        ) : tx.method.includes("USDT") ? (
+                          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-teal-100">
+                            <span className="text-[8px] font-bold text-teal-700">T</span>
+                          </div>
                         ) : (
-                          <CoinIcon className="h-4 w-4 text-green-500" />
+                          <SmartphoneIcon className="h-4 w-4 text-yellow-600" />
                         )}
                         <span className="text-[color:var(--trite-muted)]">{tx.method}</span>
+                        {tx.method.includes("USDC") && (
+                          <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">
+                            STABLE
+                          </span>
+                        )}
+                        {tx.method.includes("USDT") && (
+                          <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-semibold text-teal-700">
+                            STABLE
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td className="py-4">
@@ -306,7 +435,9 @@ export default function DashboardPage() {
                         className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
                           tx.status === "success"
                             ? "bg-[color:var(--trite-lime)]/20 text-[color:var(--trite-ink)]"
-                            : "bg-black/[0.04] text-[color:var(--trite-muted)]"
+                            : tx.status === "pending"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-red-100 text-red-700"
                         }`}
                       >
                         {tx.status.toUpperCase()}
@@ -500,14 +631,14 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* View Ledger Modal */}
+      {/* View Ledger / Settlement Reports Modal */}
       {ledgerModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl max-h-[80vh] overflow-y-auto">
+          <div className="w-full max-w-4xl rounded-2xl bg-white p-6 shadow-2xl max-h-[85vh] overflow-y-auto">
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-[color:var(--trite-ink)]">Transaction Ledger</h2>
-                <p className="text-xs text-[color:var(--trite-muted)]">View your complete transaction history</p>
+                <h2 className="text-xl font-semibold text-[color:var(--trite-ink)]">Settlement Reports</h2>
+                <p className="text-xs text-[color:var(--trite-muted)]">View your complete transaction and settlement history</p>
               </div>
               <button
                 onClick={() => setLedgerModalOpen(false)}
@@ -517,10 +648,35 @@ export default function DashboardPage() {
               </button>
             </div>
 
-            <div className="mb-4 flex gap-2">
+            {/* Settlement Summary Cards */}
+            <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-4">
+              <div className="rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 p-4 ring-1 ring-blue-100">
+                <div className="text-xs font-medium text-blue-700">Total Settlements</div>
+                <div className="mt-1 text-xl font-bold text-blue-900">{formatGHS(45280)}</div>
+                <div className="mt-1 text-[10px] text-blue-600">24 transactions</div>
+              </div>
+              <div className="rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 p-4 ring-1 ring-green-100">
+                <div className="text-xs font-medium text-green-700">Stablecoin Settlements</div>
+                <div className="mt-1 text-xl font-bold text-green-900">$20,680.50</div>
+                <div className="mt-1 text-[10px] text-green-600">8 settlements</div>
+              </div>
+              <div className="rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 p-4 ring-1 ring-amber-100">
+                <div className="text-xs font-medium text-amber-700">Pending Settlements</div>
+                <div className="mt-1 text-xl font-bold text-amber-900">{formatGHS(3240)}</div>
+                <div className="mt-1 text-[10px] text-amber-600">3 in processing</div>
+              </div>
+              <div className="rounded-xl bg-gradient-to-br from-gray-50 to-slate-50 p-4 ring-1 ring-gray-200">
+                <div className="text-xs font-medium text-gray-700">Total Fees</div>
+                <div className="mt-1 text-xl font-bold text-gray-900">{formatGHS(452.50)}</div>
+                <div className="mt-1 text-[10px] text-gray-600">1.0% avg rate</div>
+              </div>
+            </div>
+
+            {/* Enhanced Filters */}
+            <div className="mb-4 flex flex-wrap items-center gap-2">
               <button
                 onClick={() => setLedgerFilter("all")}
-                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                   ledgerFilter === "all"
                     ? "bg-[color:var(--trite-ink)] text-white"
                     : "bg-black/[0.04] text-[color:var(--trite-ink)] hover:bg-black/[0.06]"
@@ -530,7 +686,7 @@ export default function DashboardPage() {
               </button>
               <button
                 onClick={() => setLedgerFilter("deposits")}
-                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                   ledgerFilter === "deposits"
                     ? "bg-[color:var(--trite-ink)] text-white"
                     : "bg-black/[0.04] text-[color:var(--trite-ink)] hover:bg-black/[0.06]"
@@ -540,7 +696,7 @@ export default function DashboardPage() {
               </button>
               <button
                 onClick={() => setLedgerFilter("withdrawals")}
-                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                   ledgerFilter === "withdrawals"
                     ? "bg-[color:var(--trite-ink)] text-white"
                     : "bg-black/[0.04] text-[color:var(--trite-ink)] hover:bg-black/[0.06]"
@@ -550,7 +706,7 @@ export default function DashboardPage() {
               </button>
               <button
                 onClick={() => setLedgerFilter("transfers")}
-                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                   ledgerFilter === "transfers"
                     ? "bg-[color:var(--trite-ink)] text-white"
                     : "bg-black/[0.04] text-[color:var(--trite-ink)] hover:bg-black/[0.06]"
@@ -558,56 +714,110 @@ export default function DashboardPage() {
               >
                 Transfers
               </button>
+              <div className="mx-2 h-4 w-px bg-black/10" />
+              <select className="rounded-lg border border-black/10 px-3 py-1.5 text-xs outline-none focus:border-[color:var(--trite-lime-strong)]">
+                <option>All Currencies</option>
+                <option>GHS</option>
+                <option>USDC</option>
+                <option>USDT</option>
+              </select>
+              <select className="rounded-lg border border-black/10 px-3 py-1.5 text-xs outline-none focus:border-[color:var(--trite-lime-strong)]">
+                <option>This Month</option>
+                <option>Last Month</option>
+                <option>Last 3 Months</option>
+                <option>Custom Range</option>
+              </select>
             </div>
 
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-black/5 text-left">
-                  <th className="pb-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Date</th>
-                  <th className="pb-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Description</th>
-                  <th className="pb-3 text-right text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Amount</th>
-                  <th className="pb-3 text-right text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Balance</th>
-                </tr>
-              </thead>
-              <tbody className="text-sm">
-                {demoTransactions
-                  .filter((t) => ledgerFilter === "all" || t.type === ledgerFilter.slice(0, -1))
-                  .map((t, i, arr) => {
-                    const runningBalance = arr.slice(0, i + 1).reduce((acc, curr) => {
-                      return curr.type === "deposit" || curr.type === "transfer"
-                        ? acc + curr.amount
-                        : acc - curr.amount;
-                    }, 0);
-                    return (
-                      <tr key={t.id} className="border-b border-black/5">
-                        <td className="py-3">
-                          <div className="font-medium text-[color:var(--trite-ink)]">{t.date}</div>
-                          <div className="text-xs text-[color:var(--trite-muted)]">{t.time}</div>
-                        </td>
-                        <td className="py-3">
-                          <div className="font-medium text-[color:var(--trite-ink)]">
-                            {t.type === "deposit" && "Deposit - "}
-                            {t.type === "withdrawal" && "Withdrawal - "}
-                            {t.type === "transfer" && "Transfer - "}
-                            {t.method}
-                          </div>
-                          <div className="text-xs text-[color:var(--trite-muted)]">{t.id}</div>
-                        </td>
-                        <td className={`py-3 text-right font-medium ${t.type === "withdrawal" ? "text-red-600" : "text-green-600"}`}>
-                          {t.type === "withdrawal" ? "-" : "+"}{formatGHS(t.amount)}
-                        </td>
-                        <td className="py-3 text-right font-medium text-[color:var(--trite-ink)]">{formatGHS(runningBalance)}</td>
-                      </tr>
-                    );
-                  })}
-              </tbody>
-            </table>
+            {/* Settlement Table */}
+            <div className="rounded-xl border border-black/5 overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr className="text-left">
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Date</th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Settlement ID</th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Type</th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Status</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Gross</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Fee</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Net</th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm">
+                  {demoTransactions
+                    .filter((t) => ledgerFilter === "all" || t.type === ledgerFilter.slice(0, -1))
+                    .map((t) => {
+                      const fee = t.amount * 0.01;
+                      const net = t.amount - fee;
+                      const isStable = t.method.includes("USDC") || t.method.includes("USDT");
+                      return (
+                        <tr key={t.id} className="border-b border-black/5 last:border-b-0 hover:bg-gray-50">
+                          <td className="px-4 py-3">
+                            <div className="font-medium text-[color:var(--trite-ink)]">{t.date}</div>
+                            <div className="text-xs text-[color:var(--trite-muted)]">{t.time}</div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="font-medium text-[color:var(--trite-ink)]">{t.id}</div>
+                            <div className="text-xs text-[color:var(--trite-muted)]">{t.method}</div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              {t.type === "deposit" && (
+                                <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Deposit</span>
+                              )}
+                              {t.type === "withdrawal" && (
+                                <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Withdrawal</span>
+                              )}
+                              {t.type === "transfer" && (
+                                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">Transfer</span>
+                              )}
+                              {isStable && (
+                                <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-semibold text-teal-700">STABLE</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span
+                              className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${
+                                t.status === "success"
+                                  ? "bg-green-100 text-green-700"
+                                  : t.status === "pending"
+                                  ? "bg-amber-100 text-amber-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              <span className={`h-1.5 w-1.5 rounded-full ${t.status === "success" ? "bg-green-500" : t.status === "pending" ? "bg-amber-500" : "bg-red-500"}`} />
+                              {t.status.charAt(0).toUpperCase() + t.status.slice(1)}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-right font-medium text-[color:var(--trite-ink)]">
+                            {formatGHS(t.amount)}
+                          </td>
+                          <td className="px-4 py-3 text-right text-xs text-red-600">
+                            -{formatGHS(fee)}
+                          </td>
+                          <td className="px-4 py-3 text-right font-semibold text-[color:var(--trite-ink)]">
+                            {formatGHS(net)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+            </div>
 
+            {/* Footer Actions */}
             <div className="mt-6 flex items-center justify-between">
-              <button className="flex items-center gap-2 rounded-lg border border-black/10 px-4 py-2 text-sm font-medium text-[color:var(--trite-ink)] hover:bg-black/[0.03]">
-                <DownloadIcon className="h-4 w-4" />
-                Export CSV
-              </button>
+              <div className="flex gap-2">
+                <button className="flex items-center gap-2 rounded-lg border border-black/10 px-4 py-2 text-sm font-medium text-[color:var(--trite-ink)] hover:bg-black/[0.03]">
+                  <DownloadIcon className="h-4 w-4" />
+                  Export CSV
+                </button>
+                <button className="flex items-center gap-2 rounded-lg border border-black/10 px-4 py-2 text-sm font-medium text-[color:var(--trite-ink)] hover:bg-black/[0.03]">
+                  <ReceiptIcon className="h-4 w-4" />
+                  Download PDF
+                </button>
+              </div>
               <button
                 onClick={() => setLedgerModalOpen(false)}
                 className="rounded-lg bg-[color:var(--trite-ink)] px-6 py-2 text-sm font-semibold text-white hover:bg-black"
