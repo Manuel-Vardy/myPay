@@ -60,7 +60,7 @@ export default function LoginPage() {
                     Business email
                   </label>
                   <input
-                    className="mt-2 h-11 w-full rounded-xl border border-black/10 bg-[#f6f7fb] px-3 text-sm text-[color:var(--trite-ink)] outline-none placeholder:text-black/35 focus:border-[color:var(--trite-lime-strong)] focus:bg-white"
+                    className="mt-2 h-11 w-full rounded-xl border border-black/10 bg-[#f6f7fb] px-3 text-sm text-gray-900 outline-none placeholder:text-black/35 focus:border-[color:var(--trite-lime-strong)] focus:bg-white"
                     id="email"
                     name="email"
                     type="email"
@@ -86,7 +86,7 @@ export default function LoginPage() {
                     </a>
                   </div>
                   <input
-                    className="mt-2 h-11 w-full rounded-xl border border-black/10 bg-[#f6f7fb] px-3 text-sm text-[color:var(--trite-ink)] outline-none placeholder:text-black/35 focus:border-[color:var(--trite-lime-strong)] focus:bg-white"
+                    className="mt-2 h-11 w-full rounded-xl border border-black/10 bg-[#f6f7fb] px-3 text-sm text-gray-900 outline-none placeholder:text-black/35 focus:border-[color:var(--trite-lime-strong)] focus:bg-white"
                     id="password"
                     name="password"
                     type="password"

@@ -92,7 +92,7 @@ export default function GetStartedPage() {
                       First name
                     </label>
                     <input
-                      className="mt-2 h-11 w-full rounded-xl border border-black/10 bg-[#f6f7fb] px-3 text-sm text-[color:var(--trite-ink)] outline-none ring-0 placeholder:text-black/35 focus:border-[color:var(--trite-lime-strong)] focus:bg-white"
+                      className="mt-2 h-11 w-full rounded-xl border border-black/10 bg-[#f6f7fb] px-3 text-sm text-gray-900 outline-none ring-0 placeholder:text-black/35 focus:border-[color:var(--trite-lime-strong)] focus:bg-white"
                       id="firstName"
                       name="firstName"
                       placeholder="Kwame"
@@ -108,7 +108,7 @@ export default function GetStartedPage() {
                       Last name
                     </label>
                     <input
-                      className="mt-2 h-11 w-full rounded-xl border border-black/10 bg-[#f6f7fb] px-3 text-sm text-[color:var(--trite-ink)] outline-none ring-0 placeholder:text-black/35 focus:border-[color:var(--trite-lime-strong)] focus:bg-white"
+                      className="mt-2 h-11 w-full rounded-xl border border-black/10 bg-[#f6f7fb] px-3 text-sm text-gray-900 outline-none ring-0 placeholder:text-black/35 focus:border-[color:var(--trite-lime-strong)] focus:bg-white"
                       id="lastName"
                       name="lastName"
                       placeholder="Mensah"

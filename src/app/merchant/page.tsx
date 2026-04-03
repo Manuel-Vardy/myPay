@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 const sidebarItems = [
   { id: "dashboard", label: "Dashboard", href: "/merchant", icon: LayoutGridIcon },
@@ -72,6 +72,10 @@ export default function DashboardPage() {
   const [txSearch, setTxSearch] = useState("");
   const [dateRange, setDateRange] = useState<"7d" | "30d" | "90d" | "all">("30d");
   const [ledgerFilter, setLedgerFilter] = useState<"all" | "deposits" | "withdrawals" | "transfers">("all");
+  const [chartPeriod, setChartPeriod] = useState<"day" | "week" | "month" | "year">("week");
+  const [convertModalOpen, setConvertModalOpen] = useState(false);
+  const [convertAmount, setConvertAmount] = useState("");
+  const [convertFrom, setConvertFrom] = useState<"USDC" | "USDT">("USDC");
 
   const formatGHS = (amount: number) => {
     return new Intl.NumberFormat("en-GH", {
@@ -152,14 +156,7 @@ export default function DashboardPage() {
 
       <main className="ml-64">
         <header className="sticky top-0 z-30 border-b border-black/5 bg-white/80 backdrop-blur">
-          <div className="flex h-16 items-center justify-between px-6">
-            <div className="flex h-10 flex-1 max-w-md items-center gap-2 rounded-lg border border-black/10 bg-white px-3 text-sm text-[color:var(--trite-muted)]">
-              <SearchIcon className="h-4 w-4" />
-              <input
-                placeholder="Search transactions, customers or analytics..."
-                className="w-full bg-transparent outline-none placeholder:text-black/30"
-              />
-            </div>
+          <div className="flex h-16 items-center justify-end px-6">
             <div className="flex items-center gap-4">
               <Link
                 href="#"
@@ -245,11 +242,11 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div className="mt-3 flex gap-2">
-                  <button className="flex-1 rounded-lg bg-green-600 py-1.5 text-xs font-medium text-white hover:bg-green-700">
+                  <button 
+                    onClick={() => setConvertModalOpen(true)}
+                    className="flex-1 rounded-lg bg-green-600 py-1.5 text-xs font-medium text-white hover:bg-green-700"
+                  >
                     Convert to GHS
-                  </button>
-                  <button className="flex-1 rounded-lg border border-green-300 bg-white py-1.5 text-xs font-medium text-green-700 hover:bg-green-50">
-                    Withdraw
                   </button>
                 </div>
               </div>
@@ -304,13 +301,13 @@ export default function DashboardPage() {
                   value={txSearch}
                   onChange={(e) => setTxSearch(e.target.value)}
                   placeholder="Search transactions..."
-                  className="w-48 rounded-lg border border-black/10 px-3 py-1.5 text-sm outline-none focus:border-[color:var(--trite-lime-strong)]"
+                  className="w-48 rounded-lg border border-black/10 px-3 py-1.5 text-sm text-gray-900 outline-none focus:border-[color:var(--trite-lime-strong)]"
                 />
               </div>
               <select
                 value={txFilter}
                 onChange={(e) => setTxFilter(e.target.value as any)}
-                className="rounded-lg border border-black/10 px-3 py-1.5 text-sm outline-none focus:border-[color:var(--trite-lime-strong)]"
+                className="rounded-lg border border-black/10 px-3 py-1.5 text-sm text-gray-900 outline-none focus:border-[color:var(--trite-lime-strong)]"
               >
                 <option value="all">All Currencies</option>
                 <option value="fiat">Fiat (GHS)</option>
@@ -320,7 +317,7 @@ export default function DashboardPage() {
               <select
                 value={txStatus}
                 onChange={(e) => setTxStatus(e.target.value as any)}
-                className="rounded-lg border border-black/10 px-3 py-1.5 text-sm outline-none focus:border-[color:var(--trite-lime-strong)]"
+                className="rounded-lg border border-black/10 px-3 py-1.5 text-sm text-gray-900 outline-none focus:border-[color:var(--trite-lime-strong)]"
               >
                 <option value="all">All Status</option>
                 <option value="success">Success</option>
@@ -330,7 +327,7 @@ export default function DashboardPage() {
               <select
                 value={dateRange}
                 onChange={(e) => setDateRange(e.target.value as any)}
-                className="rounded-lg border border-black/10 px-3 py-1.5 text-sm outline-none focus:border-[color:var(--trite-lime-strong)]"
+                className="rounded-lg border border-black/10 px-3 py-1.5 text-sm text-gray-900 outline-none focus:border-[color:var(--trite-lime-strong)]"
               >
                 <option value="7d">Last 7 days</option>
                 <option value="30d">Last 30 days</option>
@@ -450,6 +447,32 @@ export default function DashboardPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Revenue Bar Chart */}
+          <div className="mt-6 rounded-2xl bg-white p-6 ring-1 ring-black/5">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-[color:var(--trite-ink)]">Revenue Overview</h2>
+                <p className="text-xs text-[color:var(--trite-muted)]">Track your earnings over time</p>
+              </div>
+              <div className="flex items-center gap-1 rounded-lg bg-black/[0.04] p-1">
+                {(["day", "week", "month", "year"] as const).map((period) => (
+                  <button
+                    key={period}
+                    onClick={() => setChartPeriod(period)}
+                    className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                      chartPeriod === period
+                        ? "bg-white text-[color:var(--trite-ink)] shadow-sm"
+                        : "text-[color:var(--trite-muted)] hover:text-[color:var(--trite-ink)]"
+                    }`}
+                  >
+                    {period.charAt(0).toUpperCase() + period.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <BarChart period={chartPeriod} />
           </div>
 
           <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -828,6 +851,198 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+      {/* Convert to GHS Modal */}
+      {convertModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-[color:var(--trite-ink)]">Convert Stablecoin to GHS</h2>
+              <button
+                onClick={() => setConvertModalOpen(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]"
+              >
+                <XIcon className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="mb-6 rounded-xl bg-green-50 p-4">
+              <div className="text-xs text-green-700">Available Stablecoin Balance</div>
+              <div className="text-2xl font-bold text-green-900">$20,680.50</div>
+              <div className="mt-1 text-xs text-green-600">USDC: $12,450.00 | USDT: $8,230.50</div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-[color:var(--trite-ink)]">Select Stablecoin</label>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setConvertFrom("USDC")}
+                    className={`flex items-center justify-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
+                      convertFrom === "USDC"
+                        ? "border-green-500 bg-green-50 text-green-700"
+                        : "border-black/10 text-[color:var(--trite-muted)] hover:bg-black/[0.03]"
+                    }`}
+                  >
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-[8px] font-bold text-green-700">$</span>
+                    USDC
+                  </button>
+                  <button
+                    onClick={() => setConvertFrom("USDT")}
+                    className={`flex items-center justify-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
+                      convertFrom === "USDT"
+                        ? "border-green-500 bg-green-50 text-green-700"
+                        : "border-black/10 text-[color:var(--trite-muted)] hover:bg-black/[0.03]"
+                    }`}
+                  >
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-teal-100 text-[8px] font-bold text-teal-700">T</span>
+                    USDT
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-[color:var(--trite-ink)]">Amount to Convert (USD)</label>
+                <input
+                  type="number"
+                  value={convertAmount}
+                  onChange={(e) => setConvertAmount(e.target.value)}
+                  placeholder="0.00"
+                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-green-500"
+                />
+                <div className="mt-1 flex justify-between text-xs">
+                  <span className="text-[color:var(--trite-muted)]">Available: {convertFrom === "USDC" ? "$12,450.00" : "$8,230.50"}</span>
+                  <button 
+                    onClick={() => setConvertAmount(convertFrom === "USDC" ? "12450" : "8230.50")}
+                    className="text-green-600 hover:underline"
+                  >
+                    Max
+                  </button>
+                </div>
+              </div>
+
+              <div className="rounded-xl bg-gray-50 p-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-[color:var(--trite-muted)]">Exchange Rate</span>
+                  <span className="font-medium text-[color:var(--trite-ink)]">1 USD = ₵15.50</span>
+                </div>
+                <div className="mt-1 flex justify-between text-sm">
+                  <span className="text-[color:var(--trite-muted)]">Conversion Fee (0.5%)</span>
+                  <span className="font-medium text-[color:var(--trite-ink)]">
+                    {convertAmount ? formatGHS(Number(convertAmount) * 0.005 * 15.50) : "₵0.00"}
+                  </span>
+                </div>
+                <div className="mt-2 border-t border-black/10 pt-2 flex justify-between text-sm">
+                  <span className="font-medium text-[color:var(--trite-ink)]">You Will Receive</span>
+                  <span className="font-bold text-green-700">
+                    {convertAmount ? formatGHS(Number(convertAmount) * 15.50 * 0.995) : "₵0.00"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => setConvertModalOpen(false)}
+                className="flex-1 rounded-lg border border-black/10 py-2.5 text-sm font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.03]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (convertAmount) {
+                    setConvertAmount("");
+                    setConvertModalOpen(false);
+                  }
+                }}
+                disabled={!convertAmount}
+                className="flex-1 rounded-lg bg-green-600 py-2.5 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Convert Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BarChart({ period }: { period: "day" | "week" | "month" | "year" }) {
+  // Sample data for different periods
+  const data = {
+    day: [
+      { label: "00:00", value: 1200 },
+      { label: "04:00", value: 800 },
+      { label: "08:00", value: 2500 },
+      { label: "12:00", value: 4200 },
+      { label: "16:00", value: 3800 },
+      { label: "20:00", value: 2100 },
+    ],
+    week: [
+      { label: "Mon", value: 8500 },
+      { label: "Tue", value: 12000 },
+      { label: "Wed", value: 9800 },
+      { label: "Thu", value: 14200 },
+      { label: "Fri", value: 18500 },
+      { label: "Sat", value: 11200 },
+      { label: "Sun", value: 7600 },
+    ],
+    month: [
+      { label: "Week 1", value: 45000 },
+      { label: "Week 2", value: 52000 },
+      { label: "Week 3", value: 48000 },
+      { label: "Week 4", value: 61000 },
+    ],
+    year: [
+      { label: "Jan", value: 180000 },
+      { label: "Feb", value: 195000 },
+      { label: "Mar", value: 220000 },
+      { label: "Apr", value: 205000 },
+      { label: "May", value: 245000 },
+      { label: "Jun", value: 280000 },
+      { label: "Jul", value: 265000 },
+      { label: "Aug", value: 310000 },
+      { label: "Sep", value: 290000 },
+      { label: "Oct", value: 325000 },
+      { label: "Nov", value: 340000 },
+      { label: "Dec", value: 380000 },
+    ],
+  };
+
+  const currentData = data[period];
+  const maxValue = Math.max(...currentData.map((d) => d.value));
+  const total = currentData.reduce((sum, d) => sum + d.value, 0);
+
+  return (
+    <div>
+      <div className="mb-4 flex items-baseline gap-2">
+        <span className="text-2xl font-bold text-[color:var(--trite-ink)]">
+          {new Intl.NumberFormat("en-GH", {
+            style: "currency",
+            currency: "GHS",
+            minimumFractionDigits: 0,
+          }).format(total)}
+        </span>
+        <span className="text-sm text-[color:var(--trite-muted)]">
+          Total {period === "day" ? "today" : period === "week" ? "this week" : period === "month" ? "this month" : "this year"}
+        </span>
+      </div>
+      <div className="flex items-end justify-between gap-2">
+        {currentData.map((item, index) => {
+          const heightPercent = (item.value / maxValue) * 100;
+          return (
+            <div key={index} className="flex flex-1 flex-col items-center gap-2">
+              <div className="relative w-full">
+                <div
+                  className="w-full rounded-t-md bg-gradient-to-t from-blue-600 to-blue-400 transition-all duration-500"
+                  style={{ height: `${heightPercent * 1.5}px` }}
+                />
+              </div>
+              <span className="text-xs text-[color:var(--trite-muted)]">{item.label}</span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

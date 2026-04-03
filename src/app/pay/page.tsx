@@ -143,7 +143,7 @@ export default function CheckoutPage() {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="0.00"
-                  className="w-full rounded-xl border border-black/10 bg-white py-4 pl-12 pr-4 text-2xl font-semibold text-[color:var(--trite-ink)] placeholder:text-black/20 outline-none focus:border-[color:var(--trite-lime-strong)]"
+                  className="w-full rounded-xl border border-black/10 bg-white py-4 pl-12 pr-4 text-2xl font-semibold text-gray-900 placeholder:text-black/20 outline-none focus:border-[color:var(--trite-lime-strong)]"
                 />
               </div>
               {amount && (
@@ -264,7 +264,7 @@ export default function CheckoutPage() {
                     value={cardNumber}
                     onChange={(e) => setCardNumber(e.target.value)}
                     placeholder="1234 5678 9012 3456"
-                    className="mt-1 w-full rounded-lg border border-black/10 px-4 py-3 text-[color:var(--trite-ink)] placeholder:text-black/30 outline-none focus:border-[color:var(--trite-lime-strong)]"
+                    className="mt-1 w-full rounded-lg border border-black/10 px-4 py-3 text-gray-900 placeholder:text-black/30 outline-none focus:border-[color:var(--trite-lime-strong)]"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -275,7 +275,7 @@ export default function CheckoutPage() {
                       value={cardExpiry}
                       onChange={(e) => setCardExpiry(e.target.value)}
                       placeholder="MM/YY"
-                      className="mt-1 w-full rounded-lg border border-black/10 px-4 py-3 text-[color:var(--trite-ink)] placeholder:text-black/30 outline-none focus:border-[color:var(--trite-lime-strong)]"
+                      className="mt-1 w-full rounded-lg border border-black/10 px-4 py-3 text-gray-900 placeholder:text-black/30 outline-none focus:border-[color:var(--trite-lime-strong)]"
                     />
                   </div>
                   <div>
@@ -286,7 +286,7 @@ export default function CheckoutPage() {
                       onChange={(e) => setCardCvv(e.target.value)}
                       placeholder="123"
                       maxLength={4}
-                      className="mt-1 w-full rounded-lg border border-black/10 px-4 py-3 text-[color:var(--trite-ink)] placeholder:text-black/30 outline-none focus:border-[color:var(--trite-lime-strong)]"
+                      className="mt-1 w-full rounded-lg border border-black/10 px-4 py-3 text-gray-900 placeholder:text-black/30 outline-none focus:border-[color:var(--trite-lime-strong)]"
                     />
                   </div>
                 </div>
@@ -321,7 +321,7 @@ export default function CheckoutPage() {
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     placeholder="+233 XX XXX XXXX"
-                    className="mt-1 w-full rounded-lg border border-black/10 px-4 py-3 text-[color:var(--trite-ink)] placeholder:text-black/30 outline-none focus:border-[color:var(--trite-lime-strong)]"
+                    className="mt-1 w-full rounded-lg border border-black/10 px-4 py-3 text-gray-900 placeholder:text-black/30 outline-none focus:border-[color:var(--trite-lime-strong)]"
                   />
                   <p className="mt-1 text-xs text-[color:var(--trite-muted)]">
                     You will receive a prompt on your phone to confirm payment
@@ -349,7 +349,7 @@ export default function CheckoutPage() {
                   <input
                     type="text"
                     placeholder="0x..."
-                    className="mt-1 w-full rounded-lg border border-black/10 px-4 py-3 text-[color:var(--trite-ink)] placeholder:text-black/30 outline-none focus:border-[color:var(--trite-lime-strong)]"
+                    className="mt-1 w-full rounded-lg border border-black/10 px-4 py-3 text-gray-900 placeholder:text-black/30 outline-none focus:border-[color:var(--trite-lime-strong)]"
                   />
                 </div>
               </div>

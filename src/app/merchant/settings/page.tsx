@@ -22,6 +22,30 @@ export default function SettingsPage() {
     marketing: false,
   });
 
+  // Profile form state
+  const [fullName, setFullName] = useState("Kwame Asante");
+  const [email, setEmail] = useState("kwame.asante@trite.com.gh");
+  const [region, setRegion] = useState("Greater Accra (Ghana)");
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [updateSuccess, setUpdateSuccess] = useState(false);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleUpdateProfile = () => {
+    // Simulate profile update
+    setUpdateSuccess(true);
+    setTimeout(() => setUpdateSuccess(false), 3000);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#f6f7fb]">
       <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-black/5 bg-white">
@@ -89,14 +113,7 @@ export default function SettingsPage() {
 
       <main className="ml-64">
         <header className="sticky top-0 z-30 border-b border-black/5 bg-white/80 backdrop-blur">
-          <div className="flex h-16 items-center justify-between px-6">
-            <div className="flex h-10 flex-1 max-w-md items-center gap-2 rounded-lg border border-black/10 bg-white px-3 text-sm text-[color:var(--trite-muted)]">
-              <SearchIcon className="h-4 w-4" />
-              <input
-                placeholder="Search settings..."
-                className="w-full bg-transparent outline-none placeholder:text-black/30"
-              />
-            </div>
+          <div className="flex h-16 items-center justify-end px-6">
             <div className="flex items-center gap-4">
               <button className="flex h-10 w-10 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]">
                 <BellIcon className="h-5 w-5" />
@@ -125,14 +142,29 @@ export default function SettingsPage() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2 space-y-6">
               <div className="rounded-2xl bg-white p-6 ring-1 ring-black/5">
+                {updateSuccess && (
+                  <div className="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-700">
+                    Profile updated successfully!
+                  </div>
+                )}
                 <div className="flex items-start gap-6">
                   <div className="relative">
-                    <div className="flex h-24 w-24 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-2xl font-bold text-white">
-                      KA
+                    <div className="flex h-24 w-24 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-2xl font-bold text-white overflow-hidden">
+                      {profileImage ? (
+                        <img src={profileImage} alt="Profile" className="h-full w-full object-cover" />
+                      ) : (
+                        fullName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
+                      )}
                     </div>
-                    <button className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg">
-                      <EditIcon className="h-4 w-4" />
-                    </button>
+                    <label className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg cursor-pointer hover:bg-blue-700">
+                      <CameraIcon className="h-4 w-4" />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                    </label>
                   </div>
                   <div className="flex-1 grid grid-cols-2 gap-4">
                     <div>
@@ -141,8 +173,9 @@ export default function SettingsPage() {
                       </label>
                       <input
                         type="text"
-                        defaultValue="Kwame Asante"
-                        className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-500"
                       />
                     </div>
                     <div>
@@ -151,8 +184,9 @@ export default function SettingsPage() {
                       </label>
                       <input
                         type="email"
-                        defaultValue="kwame.asante@trite.com.gh"
-                        className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-500"
                       />
                     </div>
                     <div>
@@ -172,14 +206,18 @@ export default function SettingsPage() {
                       </label>
                       <input
                         type="text"
-                        defaultValue="Greater Accra (Ghana)"
-                        className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none"
+                        value={region}
+                        onChange={(e) => setRegion(e.target.value)}
+                        className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-500"
                       />
                     </div>
                   </div>
                 </div>
                 <div className="mt-6 flex justify-end">
-                  <button className="flex h-10 items-center justify-center rounded-lg bg-blue-600 px-6 text-sm font-semibold text-white hover:bg-blue-700">
+                  <button
+                    onClick={handleUpdateProfile}
+                    className="flex h-10 items-center justify-center rounded-lg bg-blue-600 px-6 text-sm font-semibold text-white hover:bg-blue-700"
+                  >
                     Update Profile
                   </button>
                 </div>
@@ -444,6 +482,15 @@ function EditIcon({ className }: { className?: string }) {
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  );
+}
+
+function CameraIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+      <circle cx="12" cy="13" r="4" />
     </svg>
   );
 }

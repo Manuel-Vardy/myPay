@@ -92,7 +92,7 @@ export default function ContactSalesPage() {
                       Full name
                     </label>
                     <input
-                      className="mt-2 h-11 w-full rounded-xl border border-black/10 bg-[#f6f7fb] px-3 text-sm text-[color:var(--trite-ink)] outline-none placeholder:text-black/35 focus:border-[color:var(--trite-lime-strong)] focus:bg-white"
+                      className="mt-2 h-11 w-full rounded-xl border border-black/10 bg-[#f6f7fb] px-3 text-sm text-gray-900 outline-none placeholder:text-black/35 focus:border-[color:var(--trite-lime-strong)] focus:bg-white"
                       id="fullName"
                       name="fullName"
                       placeholder="Ama Owusu"
@@ -109,7 +109,7 @@ export default function ContactSalesPage() {
                       Work email
                     </label>
                     <input
-                      className="mt-2 h-11 w-full rounded-xl border border-black/10 bg-[#f6f7fb] px-3 text-sm text-[color:var(--trite-ink)] outline-none placeholder:text-black/35 focus:border-[color:var(--trite-lime-strong)] focus:bg-white"
+                      className="mt-2 h-11 w-full rounded-xl border border-black/10 bg-[#f6f7fb] px-3 text-sm text-gray-900 outline-none placeholder:text-black/35 focus:border-[color:var(--trite-lime-strong)] focus:bg-white"
                       id="workEmail"
                       name="workEmail"
                       type="email"
@@ -146,7 +146,7 @@ export default function ContactSalesPage() {
                       Phone / WhatsApp (optional)
                     </label>
                     <input
-                      className="mt-2 h-11 w-full rounded-xl border border-black/10 bg-[#f6f7fb] px-3 text-sm text-[color:var(--trite-ink)] outline-none placeholder:text-black/35 focus:border-[color:var(--trite-lime-strong)] focus:bg-white"
+                      className="mt-2 h-11 w-full rounded-xl border border-black/10 bg-[#f6f7fb] px-3 text-sm text-gray-900 outline-none placeholder:text-black/35 focus:border-[color:var(--trite-lime-strong)] focus:bg-white"
                       id="phone"
                       name="phone"
                       placeholder="+233 20 000 0000"
@@ -162,7 +162,7 @@ export default function ContactSalesPage() {
                       Estimated monthly volume (GHS)
                     </label>
                     <select
-                      className="mt-2 h-11 w-full rounded-xl border border-black/10 bg-[#f6f7fb] px-3 text-sm text-[color:var(--trite-ink)] outline-none focus:border-[color:var(--trite-lime-strong)] focus:bg-white"
+                      className="mt-2 h-11 w-full rounded-xl border border-black/10 bg-[#f6f7fb] px-3 text-sm text-gray-900 outline-none focus:border-[color:var(--trite-lime-strong)] focus:bg-white"
                       id="monthlyVolume"
                       name="monthlyVolume"
                       defaultValue=""
@@ -219,7 +219,7 @@ export default function ContactSalesPage() {
                     Message
                   </label>
                   <textarea
-                    className="mt-2 min-h-28 w-full resize-y rounded-xl border border-black/10 bg-[#f6f7fb] px-3 py-3 text-sm text-[color:var(--trite-ink)] outline-none placeholder:text-black/35 focus:border-[color:var(--trite-lime-strong)] focus:bg-white"
+                    className="mt-2 min-h-28 w-full resize-y rounded-xl border border-black/10 bg-[#f6f7fb] px-3 py-3 text-sm text-gray-900 outline-none placeholder:text-black/35 focus:border-[color:var(--trite-lime-strong)] focus:bg-white"
                     id="message"
                     name="message"
                     placeholder="Tell us what you’re building, timelines, and any requirements."

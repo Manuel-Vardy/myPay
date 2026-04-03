@@ -86,7 +86,26 @@ export default function CustomersPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("customers");
   const [tierFilter, setTierFilter] = useState<CustomerTier | "all">("all");
+  const [chartPeriod, setChartPeriod] = useState<"day" | "week" | "month" | "year">("week");
   const [sortBy, setSortBy] = useState("recent");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [actionMenuOpen, setActionMenuOpen] = useState<string | null>(null);
+  
+  // Add Customer modal state
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [newCustomerName, setNewCustomerName] = useState("");
+  const [newCustomerEmail, setNewCustomerEmail] = useState("");
+  const [newCustomerTier, setNewCustomerTier] = useState<CustomerTier>("standard");
+  const [newCustomerVolume, setNewCustomerVolume] = useState("");
+
+  // Edit form state
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editTier, setEditTier] = useState<CustomerTier>("standard");
+  const [editVolume, setEditVolume] = useState("");
+  const [editVerification, setEditVerification] = useState<VerificationStatus>("pending");
 
   const formatGHS = (amount: number) => {
     return new Intl.NumberFormat("en-GH", {
@@ -99,6 +118,17 @@ export default function CustomersPage() {
   const filteredCustomers = useMemo(() => {
     let result = tierFilter === "all" ? demoCustomers : demoCustomers.filter((c) => c.tier === tierFilter);
     
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (c) =>
+          c.name.toLowerCase().includes(query) ||
+          c.email.toLowerCase().includes(query) ||
+          c.id.toLowerCase().includes(query)
+      );
+    }
+    
     if (sortBy === "volume") {
       result = [...result].sort((a, b) => b.volume - a.volume);
     } else if (sortBy === "name") {
@@ -106,7 +136,7 @@ export default function CustomersPage() {
     }
     
     return result;
-  }, [tierFilter, sortBy]);
+  }, [tierFilter, sortBy, searchQuery]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#f6f7fb]">
@@ -173,8 +203,11 @@ export default function CustomersPage() {
             <div className="flex h-10 flex-1 max-w-md items-center gap-2 rounded-lg border border-black/10 bg-white px-3 text-sm text-[color:var(--trite-muted)]">
               <SearchIcon className="h-4 w-4" />
               <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search customer records..."
-                className="w-full bg-transparent outline-none placeholder:text-black/30"
+                className="w-full bg-transparent text-gray-900 outline-none placeholder:text-black/30"
               />
             </div>
             <div className="flex items-center gap-4">
@@ -207,7 +240,10 @@ export default function CustomersPage() {
                 <DownloadIcon className="h-4 w-4" />
                 Export CSV
               </button>
-              <button className="flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700">
+              <button 
+                onClick={() => setAddModalOpen(true)}
+                className="flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700"
+              >
                 <PlusIcon className="h-4 w-4" />
                 Add Customer
               </button>
@@ -301,13 +337,63 @@ export default function CustomersPage() {
                       <VerificationBadge status={customer.verification} />
                     </td>
                     <td className="py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button className="flex h-8 w-8 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]">
+                      <div className="flex items-center justify-end gap-2 relative">
+                        <button 
+                          onClick={() => {
+                            setEditingCustomer(customer);
+                            setEditName(customer.name);
+                            setEditEmail(customer.email);
+                            setEditTier(customer.tier);
+                            setEditVolume(customer.volume.toString());
+                            setEditVerification(customer.verification);
+                            setEditModalOpen(true);
+                          }}
+                          className="flex h-8 w-8 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]"
+                        >
                           <EditIcon className="h-4 w-4" />
                         </button>
-                        <button className="flex h-8 w-8 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]">
-                          <MoreVerticalIcon className="h-4 w-4" />
-                        </button>
+                        <div className="relative">
+                          <button 
+                            onClick={() => setActionMenuOpen(actionMenuOpen === customer.id ? null : customer.id)}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]"
+                          >
+                            <MoreVerticalIcon className="h-4 w-4" />
+                          </button>
+                          {actionMenuOpen === customer.id && (
+                            <div className="absolute right-0 top-full mt-1 w-48 rounded-lg bg-white shadow-lg ring-1 ring-black/5 z-50">
+                              <div className="py-1">
+                                <button 
+                                  onClick={() => {
+                                    setEditingCustomer(customer);
+                                    setEditName(customer.name);
+                                    setEditEmail(customer.email);
+                                    setEditTier(customer.tier);
+                                    setEditVolume(customer.volume.toString());
+                                    setEditVerification(customer.verification);
+                                    setEditModalOpen(true);
+                                    setActionMenuOpen(null);
+                                  }}
+                                  className="w-full px-4 py-2 text-left text-sm text-[color:var(--trite-ink)] hover:bg-black/[0.03] flex items-center gap-2"
+                                >
+                                  <EditIcon className="h-4 w-4" />
+                                  Edit Customer
+                                </button>
+                                <button 
+                                  onClick={() => {
+                                    if (confirm(`Delete ${customer.name}?`)) {
+                                      // Handle delete
+                                    }
+                                    setActionMenuOpen(null);
+                                  }}
+                                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                                >
+                                  <TrashIcon className="h-4 w-4" />
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -406,6 +492,201 @@ export default function CustomersPage() {
           </div>
         </div>
       </main>
+
+      {/* Edit Customer Modal */}
+      {editModalOpen && editingCustomer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-[color:var(--trite-ink)]">Edit Customer</h2>
+                <p className="text-xs text-[color:var(--trite-muted)]">Update customer details</p>
+              </div>
+              <button
+                onClick={() => setEditModalOpen(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]"
+              >
+                <XIcon className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-[color:var(--trite-ink)]">Full Name</label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder="e.g., Enter Name"
+                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-[color:var(--trite-ink)]">Email Address</label>
+                <input
+                  type="email"
+                  value={editEmail}
+                  onChange={(e) => setEditEmail(e.target.value)}
+                  placeholder="e.g., example@gmail.com"
+                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-[color:var(--trite-ink)]">Customer Tier</label>
+                <select
+                  value={editTier}
+                  onChange={(e) => setEditTier(e.target.value as CustomerTier)}
+                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-500"
+                >
+                  <option value="standard">Standard</option>
+                  <option value="enterprise">Enterprise (Tier 2)</option>
+                  <option value="institutional">Institutional (Tier 1)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-[color:var(--trite-ink)]">Volume (GHS)</label>
+                <input
+                  type="number"
+                  value={editVolume}
+                  onChange={(e) => setEditVolume(e.target.value)}
+                  placeholder="0.00"
+                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-[color:var(--trite-ink)]">Verification Status</label>
+                <select
+                  value={editVerification}
+                  onChange={(e) => setEditVerification(e.target.value as VerificationStatus)}
+                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-500"
+                >
+                  <option value="verified">Verified</option>
+                  <option value="pending">Pending</option>
+                  <option value="unverified">Unverified</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => setEditModalOpen(false)}
+                className="flex-1 rounded-lg border border-black/10 py-2.5 text-sm font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.03]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (editName && editEmail && editingCustomer) {
+                    setEditModalOpen(false);
+                    setEditingCustomer(null);
+                  }
+                }}
+                disabled={!editName || !editEmail}
+                className="flex-1 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Customer Modal */}
+      {addModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-[color:var(--trite-ink)]">Add Customer</h2>
+                <p className="text-xs text-[color:var(--trite-muted)]">Create a new customer record</p>
+              </div>
+              <button
+                onClick={() => setAddModalOpen(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]"
+              >
+                <XIcon className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-[color:var(--trite-ink)]">Full Name</label>
+                <input
+                  type="text"
+                  value={newCustomerName}
+                  onChange={(e) => setNewCustomerName(e.target.value)}
+                  placeholder="e.g., Enter Name"
+                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-[color:var(--trite-ink)]">Email Address</label>
+                <input
+                  type="email"
+                  value={newCustomerEmail}
+                  onChange={(e) => setNewCustomerEmail(e.target.value)}
+                  placeholder="e.g., example@gmail.com"
+                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-[color:var(--trite-ink)]">Customer Tier</label>
+                <select
+                  value={newCustomerTier}
+                  onChange={(e) => setNewCustomerTier(e.target.value as CustomerTier)}
+                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-500"
+                >
+                  <option value="standard">Standard</option>
+                  <option value="enterprise">Enterprise (Tier 2)</option>
+                  <option value="institutional">Institutional (Tier 1)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-[color:var(--trite-ink)]">Initial Volume (GHS)</label>
+                <input
+                  type="number"
+                  value={newCustomerVolume}
+                  onChange={(e) => setNewCustomerVolume(e.target.value)}
+                  placeholder="0.00"
+                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-blue-500"
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => setAddModalOpen(false)}
+                className="flex-1 rounded-lg border border-black/10 py-2.5 text-sm font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.03]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (newCustomerName && newCustomerEmail) {
+                    // Reset form
+                    setNewCustomerName("");
+                    setNewCustomerEmail("");
+                    setNewCustomerTier("standard");
+                    setNewCustomerVolume("");
+                    setAddModalOpen(false);
+                  }
+                }}
+                disabled={!newCustomerName || !newCustomerEmail}
+                className="flex-1 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Add Customer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -632,6 +913,15 @@ function XIcon({ className }: { className?: string }) {
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
+
+function TrashIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
     </svg>
   );
 }

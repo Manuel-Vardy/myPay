@@ -208,7 +208,7 @@ export default function TransactionsPage() {
               <SearchIcon className="h-4 w-4" />
               <input
                 placeholder="Search transactions..."
-                className="w-full bg-transparent outline-none placeholder:text-black/30"
+                className="w-full bg-transparent text-gray-900 outline-none placeholder:text-black/30"
               />
             </div>
             <div className="flex items-center gap-4">
@@ -320,7 +320,7 @@ export default function TransactionsPage() {
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
                       placeholder="Search TXN, customer..."
-                      className="w-48 bg-transparent outline-none placeholder:text-black/30"
+                      className="w-48 bg-transparent text-gray-900 outline-none placeholder:text-black/30"
                     />
                   </div>
                 </div>

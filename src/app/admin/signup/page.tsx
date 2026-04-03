@@ -87,7 +87,7 @@ export default function AdminSignupPage() {
                     required
                     value={formData.institution}
                     onChange={handleChange}
-                    className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm text-[color:var(--trite-ink)] outline-none transition-all placeholder:text-black/30 focus:border-[color:var(--trite-lime-strong)]"
+                    className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm text-gray-900 outline-none transition-all placeholder:text-black/30 focus:border-[color:var(--trite-lime-strong)]"
                   />
                 </div>
 
@@ -107,7 +107,7 @@ export default function AdminSignupPage() {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm text-[color:var(--trite-ink)] outline-none transition-all placeholder:text-black/30 focus:border-[color:var(--trite-lime-strong)]"
+                    className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm text-gray-900 outline-none transition-all placeholder:text-black/30 focus:border-[color:var(--trite-lime-strong)]"
                   />
                 </div>
 
@@ -126,7 +126,7 @@ export default function AdminSignupPage() {
                     required
                     value={formData.phone}
                     onChange={handleChange}
-                    className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm text-[color:var(--trite-ink)] outline-none transition-all placeholder:text-black/30 focus:border-[color:var(--trite-lime-strong)]"
+                    className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm text-gray-900 outline-none transition-all placeholder:text-black/30 focus:border-[color:var(--trite-lime-strong)]"
                   />
                 </div>
 
@@ -143,7 +143,7 @@ export default function AdminSignupPage() {
                     required
                     value={formData.role}
                     onChange={handleChange}
-                    className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm text-[color:var(--trite-ink)] outline-none transition-all focus:border-[color:var(--trite-lime-strong)]"
+                    className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm text-gray-900 outline-none transition-all focus:border-[color:var(--trite-lime-strong)]"
                   >
                     <option value="">Select role...</option>
                     <option value="compliance-officer">Compliance Officer</option>
@@ -171,7 +171,7 @@ export default function AdminSignupPage() {
                     minLength={16}
                     value={formData.password}
                     onChange={handleChange}
-                    className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm text-[color:var(--trite-ink)] outline-none transition-all placeholder:text-black/30 focus:border-[color:var(--trite-lime-strong)]"
+                    className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm text-gray-900 outline-none transition-all placeholder:text-black/30 focus:border-[color:var(--trite-lime-strong)]"
                   />
                 </div>
 
@@ -191,7 +191,7 @@ export default function AdminSignupPage() {
                     required
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm text-[color:var(--trite-ink)] outline-none transition-all placeholder:text-black/30 focus:border-[color:var(--trite-lime-strong)]"
+                    className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm text-gray-900 outline-none transition-all placeholder:text-black/30 focus:border-[color:var(--trite-lime-strong)]"
                   />
                 </div>
               </div>

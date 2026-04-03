@@ -121,7 +121,7 @@ export default function AnalyticsPage() {
               <SearchIcon className="h-4 w-4" />
               <input
                 placeholder="Search analytics..."
-                className="w-full bg-transparent outline-none placeholder:text-black/30"
+                className="w-full bg-transparent text-gray-900 outline-none placeholder:text-black/30"
               />
             </div>
             <div className="flex items-center gap-4">

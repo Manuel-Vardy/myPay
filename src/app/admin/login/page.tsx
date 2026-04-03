@@ -77,7 +77,7 @@ export default function AdminLoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm text-[color:var(--trite-ink)] outline-none transition-all placeholder:text-black/30 focus:border-[color:var(--trite-lime-strong)]"
+                  className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm text-gray-900 outline-none transition-all placeholder:text-black/30 focus:border-[color:var(--trite-lime-strong)]"
                 />
               </div>
 
@@ -97,7 +97,7 @@ export default function AdminLoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm text-[color:var(--trite-ink)] outline-none transition-all placeholder:text-black/30 focus:border-[color:var(--trite-lime-strong)]"
+                  className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm text-gray-900 outline-none transition-all placeholder:text-black/30 focus:border-[color:var(--trite-lime-strong)]"
                 />
               </div>
 

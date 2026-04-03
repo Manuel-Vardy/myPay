@@ -73,6 +73,7 @@ const sidebarItems = [
 ];
 
 const bottomItems = [
+  { id: "settings", label: "Settings", href: "/admin/settings", icon: Settings },
   { id: "logout", label: "Logout", href: "/admin/login", icon: LogOut },
 ];
 
