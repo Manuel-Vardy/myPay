@@ -9,6 +9,7 @@ const sidebarItems = [
   { id: "dashboard", label: "Dashboard", href: "/merchant", icon: LayoutGridIcon },
   { id: "analytics", label: "Analytics", href: "/merchant/analytics", icon: BarChartIcon },
   { id: "transactions", label: "Transactions", href: "/merchant/transactions", icon: ReceiptIcon },
+  { id: "subscriptions", label: "Subscriptions", href: "/merchant/subscriptions", icon: RefreshCcwIcon },
   { id: "customers", label: "Customers", href: "/merchant/customers", icon: UsersIcon },
   { id: "settings", label: "Settings", href: "/merchant/settings", icon: SettingsIcon },
 ];
@@ -144,7 +145,7 @@ export default function TransactionsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#f6f7fb]">
-      <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-black/5 bg-white">
+      <aside className="fixed left-0 top-0 z-40 h-screen w-56 border-r border-black/5 bg-white">
         <div className="flex h-full flex-col">
           <div className="flex h-16 items-center border-b border-black/5 px-4">
             <Link href="/" className="flex items-center gap-3">
@@ -194,14 +195,17 @@ export default function TransactionsPage() {
                 <div className="text-sm font-semibold text-[color:var(--trite-ink)]">
                   Kwame Asante
                 </div>
-                <div className="text-xs text-[color:var(--trite-muted)]">Verified Merchant</div>
+                <div className="flex items-center gap-1.5">
+                  <div className="text-xs text-[color:var(--trite-muted)]">Verified Merchant</div>
+                  <VerifiedBadge className="h-3 w-3" />
+                </div>
               </div>
             </div>
           </div>
         </div>
       </aside>
 
-      <main className="ml-64">
+      <main className="ml-56">
         <header className="sticky top-0 z-30 border-b border-black/5 bg-white/80 backdrop-blur">
           <div className="flex h-16 items-center justify-between px-6">
             <div className="flex h-10 flex-1 max-w-md items-center gap-2 rounded-lg border border-black/10 bg-white px-3 text-sm text-[color:var(--trite-muted)]">
@@ -226,13 +230,13 @@ export default function TransactionsPage() {
           </div>
         </header>
 
-        <div className="p-6">
+        <div className="p-5">
           <div className="mb-6 flex items-center justify-between">
             <div>
               <div className="text-xs font-semibold uppercase tracking-wider text-blue-600">
                 Transaction Overview
               </div>
-              <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--trite-ink)]">
+              <h1 className="text-2xl font-semibold tracking-tight text-[color:var(--trite-ink)]">
                 Transaction Monitoring
               </h1>
             </div>
@@ -249,7 +253,7 @@ export default function TransactionsPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
+            <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-[color:var(--trite-muted)]">Total Volume</span>
                 <span className="rounded-full bg-[color:var(--trite-lime)] px-1.5 py-0.5 text-[10px] font-semibold text-[color:var(--trite-ink)]">
@@ -262,7 +266,7 @@ export default function TransactionsPage() {
               <div className="mt-1 text-xs text-[color:var(--trite-muted)]">{stats.count} transactions</div>
             </div>
 
-            <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
+            <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-[color:var(--trite-muted)]">Completed</span>
                 <span className="rounded-full bg-[color:var(--trite-lime)] px-1.5 py-0.5 text-[10px] font-semibold text-[color:var(--trite-ink)]">
@@ -275,7 +279,7 @@ export default function TransactionsPage() {
               <div className="mt-1 text-xs text-[color:var(--trite-muted)]">Successful payments</div>
             </div>
 
-            <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
+            <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-[color:var(--trite-muted)]">Pending</span>
                 <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-semibold text-blue-600">
@@ -288,7 +292,7 @@ export default function TransactionsPage() {
               <div className="mt-1 text-xs text-[color:var(--trite-muted)]">Awaiting confirmation</div>
             </div>
 
-            <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
+            <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-[color:var(--trite-muted)]">Issues</span>
                 <span className="rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-600">
@@ -303,7 +307,7 @@ export default function TransactionsPage() {
           </div>
 
           <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <div className="rounded-2xl bg-white p-6 ring-1 ring-black/5 lg:col-span-2">
+            <div className="rounded-xl bg-white p-5 ring-1 ring-black/5 lg:col-span-2">
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <div className="text-lg font-semibold text-[color:var(--trite-ink)]">
@@ -446,7 +450,7 @@ export default function TransactionsPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl bg-gradient-to-br from-[#1a1f2e] to-[#0f1419] p-6 text-white">
+            <div className="rounded-xl bg-gradient-to-br from-[#1a1f2e] to-[#0f1419] p-5 text-white">
               <div className="text-lg font-semibold">Payment Method Mix</div>
               <div className="mt-1 text-xs text-white/60">Distribution by transaction count</div>
               <div className="mt-6 space-y-4">
@@ -470,7 +474,7 @@ export default function TransactionsPage() {
           </div>
 
           <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <div className="rounded-2xl bg-[color:var(--trite-lime)] p-6 ring-1 ring-black/5">
+            <div className="rounded-xl bg-[color:var(--trite-lime)] p-5 ring-1 ring-black/5">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="text-sm font-medium text-[color:var(--trite-ink)]/70">
@@ -489,7 +493,7 @@ export default function TransactionsPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl bg-[color:var(--trite-ink)] p-6 text-white ring-1 ring-black/10">
+            <div className="rounded-xl bg-[color:var(--trite-ink)] p-5 text-white ring-1 ring-black/10">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="text-sm font-medium text-white/60">Settlement Status</div>
@@ -728,3 +732,22 @@ function CoinIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
+function RefreshCcwIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+      <polyline points="21 3 21 8 16 8" />
+    </svg>
+  );
+}
+
+function VerifiedBadge({ className }: { className?: string }) {
+  return (
+    <div className={`flex shrink-0 items-center justify-center rounded-full bg-[color:var(--trite-lime-strong)] p-0.5 ${className}`}>
+      <svg className="h-full w-full text-[color:var(--trite-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+        <polyline points="20 6 9 17 4 12" />
+      </svg>    </div>
+  );
+}
+

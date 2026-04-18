@@ -173,7 +173,7 @@ export default function AdminSupportPage() {
               <input
                 type="text"
                 placeholder="Search tickets..."
-                className="h-10 w-64 rounded-xl border border-black/10 bg-white pl-10 pr-4 text-sm text-[color:var(--trite-ink)] outline-none focus:border-[color:var(--trite-lime-strong)]"
+                className="h-10 w-56 rounded-xl border border-black/10 bg-white pl-10 pr-4 text-sm text-[color:var(--trite-ink)] outline-none focus:border-[color:var(--trite-lime-strong)]"
               />
             </div>
             <button className="h-10 rounded-xl border border-black/10 bg-white px-4 text-sm font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.02]">
@@ -202,7 +202,7 @@ export default function AdminSupportPage() {
 
       <div className="flex">
         {/* Sidebar */}
-        <aside className="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 border-r border-black/5 bg-white">
+        <aside className="fixed left-0 top-16 h-[calc(100vh-64px)] w-56 border-r border-black/5 bg-white">
           <div className="flex h-full flex-col">
             <div className="flex-1 overflow-y-auto px-3 py-4">
               <ul className="space-y-1">
@@ -253,7 +253,7 @@ export default function AdminSupportPage() {
         </aside>
 
         {/* Main Content */}
-        <main className="ml-64 flex-1 p-6">
+        <main className="ml-56 flex-1 p-5">
           <div className="mx-auto max-w-7xl">
             {/* Page Header */}
             <div className="mb-6">
@@ -265,7 +265,7 @@ export default function AdminSupportPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
               {/* Tickets List */}
               <div className="lg:col-span-8">
                 {/* Filter Tabs */}
@@ -312,7 +312,7 @@ export default function AdminSupportPage() {
                     <div
                       key={ticket.id}
                       onClick={() => setSelectedTicket(ticket)}
-                      className={`cursor-pointer rounded-2xl border bg-white p-5 transition-all hover:shadow-md ${
+                      className={`cursor-pointer rounded-xl border bg-white p-5 transition-all hover:shadow-md ${
                         selectedTicket?.id === ticket.id
                           ? "border-blue-400 ring-1 ring-blue-400"
                           : "border-black/5"
@@ -347,7 +347,7 @@ export default function AdminSupportPage() {
               {/* Right Panel */}
               <div className="flex flex-col gap-4 lg:col-span-4">
                 {/* Avg Response Time */}
-                <div className="rounded-2xl border border-black/5 bg-white p-5">
+                <div className="rounded-xl border border-black/5 bg-white p-5">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs font-medium text-[color:var(--trite-muted)] uppercase tracking-wide">Avg Response</p>
@@ -361,7 +361,7 @@ export default function AdminSupportPage() {
 
                 {/* Quick Resolve */}
                 {selectedTicket && (
-                  <div className="rounded-2xl border border-black/5 bg-white p-5">
+                  <div className="rounded-xl border border-black/5 bg-white p-5">
                     <h3 className="text-sm font-semibold text-[color:var(--trite-ink)]">Quick Resolve</h3>
                     <p className="text-xs text-[color:var(--trite-muted)]">
                       Active Response for {selectedTicket.ticketNumber}
@@ -396,7 +396,7 @@ export default function AdminSupportPage() {
                 )}
 
                 {/* Infrastructure */}
-                <div className="rounded-2xl bg-[color:var(--trite-ink)] p-5 text-white">
+                <div className="rounded-xl bg-[color:var(--trite-ink)] p-5 text-white">
                   <h3 className="text-sm font-semibold">Infrastructure</h3>
                   <div className="mt-4 space-y-3">
                     {infrastructureStatus.map((item) => (

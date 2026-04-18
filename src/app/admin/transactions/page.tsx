@@ -241,7 +241,7 @@ export default function AdminTransactionsPage() {
               <input
                 type="text"
                 placeholder="Global Search..."
-                className="h-10 w-64 rounded-xl border border-black/10 bg-white pl-10 pr-4 text-sm text-[color:var(--trite-ink)] outline-none focus:border-[color:var(--trite-lime-strong)]"
+                className="h-10 w-56 rounded-xl border border-black/10 bg-white pl-10 pr-4 text-sm text-[color:var(--trite-ink)] outline-none focus:border-[color:var(--trite-lime-strong)]"
               />
             </div>
             <button className="h-10 rounded-xl border border-black/10 bg-white px-4 text-sm font-medium text-[color:var(--trite-ink)] hover:bg-black/[0.02]">
@@ -270,7 +270,7 @@ export default function AdminTransactionsPage() {
 
       <div className="flex">
         {/* Sidebar */}
-        <aside className="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 border-r border-black/5 bg-white">
+        <aside className="fixed left-0 top-16 h-[calc(100vh-64px)] w-56 border-r border-black/5 bg-white">
           <div className="flex h-full flex-col">
             <div className="flex-1 overflow-y-auto px-3 py-4">
               <ul className="space-y-1">
@@ -321,11 +321,11 @@ export default function AdminTransactionsPage() {
         </aside>
 
         {/* Main Content */}
-        <main className="ml-64 flex-1 p-6">
+        <main className="ml-56 flex-1 p-5">
           <div className="mx-auto max-w-7xl">
             {/* Page Header */}
             <div className="mb-6">
-              <h1 className="text-3xl font-semibold text-[color:var(--trite-ink)]">Transaction Monitoring</h1>
+              <h1 className="text-2xl font-semibold text-[color:var(--trite-ink)]">Transaction Monitoring</h1>
               <p className="mt-2 text-sm text-[color:var(--trite-muted)]">
                 Real-time architectural overview of platform liquidity and transaction integrity. Maintain security across 14 merchant channels and cross-border gateways.
               </p>
@@ -334,7 +334,7 @@ export default function AdminTransactionsPage() {
             {/* Filters */}
             <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
               {/* Search Transaction ID */}
-              <div className="rounded-2xl border border-black/5 bg-white p-5">
+              <div className="rounded-xl border border-black/5 bg-white p-5">
                 <p className="text-xs font-medium text-[color:var(--trite-muted)] uppercase tracking-wide mb-3">Search Transaction ID</p>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--trite-muted)]" />
@@ -349,7 +349,7 @@ export default function AdminTransactionsPage() {
               </div>
 
               {/* Status & Priority */}
-              <div className="rounded-2xl border border-black/5 bg-white p-5">
+              <div className="rounded-xl border border-black/5 bg-white p-5">
                 <p className="text-xs font-medium text-[color:var(--trite-muted)] uppercase tracking-wide mb-3">Status & Priority</p>
                 <div className="flex flex-wrap gap-2">
                   {["All", "Success", "Failed", "Flagged"].map((status) => (
@@ -372,7 +372,7 @@ export default function AdminTransactionsPage() {
               </div>
 
               {/* Export */}
-              <div className="rounded-2xl border border-black/5 bg-white p-5">
+              <div className="rounded-xl border border-black/5 bg-white p-5">
                 <p className="text-xs font-medium text-[color:var(--trite-muted)] uppercase tracking-wide mb-3">Export</p>
                 <div className="flex gap-2">
                   <button className="flex items-center gap-2 rounded-lg border border-black/10 bg-white px-4 py-2 text-sm font-medium text-[color:var(--trite-ink)] hover:bg-black/[0.02]">
@@ -388,7 +388,7 @@ export default function AdminTransactionsPage() {
             </div>
 
             {/* Live Ledger Table */}
-            <div className="mb-6 rounded-2xl border border-black/5 bg-white">
+            <div className="mb-6 rounded-xl border border-black/5 bg-white">
               <div className="flex items-center justify-between border-b border-black/5 px-6 py-4">
                 <div>
                   <h2 className="text-lg font-semibold text-[color:var(--trite-ink)]">Live Ledger</h2>
@@ -505,9 +505,9 @@ export default function AdminTransactionsPage() {
             </div>
 
             {/* Bottom Section */}
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
               {/* Architect Insights */}
-              <div className="lg:col-span-2 rounded-2xl bg-[color:var(--trite-ink)] p-6 text-white">
+              <div className="lg:col-span-2 rounded-xl bg-[color:var(--trite-ink)] p-5 text-white">
                 <p className="text-xs font-medium text-white/60 uppercase tracking-wide">Architect Insights</p>
                 <h3 className="mt-3 text-xl font-semibold">Anomaly detection is operating at 99.8% precision.</h3>
                 <div className="mt-4 flex items-center gap-4">
@@ -519,7 +519,7 @@ export default function AdminTransactionsPage() {
               </div>
 
               {/* Liquidity Pulse */}
-              <div className="rounded-2xl border border-black/5 bg-white p-5">
+              <div className="rounded-xl border border-black/5 bg-white p-5">
                 <h3 className="text-sm font-semibold text-[color:var(--trite-ink)]">Liquidity Pulse</h3>
                 <div className="mt-4 space-y-3">
                   <div>

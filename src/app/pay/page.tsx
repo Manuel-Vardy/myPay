@@ -16,6 +16,7 @@ export default function CheckoutPage() {
   const [cardCvv, setCardCvv] = useState("");
   const [momoNetwork, setMomoNetwork] = useState<"mtn" | "vodafone" | "airteltigo">("mtn");
   const [processingMessage, setProcessingMessage] = useState("");
+  const [frequency, setFrequency] = useState<"one-time" | "monthly" | "weekly">("one-time");
 
   const formatGHS = (value: string) => {
     const num = parseFloat(value);
@@ -81,8 +82,11 @@ export default function CheckoutPage() {
               priority
             />
           </Link>
-          <div className="text-sm text-[color:var(--trite-muted)]">
-            Secure Checkout
+          <div className="flex items-center gap-3">
+            <VerifiedBadge className="h-5 w-5" />
+            <div className="text-sm text-[color:var(--trite-muted)]">
+              Secure Checkout
+            </div>
           </div>
         </div>
       </header>
@@ -123,9 +127,12 @@ export default function CheckoutPage() {
         {/* Step 1: Enter Amount */}
         {step === "amount" && (
           <div className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-black/5">
-            <h1 className="text-2xl font-semibold text-[color:var(--trite-ink)]">
-              Enter Payment Amount
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-semibold text-[color:var(--trite-ink)]">
+                Enter Payment Amount
+              </h1>
+              <VerifiedBadge className="h-4 w-4" />
+            </div>
             <p className="mt-2 text-sm text-[color:var(--trite-muted)]">
               Specify how much you want to pay
             </p>
@@ -146,12 +153,31 @@ export default function CheckoutPage() {
                   className="w-full rounded-xl border border-black/10 bg-white py-4 pl-12 pr-4 text-2xl font-semibold text-gray-900 placeholder:text-black/20 outline-none focus:border-[color:var(--trite-lime-strong)]"
                 />
               </div>
-              {amount && (
-                <p className="mt-2 text-sm text-[color:var(--trite-muted)]">
-                  You will pay {formatGHS(amount)}
-                </p>
-              )}
-            </div>
+                {amount && (
+                  <p className="mt-2 text-sm text-[color:var(--trite-muted)]">
+                    You will pay {formatGHS(amount)} {frequency !== "one-time" && ` every ${frequency.replace("-time", "")}`}
+                  </p>
+                )}
+              </div>
+
+              <div className="mt-6">
+                <label className="text-sm font-medium text-[color:var(--trite-ink)]">Payment Frequency</label>
+                <div className="mt-2 grid grid-cols-3 gap-2">
+                  {(["one-time", "monthly", "weekly"] as const).map((freq) => (
+                    <button
+                      key={freq}
+                      onClick={() => setFrequency(freq)}
+                      className={`rounded-lg border px-3 py-2 text-xs font-semibold capitalize transition-all ${
+                        frequency === freq
+                          ? "border-[color:var(--trite-lime-strong)] bg-[color:var(--trite-lime)] text-[color:var(--trite-ink)]"
+                          : "border-black/10 text-[color:var(--trite-muted)] hover:bg-black/5"
+                      }`}
+                    >
+                      {freq.replace("-", " ")}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
             <button
               onClick={handleAmountSubmit}
@@ -359,7 +385,7 @@ export default function CheckoutPage() {
               onClick={handlePaymentSubmit}
               className="mt-6 w-full rounded-xl bg-[color:var(--trite-ink)] py-4 text-sm font-semibold text-white hover:bg-black"
             >
-              Pay {formatGHS(amount)}
+              {frequency === "one-time" ? "Pay" : "Subscribe"} {formatGHS(amount)} {frequency !== "one-time" && `/${frequency === "monthly" ? "mo" : "wk"}`}
             </button>
 
             <button
@@ -396,10 +422,10 @@ export default function CheckoutPage() {
               <CheckIcon className="h-8 w-8 text-green-600" />
             </div>
             <h2 className="mt-6 text-xl font-semibold text-[color:var(--trite-ink)]">
-              Payment Successful!
+              {frequency === "one-time" ? "Payment Successful!" : "Subscription Activated!"}
             </h2>
             <p className="mt-2 text-sm text-[color:var(--trite-muted)]">
-              Your payment of {formatGHS(amount)} has been confirmed
+              Your {frequency === "one-time" ? "payment" : frequency + " subscription"} of {formatGHS(amount)} has been confirmed
             </p>
             <div className="mt-6 rounded-xl bg-black/[0.02] p-4">
               <div className="flex justify-between text-sm">
@@ -563,5 +589,15 @@ function LockIcon({ className }: { className?: string }) {
       <rect x="5" y="11" width="14" height="10" rx="2" />
       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
     </svg>
+  );
+}
+
+function VerifiedBadge({ className }: { className?: string }) {
+  return (
+    <div className={`flex shrink-0 items-center justify-center rounded-full bg-[color:var(--trite-lime-strong)] p-0.5 ${className}`}>
+      <svg className="h-full w-full text-[color:var(--trite-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+    </div>
   );
 }

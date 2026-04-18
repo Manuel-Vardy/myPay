@@ -9,6 +9,7 @@ const sidebarItems = [
   { id: "dashboard", label: "Dashboard", href: "/merchant", icon: LayoutGridIcon },
   { id: "analytics", label: "Analytics", href: "/merchant/analytics", icon: BarChartIcon },
   { id: "transactions", label: "Transactions", href: "/merchant/transactions", icon: ReceiptIcon },
+  { id: "subscriptions", label: "Subscriptions", href: "/merchant/subscriptions", icon: RefreshCcwIcon },
   { id: "customers", label: "Customers", href: "/merchant/customers", icon: UsersIcon },
   { id: "settings", label: "Settings", href: "/merchant/settings", icon: SettingsIcon },
 ];
@@ -48,7 +49,7 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#f6f7fb]">
-      <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-black/5 bg-white">
+      <aside className="fixed left-0 top-0 z-40 h-screen w-56 border-r border-black/5 bg-white">
         <div className="flex h-full flex-col">
           <div className="flex h-16 items-center border-b border-black/5 px-4">
             <Link href="/" className="flex items-center gap-3">
@@ -111,7 +112,7 @@ export default function SettingsPage() {
         </div>
       </aside>
 
-      <main className="ml-64">
+      <main className="ml-56">
         <header className="sticky top-0 z-30 border-b border-black/5 bg-white/80 backdrop-blur">
           <div className="flex h-16 items-center justify-end px-6">
             <div className="flex items-center gap-4">
@@ -129,9 +130,9 @@ export default function SettingsPage() {
           </div>
         </header>
 
-        <div className="p-6">
-          <div className="mb-8">
-            <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--trite-ink)]">
+        <div className="p-5">
+          <div className="mb-6">
+            <h1 className="text-2xl font-semibold tracking-tight text-[color:var(--trite-ink)]">
               Account Settings
             </h1>
             <p className="mt-2 text-sm text-[color:var(--trite-muted)]">
@@ -139,15 +140,15 @@ export default function SettingsPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
             <div className="lg:col-span-2 space-y-6">
-              <div className="rounded-2xl bg-white p-6 ring-1 ring-black/5">
+              <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
                 {updateSuccess && (
                   <div className="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-700">
                     Profile updated successfully!
                   </div>
                 )}
-                <div className="flex items-start gap-6">
+                <div className="flex items-start gap-5">
                   <div className="relative">
                     <div className="flex h-24 w-24 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-2xl font-bold text-white overflow-hidden">
                       {profileImage ? (
@@ -223,7 +224,7 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-white p-6 ring-1 ring-black/5">
+              <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
                 <div className="flex items-center gap-2">
                   <MailIcon className="h-5 w-5 text-blue-600" />
                   <h3 className="text-lg font-semibold text-[color:var(--trite-ink)]">Email Notifications</h3>
@@ -262,7 +263,7 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-white p-6 ring-1 ring-black/5">
+              <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
                 <h3 className="text-lg font-semibold text-[color:var(--trite-ink)]">Authentication</h3>
                 <div className="mt-6 space-y-4">
                   <div className="flex items-center justify-between py-2">
@@ -295,7 +296,7 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-white p-6 ring-1 ring-black/5">
+              <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
                 <div className="flex items-center gap-2">
                   <ShieldIcon className="h-5 w-5 text-blue-600" />
                   <h3 className="text-lg font-semibold text-[color:var(--trite-ink)]">Two-Step Verification (2FA)</h3>
@@ -326,7 +327,7 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-6">
-              <div className="rounded-2xl bg-gradient-to-br from-[#1a1f2e] to-[#0f1419] p-6 text-white">
+              <div className="rounded-xl bg-gradient-to-br from-[#1a1f2e] to-[#0f1419] p-5 text-white">
                 <h3 className="text-lg font-semibold">Security Health</h3>
                 <div className="mt-6 flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500/20">
@@ -398,6 +399,7 @@ function LayoutGridIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
 
 function BarChartIcon({ className }: { className?: string }) {
   return (
@@ -562,5 +564,24 @@ function ShieldCheckIcon({ className }: { className?: string }) {
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
       <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
     </svg>
+  );
+}
+
+function RefreshCcwIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+      <polyline points="21 3 21 8 16 8" />
+    </svg>
+  );
+}
+
+function VerifiedBadge({ className }: { className?: string }) {
+  return (
+    <div className={`flex shrink-0 items-center justify-center rounded-full bg-[color:var(--trite-lime-strong)] p-0.5 ${className}`}>
+      <svg className="h-full w-full text-[color:var(--trite-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+    </div>
   );
 }

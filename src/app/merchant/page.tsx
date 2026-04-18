@@ -9,6 +9,7 @@ const sidebarItems = [
   { id: "dashboard", label: "Dashboard", href: "/merchant", icon: LayoutGridIcon },
   { id: "analytics", label: "Analytics", href: "/merchant/analytics", icon: BarChartIcon },
   { id: "transactions", label: "Transactions", href: "/merchant/transactions", icon: ReceiptIcon },
+  { id: "subscriptions", label: "Subscriptions", href: "/merchant/subscriptions", icon: RefreshCcwIcon },
   { id: "customers", label: "Customers", href: "/merchant/customers", icon: UsersIcon },
   { id: "settings", label: "Settings", href: "/merchant/settings", icon: SettingsIcon },
 ];
@@ -74,8 +75,59 @@ export default function DashboardPage() {
   const [ledgerFilter, setLedgerFilter] = useState<"all" | "deposits" | "withdrawals" | "transfers">("all");
   const [chartPeriod, setChartPeriod] = useState<"day" | "week" | "month" | "year">("week");
   const [convertModalOpen, setConvertModalOpen] = useState(false);
-  const [convertAmount, setConvertAmount] = useState("");
+  const [highContrast, setHighContrast] = useState(false);
+
+  // Persistence for high contrast
+  useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("high-contrast") === "true";
+      setHighContrast(saved);
+      if (saved) document.documentElement.classList.add("high-contrast");
+    }
+  });
+
+  const toggleHighContrast = () => {
+    const newVal = !highContrast;
+    setHighContrast(newVal);
+    localStorage.setItem("high-contrast", String(newVal));
+    if (newVal) document.documentElement.classList.add("high-contrast");
+    else document.documentElement.classList.remove("high-contrast");
+  };
   const [convertFrom, setConvertFrom] = useState<"USDC" | "USDT">("USDC");
+  const [exchangeRate, setExchangeRate] = useState(15.5);
+  const [convertAmount, setConvertAmount] = useState("");
+  const [ghsAmount, setGhsAmount] = useState("");
+
+  const FEE_PERCENT = 0.005; // 0.5% conversion fee
+
+  const handleUsdChange = (val: string) => {
+    setConvertAmount(val);
+    if (!val || isNaN(Number(val))) {
+      setGhsAmount("");
+      return;
+    }
+    const ghs = Number(val) * exchangeRate * (1 - FEE_PERCENT);
+    setGhsAmount(ghs.toFixed(2));
+  };
+
+  const handleGhsChange = (val: string) => {
+    setGhsAmount(val);
+    if (!val || isNaN(Number(val))) {
+      setConvertAmount("");
+      return;
+    }
+    const usd = Number(val) / (exchangeRate * (1 - FEE_PERCENT));
+    setConvertAmount(usd.toFixed(2));
+  };
+
+  const handleRateChange = (val: string) => {
+    const rate = Number(val);
+    setExchangeRate(rate);
+    if (convertAmount && !isNaN(rate)) {
+      const ghs = Number(convertAmount) * rate * (1 - FEE_PERCENT);
+      setGhsAmount(ghs.toFixed(2));
+    }
+  };
 
   const formatGHS = (amount: number) => {
     return new Intl.NumberFormat("en-GH", {
@@ -87,7 +139,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#f6f7fb]">
-      <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-black/5 bg-white">
+      <aside className="fixed left-0 top-0 z-40 h-screen w-56 border-r border-black/5 bg-white">
         <div className="flex h-full flex-col">
           <div className="flex h-16 items-center border-b border-black/5 px-4">
             <Link href="/" className="flex items-center gap-3">
@@ -116,6 +168,8 @@ export default function DashboardPage() {
                           router.push("/merchant/transactions");
                         } else if (item.id === "customers") {
                           router.push("/merchant/customers");
+                        } else if (item.id === "subscriptions") {
+                          router.push("/merchant/subscriptions");
                         } else {
                           setActiveTab(item.id);
                           router.push(item.href);
@@ -136,6 +190,20 @@ export default function DashboardPage() {
             </ul>
           </nav>
 
+          <div className="px-3 py-2">
+            <button
+              onClick={toggleHighContrast}
+              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-semibold transition-colors ${
+                highContrast
+                  ? "bg-black text-white hover:bg-zinc-800"
+                  : "text-[color:var(--trite-muted)] hover:bg-black/[0.03] hover:text-[color:var(--trite-ink)]"
+              }`}
+            >
+              <WindIcon className="h-4 w-4" />
+              {highContrast ? "Standard Contrast" : "High Contrast Mode"}
+            </button>
+          </div>
+
           <div className="border-t border-black/5 p-4">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--trite-ink)]">
@@ -154,7 +222,7 @@ export default function DashboardPage() {
         </div>
       </aside>
 
-      <main className="ml-64">
+      <main className="ml-56">
         <header className="sticky top-0 z-30 border-b border-black/5 bg-white/80 backdrop-blur">
           <div className="flex h-16 items-center justify-end px-6">
             <div className="flex items-center gap-4">
@@ -168,20 +236,23 @@ export default function DashboardPage() {
           </div>
         </header>
 
-        <div className="p-6">
-          <div className="mb-8">
-            <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--trite-ink)]">
-              Welcome back, Merchant.
-            </h1>
+        <div className="p-5">
+          <div className="mb-6">
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-semibold tracking-tight text-[color:var(--trite-ink)]">
+                Welcome back, Merchant.
+              </h1>
+              <VerifiedBadge className="h-6 w-6 mt-1" />
+            </div>
             <p className="mt-2 text-sm text-[color:var(--trite-muted)]">
               Your institutional portal is ready. Global markets are stable, and your
               transaction success rate is currently exceeding the 98th percentile.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <div className="rounded-2xl bg-gradient-to-br from-[#1a1f2e] to-[#0f1419] p-6 text-white">
+              <div className="rounded-xl bg-gradient-to-br from-[#1a1f2e] to-[#0f1419] p-5 text-white">
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="text-[11px] font-semibold uppercase tracking-wide text-white/60">
@@ -216,7 +287,7 @@ export default function DashboardPage() {
 
             <div className="space-y-4">
               {/* Stablecoin Balance Card */}
-              <div className="rounded-2xl bg-gradient-to-br from-green-50 to-teal-50 p-5 ring-1 ring-green-200">
+              <div className="rounded-xl bg-gradient-to-br from-green-50 to-teal-50 p-5 ring-1 ring-green-200">
                 <div className="flex items-center justify-between">
                   <div className="text-sm font-medium text-green-800">
                     Stablecoin Holdings
@@ -251,7 +322,7 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
+              <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
                 <div className="flex items-center justify-between">
                   <div className="text-sm font-medium text-[color:var(--trite-muted)]">
                     Daily Volume
@@ -269,7 +340,7 @@ export default function DashboardPage() {
                 <div className="mt-1 text-xs text-[color:var(--trite-muted)]">Last 24h</div>
               </div>
 
-              <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
+              <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
                 <div className="flex items-center justify-between">
                   <div className="text-sm font-medium text-[color:var(--trite-muted)]">
                     Success Rate
@@ -291,7 +362,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="mt-6 rounded-2xl bg-white p-6 ring-1 ring-black/5">
+          <div className="mt-6 rounded-xl bg-white p-5 ring-1 ring-black/5">
             {/* Enhanced Filters */}
             <div className="mb-4 flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-2">
@@ -450,7 +521,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Revenue Bar Chart */}
-          <div className="mt-6 rounded-2xl bg-white p-6 ring-1 ring-black/5">
+          <div className="mt-6 rounded-xl bg-white p-5 ring-1 ring-black/5">
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-[color:var(--trite-ink)]">Revenue Overview</h2>
@@ -476,7 +547,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <div className="rounded-2xl bg-gradient-to-br from-[#eef2ff] to-[#e0e7ff] p-5 ring-1 ring-black/5">
+            <div className="rounded-xl bg-gradient-to-br from-[#eef2ff] to-[#e0e7ff] p-5 ring-1 ring-black/5">
               <div className="text-sm font-semibold text-[color:var(--trite-ink)]">
                 Merchant Intelligence
               </div>
@@ -490,7 +561,7 @@ export default function DashboardPage() {
               </button>
             </div>
 
-            <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
+            <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
                   <ShieldCheckIcon className="h-5 w-5 text-blue-600" />
@@ -509,7 +580,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
+            <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--trite-lime)]">
                   <KeyIcon className="h-5 w-5 text-[color:var(--trite-ink)]" />
@@ -534,7 +605,7 @@ export default function DashboardPage() {
       {/* Withdraw Funds Modal */}
       {withdrawModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-xl bg-white p-5 shadow-2xl">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-xl font-semibold text-[color:var(--trite-ink)]">Withdraw Funds</h2>
               <button
@@ -657,7 +728,7 @@ export default function DashboardPage() {
       {/* View Ledger / Settlement Reports Modal */}
       {ledgerModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-4xl rounded-2xl bg-white p-6 shadow-2xl max-h-[85vh] overflow-y-auto">
+          <div className="w-full max-w-4xl rounded-xl bg-white p-5 shadow-2xl max-h-[85vh] overflow-y-auto">
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-semibold text-[color:var(--trite-ink)]">Settlement Reports</h2>
@@ -854,7 +925,7 @@ export default function DashboardPage() {
       {/* Convert to GHS Modal */}
       {convertModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-xl bg-white p-5 shadow-2xl">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-xl font-semibold text-[color:var(--trite-ink)]">Convert Stablecoin to GHS</h2>
               <button
@@ -905,14 +976,14 @@ export default function DashboardPage() {
                 <input
                   type="number"
                   value={convertAmount}
-                  onChange={(e) => setConvertAmount(e.target.value)}
+                  onChange={(e) => handleUsdChange(e.target.value)}
                   placeholder="0.00"
                   className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-green-500"
                 />
                 <div className="mt-1 flex justify-between text-xs">
                   <span className="text-[color:var(--trite-muted)]">Available: {convertFrom === "USDC" ? "$12,450.00" : "$8,230.50"}</span>
                   <button 
-                    onClick={() => setConvertAmount(convertFrom === "USDC" ? "12450" : "8230.50")}
+                    onClick={() => handleUsdChange(convertFrom === "USDC" ? "12450" : "8230.50")}
                     className="text-green-600 hover:underline"
                   >
                     Max
@@ -920,21 +991,43 @@ export default function DashboardPage() {
                 </div>
               </div>
 
+              <div>
+                <label className="text-sm font-medium text-[color:var(--trite-ink)]">Amount to Receive (GHS)</label>
+                <input
+                  type="number"
+                  value={ghsAmount}
+                  onChange={(e) => handleGhsChange(e.target.value)}
+                  placeholder="₵0.00"
+                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-green-500"
+                />
+                <p className="mt-1 text-xs text-[color:var(--trite-muted)]">
+                  Enter the exact Cedis amount you wish to receive
+                </p>
+              </div>
+
               <div className="rounded-xl bg-gray-50 p-3">
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between items-center text-sm">
                   <span className="text-[color:var(--trite-muted)]">Exchange Rate</span>
-                  <span className="font-medium text-[color:var(--trite-ink)]">1 USD = ₵15.50</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-[color:var(--trite-muted)]">1 USD = ₵</span>
+                    <input
+                      type="number"
+                      value={exchangeRate}
+                      onChange={(e) => handleRateChange(e.target.value)}
+                      className="w-16 rounded border border-black/10 bg-white px-1 py-0.5 text-right font-medium text-[color:var(--trite-ink)] outline-none focus:border-green-500"
+                    />
+                  </div>
                 </div>
                 <div className="mt-1 flex justify-between text-sm">
                   <span className="text-[color:var(--trite-muted)]">Conversion Fee (0.5%)</span>
                   <span className="font-medium text-[color:var(--trite-ink)]">
-                    {convertAmount ? formatGHS(Number(convertAmount) * 0.005 * 15.50) : "₵0.00"}
+                    {convertAmount ? formatGHS(Number(convertAmount) * FEE_PERCENT * exchangeRate) : "₵0.00"}
                   </span>
                 </div>
                 <div className="mt-2 border-t border-black/10 pt-2 flex justify-between text-sm">
                   <span className="font-medium text-[color:var(--trite-ink)]">You Will Receive</span>
                   <span className="font-bold text-green-700">
-                    {convertAmount ? formatGHS(Number(convertAmount) * 15.50 * 0.995) : "₵0.00"}
+                    {ghsAmount ? formatGHS(Number(ghsAmount)) : "₵0.00"}
                   </span>
                 </div>
               </div>
@@ -1213,5 +1306,34 @@ function DownloadIcon({ className }: { className?: string }) {
       <polyline points="7 10 12 15 17 10" />
       <line x1="12" y1="15" x2="12" y2="3" />
     </svg>
+  );
+}
+
+function RefreshCcwIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+      <polyline points="21 3 21 8 16 8" />
+    </svg>
+  );
+}
+
+function WindIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2" />
+      <path d="M9.6 4.6A2 2 0 1 1 11 8H2" />
+      <path d="M12.6 19.4A2 2 0 1 0 14 16H2" />
+    </svg>
+  );
+}
+
+function VerifiedBadge({ className }: { className?: string }) {
+  return (
+    <div className={`flex shrink-0 items-center justify-center rounded-full bg-[color:var(--trite-lime-strong)] p-0.5 ${className}`}>
+      <svg className="h-full w-full text-[color:var(--trite-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+    </div>
   );
 }

@@ -12,7 +12,7 @@ export default function LoginPage() {
     router.push("/merchant");
   };
   return (
-    <div className="min-h-[100svh] bg-[#f6f7fb]">
+    <div className="min-h-[100svh] bg-[#f6f7fb] flex flex-col">
       <header className="sticky top-0 z-50 border-b border-black/5 bg-white/80 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Link className="flex items-center gap-3" href="/">
@@ -25,18 +25,11 @@ export default function LoginPage() {
             />
           </Link>
 
-          <nav className="flex items-center gap-6 text-sm font-medium text-[color:var(--trite-muted)]">
-            <a className="hover:text-[color:var(--trite-ink)]" href="#support">
-              Support
-            </a>
-            <a className="hover:text-[color:var(--trite-ink)]" href="#security">
-              Security
-            </a>
-          </nav>
+
         </div>
       </header>
 
-      <main className="px-4 py-14 sm:px-6">
+      <main className="px-4 py-14 sm:px-6 flex-1 flex flex-col justify-center">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center">
           <div className="w-full max-w-md">
             <h1 className="text-4xl font-semibold leading-[1.05] tracking-tight text-[color:var(--trite-ink)]">
@@ -115,20 +108,7 @@ export default function LoginPage() {
               </form>
             </div>
 
-            <div className="mt-6 flex items-center justify-center gap-6 text-xs font-semibold text-[color:var(--trite-muted)]">
-              <div className="flex items-center gap-2">
-                <span className="inline-block h-2 w-2 rounded-full bg-[color:var(--trite-lime-strong)]" />
-                PCI DSS Level 1
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="inline-block h-2 w-2 rounded-full bg-[color:var(--trite-lime-strong)]" />
-                256-bit AES
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="inline-block h-2 w-2 rounded-full bg-[color:var(--trite-lime-strong)]" />
-                SOC2 Type II
-              </div>
-            </div>
+
           </div>
         </div>
       </main>

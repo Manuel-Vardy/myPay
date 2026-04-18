@@ -17,15 +17,6 @@ export default function GetStartedPage() {
           </Link>
 
           <nav className="hidden items-center gap-6 text-sm font-medium text-[color:var(--trite-muted)] md:flex">
-            <Link className="hover:text-[color:var(--trite-ink)]" href="/#solutions">
-              Solutions
-            </Link>
-            <Link className="hover:text-[color:var(--trite-ink)]" href="/#pricing">
-              Pricing
-            </Link>
-            <Link className="hover:text-[color:var(--trite-ink)]" href="/#developers">
-              Developers
-            </Link>
           </nav>
 
           <div className="flex items-center gap-2">

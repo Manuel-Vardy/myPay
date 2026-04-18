@@ -26,15 +26,6 @@ export default function Home() {
           </div>
 
           <nav className="hidden items-center gap-6 text-sm font-medium text-[color:var(--trite-muted)] md:flex">
-            <a className="hover:text-[color:var(--trite-ink)]" href="#solutions">
-              Solutions
-            </a>
-            <a className="hover:text-[color:var(--trite-ink)]" href="#pricing">
-              Pricing
-            </a>
-            <a className="hover:text-[color:var(--trite-ink)]" href="#developers">
-              Developers
-            </a>
           </nav>
 
           <div className="flex items-center gap-2">
@@ -57,7 +48,7 @@ export default function Home() {
       <main>
         <section className="relative overflow-hidden bg-black">
           <CanvasAnimation />
-          <div className="relative z-10 mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+          <div className="relative z-10 mx-auto max-w-6xl px-4 py-24 sm:px-6 sm:py-32">
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold text-white/70 backdrop-blur">
                 <span
@@ -131,7 +122,7 @@ export default function Home() {
               </div>
 
             <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
-              <div className="rounded-xl bg-white p-8">
+              <div className="rounded-lg bg-white p-8">
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[color:var(--trite-lime)]/20">
                   <svg className="h-7 w-7 text-[color:var(--trite-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                     <circle cx="12" cy="12" r="10" />
@@ -146,17 +137,9 @@ export default function Home() {
                   Execute cross-border transactions that settle in seconds using
                   our payments infrastructure.
                 </p>
-                <a href="#" className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-[color:var(--trite-ink)] hover:text-[color:var(--trite-lime-strong)]">
-                  <svg className="h-4 w-4 text-[color:var(--trite-lime-strong)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M12 8v8" />
-                    <path d="M8 12h8" />
-                  </svg>
-                  Learn More
-                </a>
               </div>
 
-              <div className="rounded-xl bg-white p-8">
+              <div className="rounded-lg bg-white p-8">
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[color:var(--trite-lime)]/20">
                   <svg className="h-7 w-7 text-[color:var(--trite-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
@@ -170,17 +153,9 @@ export default function Home() {
                   Multi-layer encryption and robust compliance so you can scale
                   with confidence.
                 </p>
-                <a href="#" className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-[color:var(--trite-ink)] hover:text-[color:var(--trite-lime-strong)]">
-                  <svg className="h-4 w-4 text-[color:var(--trite-lime-strong)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M12 8v8" />
-                    <path d="M8 12h8" />
-                  </svg>
-                  Learn More
-                </a>
               </div>
 
-              <div className="rounded-xl bg-white p-8">
+              <div className="rounded-lg bg-white p-8">
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[color:var(--trite-lime)]/20">
                   <svg className="h-7 w-7 text-[color:var(--trite-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                     <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
@@ -193,14 +168,6 @@ export default function Home() {
                   One integration for global rails and crypto payments. Built
                   for developers.
                 </p>
-                <a href="#" className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-[color:var(--trite-ink)] hover:text-[color:var(--trite-lime-strong)]">
-                  <svg className="h-4 w-4 text-[color:var(--trite-lime-strong)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M12 8v8" />
-                    <path d="M8 12h8" />
-                  </svg>
-                  Learn More
-                </a>
               </div>
             </div>
           </div>

@@ -205,7 +205,7 @@ export default function AdminLogsPage() {
                 placeholder="Search logs, sources, or IPs..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-10 w-64 rounded-xl border border-black/10 bg-white pl-10 pr-4 text-sm text-[color:var(--trite-ink)] outline-none focus:border-[color:var(--trite-lime-strong)]"
+                className="h-10 w-56 rounded-xl border border-black/10 bg-white pl-10 pr-4 text-sm text-[color:var(--trite-ink)] outline-none focus:border-[color:var(--trite-lime-strong)]"
               />
             </div>
             <button className="h-10 rounded-xl border border-black/10 bg-white px-4 text-sm font-medium text-[color:var(--trite-ink)] hover:bg-black/[0.02]">
@@ -234,7 +234,7 @@ export default function AdminLogsPage() {
 
       <div className="flex">
         {/* Sidebar */}
-        <aside className="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 border-r border-black/5 bg-white">
+        <aside className="fixed left-0 top-16 h-[calc(100vh-64px)] w-56 border-r border-black/5 bg-white">
           <div className="flex h-full flex-col">
             <div className="flex-1 overflow-y-auto px-3 py-4">
               <ul className="space-y-1">
@@ -285,12 +285,12 @@ export default function AdminLogsPage() {
         </aside>
 
         {/* Main Content */}
-        <main className="ml-64 flex-1 p-6">
+        <main className="ml-56 flex-1 p-5">
           <div className="mx-auto max-w-7xl">
             {/* Page Header */}
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-semibold text-[color:var(--trite-ink)]">System Logs</h1>
+                <h1 className="text-2xl font-semibold text-[color:var(--trite-ink)]">System Logs</h1>
                 <p className="mt-1 text-sm text-[color:var(--trite-muted)]">Real-time security auditing and compliance monitoring engine.</p>
               </div>
               <div className="flex items-center gap-3">
@@ -307,7 +307,7 @@ export default function AdminLogsPage() {
 
             {/* Stats Cards */}
             <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-4">
-              <div className="rounded-2xl border border-black/5 bg-white p-5 cursor-pointer hover:bg-black/[0.02]">
+              <div className="rounded-xl border border-black/5 bg-white p-5 cursor-pointer hover:bg-black/[0.02]">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
                     <AlertTriangle className="h-5 w-5 text-red-600" />
@@ -319,7 +319,7 @@ export default function AdminLogsPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-black/5 bg-white p-5 cursor-pointer hover:bg-black/[0.02]">
+              <div className="rounded-xl border border-black/5 bg-white p-5 cursor-pointer hover:bg-black/[0.02]">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100">
                     <AlertTriangle className="h-5 w-5 text-amber-600" />
@@ -331,7 +331,7 @@ export default function AdminLogsPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-black/5 bg-white p-5 cursor-pointer hover:bg-black/[0.02]">
+              <div className="rounded-xl border border-black/5 bg-white p-5 cursor-pointer hover:bg-black/[0.02]">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
                     <Info className="h-5 w-5 text-blue-600" />
@@ -343,7 +343,7 @@ export default function AdminLogsPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-black/5 bg-white p-5 cursor-pointer hover:bg-black/[0.02]">
+              <div className="rounded-xl border border-black/5 bg-white p-5 cursor-pointer hover:bg-black/[0.02]">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100">
                     <Layers className="h-5 w-5 text-slate-600" />
@@ -357,7 +357,7 @@ export default function AdminLogsPage() {
             </div>
 
             {/* Console Output */}
-            <div className="mb-6 rounded-2xl border border-black/5 bg-white overflow-hidden">
+            <div className="mb-6 rounded-xl border border-black/5 bg-white overflow-hidden">
               <div className="flex items-center justify-between border-b border-black/5 bg-[color:var(--trite-ink)] px-4 py-3">
                 <div className="flex items-center gap-2">
                   <div className="flex gap-1.5">
@@ -440,9 +440,9 @@ export default function AdminLogsPage() {
             </div>
 
             {/* Bottom Section */}
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
               {/* Activity Volume Chart */}
-              <div className="lg:col-span-2 rounded-2xl border border-black/5 bg-white p-5">
+              <div className="lg:col-span-2 rounded-xl border border-black/5 bg-white p-5">
                 <div className="mb-4 flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-[color:var(--trite-ink)]">Activity Volume (24h)</h3>
                   <div className="flex items-center gap-4">
@@ -478,7 +478,7 @@ export default function AdminLogsPage() {
               </div>
 
               {/* Security Profile */}
-              <div className="rounded-2xl bg-[color:var(--trite-ink)] p-5 text-white">
+              <div className="rounded-xl bg-[color:var(--trite-ink)] p-5 text-white">
                 <h3 className="text-sm font-semibold">Security Profile</h3>
                 <p className="mt-1 text-xs text-white/60">System-wide threat analysis based on current log ingestion patterns.</p>
 

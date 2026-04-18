@@ -9,6 +9,7 @@ const sidebarItems = [
   { id: "dashboard", label: "Dashboard", href: "/merchant", icon: LayoutGridIcon },
   { id: "analytics", label: "Analytics", href: "/merchant/analytics", icon: BarChartIcon },
   { id: "transactions", label: "Transactions", href: "/merchant/transactions", icon: ReceiptIcon },
+  { id: "subscriptions", label: "Subscriptions", href: "/merchant/subscriptions", icon: RefreshCcwIcon },
   { id: "customers", label: "Customers", href: "/merchant/customers", icon: UsersIcon },
   { id: "settings", label: "Settings", href: "/merchant/settings", icon: SettingsIcon },
 ];
@@ -140,7 +141,7 @@ export default function CustomersPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#f6f7fb]">
-      <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-black/5 bg-white">
+      <aside className="fixed left-0 top-0 z-40 h-screen w-56 border-r border-black/5 bg-white">
         <div className="flex h-full flex-col">
           <div className="flex h-16 items-center border-b border-black/5 px-4">
             <Link href="/" className="flex items-center gap-3">
@@ -190,14 +191,17 @@ export default function CustomersPage() {
                 <div className="text-sm font-semibold text-[color:var(--trite-ink)]">
                   Adrian Vance
                 </div>
-                <div className="text-xs text-[color:var(--trite-muted)]">Regional Director</div>
+                <div className="flex items-center gap-1.5">
+                  <div className="text-xs text-[color:var(--trite-muted)]">Verified Merchant</div>
+                  <VerifiedBadge className="h-3 w-3" />
+                </div>
               </div>
             </div>
           </div>
         </div>
       </aside>
 
-      <main className="ml-64">
+      <main className="ml-56">
         <header className="sticky top-0 z-30 border-b border-black/5 bg-white/80 backdrop-blur">
           <div className="flex h-16 items-center justify-between px-6">
             <div className="flex h-10 flex-1 max-w-md items-center gap-2 rounded-lg border border-black/10 bg-white px-3 text-sm text-[color:var(--trite-muted)]">
@@ -225,10 +229,10 @@ export default function CustomersPage() {
           </div>
         </header>
 
-        <div className="p-6">
+        <div className="p-5">
           <div className="mb-6 flex items-start justify-between">
             <div>
-              <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--trite-ink)]">
+              <h1 className="text-2xl font-semibold tracking-tight text-[color:var(--trite-ink)]">
                 Customer Directory
               </h1>
               <p className="mt-1 text-sm text-[color:var(--trite-muted)]">
@@ -287,7 +291,7 @@ export default function CustomersPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl bg-white p-6 ring-1 ring-black/5">
+          <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-black/5 text-left">
@@ -436,7 +440,7 @@ export default function CustomersPage() {
           </div>
 
           <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
+            <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center justify-between">
                 <div className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
                   Acquisition Rate
@@ -452,7 +456,7 @@ export default function CustomersPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
+            <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center justify-between">
                 <div className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
                   KYC Compliance
@@ -470,7 +474,7 @@ export default function CustomersPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl bg-gradient-to-br from-blue-600 to-blue-800 p-5 text-white">
+            <div className="rounded-xl bg-gradient-to-br from-blue-600 to-blue-800 p-5 text-white">
               <div className="flex items-center justify-between">
                 <div className="text-xs font-semibold uppercase tracking-wide text-white/70">
                   Portfolio Value
@@ -479,7 +483,7 @@ export default function CustomersPage() {
                   <TrendingUpIcon className="h-4 w-4 text-white" />
                 </div>
               </div>
-              <div className="mt-2 text-3xl font-bold">₵48.2M</div>
+              <div className="mt-2 text-2xl font-bold">₵48.2M</div>
               <div className="mt-1 text-xs text-white/60">Total Managed Assets (GHS)</div>
               <div className="mt-4 flex items-center gap-2">
                 <div className="h-8 flex-1 rounded bg-white/10" />
@@ -496,7 +500,7 @@ export default function CustomersPage() {
       {/* Edit Customer Modal */}
       {editModalOpen && editingCustomer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-xl bg-white p-5 shadow-2xl">
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-semibold text-[color:var(--trite-ink)]">Edit Customer</h2>
@@ -923,5 +927,24 @@ function TrashIcon({ className }: { className?: string }) {
       <polyline points="3 6 5 6 21 6" />
       <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
     </svg>
+  );
+}
+function RefreshCcwIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+      <polyline points="21 3 21 8 16 8" />
+    </svg>
+  );
+}
+
+
+function VerifiedBadge({ className }: { className?: string }) {
+  return (
+    <div className={`flex shrink-0 items-center justify-center rounded-full bg-[color:var(--trite-lime-strong)] p-0.5 ${className}`}>
+      <svg className="h-full w-full text-[color:var(--trite-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+    </div>
   );
 }

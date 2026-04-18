@@ -133,7 +133,7 @@ export default function AdminDashboardPage() {
               <input
                 type="text"
                 placeholder="Global system search..."
-                className="h-10 w-64 rounded-xl border border-black/10 bg-white pl-10 pr-4 text-sm text-[color:var(--trite-ink)] outline-none focus:border-[color:var(--trite-lime-strong)]"
+                className="h-10 w-56 rounded-xl border border-black/10 bg-white pl-10 pr-4 text-sm text-[color:var(--trite-ink)] outline-none focus:border-[color:var(--trite-lime-strong)]"
               />
             </div>
             <button className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-black/10 bg-white hover:bg-black/[0.02]">
@@ -158,7 +158,7 @@ export default function AdminDashboardPage() {
 
       <div className="flex">
         {/* Sidebar */}
-        <aside className="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 border-r border-black/5 bg-white">
+        <aside className="fixed left-0 top-16 h-[calc(100vh-64px)] w-56 border-r border-black/5 bg-white">
           <div className="flex h-full flex-col">
             <div className="flex-1 overflow-y-auto px-3 py-4">
               <ul className="space-y-1">
@@ -209,18 +209,18 @@ export default function AdminDashboardPage() {
         </aside>
 
         {/* Main Content */}
-        <main className="ml-64 flex-1 p-6">
+        <main className="ml-56 flex-1 p-5">
           <div className="mx-auto max-w-7xl">
             {/* Page Header */}
-            <div className="mb-8">
-              <h1 className="text-3xl font-semibold text-[color:var(--trite-ink)]">Institutional Oversight</h1>
+            <div className="mb-6">
+              <h1 className="text-2xl font-semibold text-[color:var(--trite-ink)]">Institutional Oversight</h1>
               <p className="mt-1 text-sm text-[color:var(--trite-muted)]">Real-time platform performance and security metrics.</p>
             </div>
 
             {/* Stats Grid */}
-            <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
               {stats.map((stat, idx) => (
-                <div key={idx} className="rounded-2xl border border-black/5 bg-white p-5">
+                <div key={idx} className="rounded-xl border border-black/5 bg-white p-5">
                   <p className="text-xs font-medium text-[color:var(--trite-muted)] uppercase tracking-wide">{stat.label}</p>
                   <div className="mt-2 flex items-baseline gap-2">
                     <span className={`text-2xl font-semibold ${stat.alert ? "text-red-500" : "text-[color:var(--trite-ink)]"}`}>
@@ -233,10 +233,10 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Main Grid */}
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
               {/* Left Column - Liquidity */}
               <div className="lg:col-span-2 space-y-6">
-                <div className="rounded-2xl border border-black/5 bg-white p-6">
+                <div className="rounded-xl border border-black/5 bg-white p-5">
                   <div className="mb-4 flex items-center justify-between">
                     <div>
                       <h2 className="text-lg font-semibold text-[color:var(--trite-ink)]">Global Liquidity Monitoring</h2>
@@ -287,7 +287,7 @@ export default function AdminDashboardPage() {
                 </div>
 
                 {/* Recent Activity Table */}
-                <div className="rounded-2xl border border-black/5 bg-white p-6">
+                <div className="rounded-xl border border-black/5 bg-white p-5">
                   <div className="mb-4 flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-[color:var(--trite-ink)]">Recent Institutional Activity</h2>
                     <div className="flex gap-2">
@@ -361,7 +361,7 @@ export default function AdminDashboardPage() {
               {/* Right Column - Security & Performance */}
               <div className="space-y-6">
                 {/* Security Alerts */}
-                <div className="rounded-2xl bg-[color:var(--trite-ink)] p-5 text-white">
+                <div className="rounded-xl bg-[color:var(--trite-ink)] p-5 text-white">
                   <h2 className="mb-4 text-lg font-semibold">Critical Security Alerts</h2>
                   <div className="space-y-3">
                     {securityAlerts.map((alert, idx) => (
@@ -387,7 +387,7 @@ export default function AdminDashboardPage() {
                 </div>
 
                 {/* Regional Performance */}
-                <div className="rounded-2xl border border-black/5 bg-white p-5">
+                <div className="rounded-xl border border-black/5 bg-white p-5">
                   <h2 className="mb-4 text-sm font-semibold text-[color:var(--trite-ink)] uppercase tracking-wide">Regional Performance</h2>
                   <div className="space-y-3">
                     {regionalPerformance.map((region) => (

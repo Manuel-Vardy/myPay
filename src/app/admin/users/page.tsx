@@ -253,7 +253,7 @@ export default function AdminUsersPage() {
 
       <div className="flex">
         {/* Sidebar */}
-        <aside className="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 border-r border-black/5 bg-white">
+        <aside className="fixed left-0 top-16 h-[calc(100vh-64px)] w-56 border-r border-black/5 bg-white">
           <div className="flex h-full flex-col">
             <div className="flex-1 overflow-y-auto px-3 py-4">
               <ul className="space-y-1">
@@ -304,7 +304,7 @@ export default function AdminUsersPage() {
         </aside>
 
         {/* Main Content */}
-        <main className="ml-64 flex-1 p-6">
+        <main className="ml-56 flex-1 p-5">
           <div className="mx-auto max-w-7xl">
             {/* Page Header */}
             <div className="mb-6 flex items-center justify-between">
@@ -320,7 +320,7 @@ export default function AdminUsersPage() {
 
             {/* Stats Grid */}
             <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-              <div className="rounded-2xl border border-black/5 bg-white p-5">
+              <div className="rounded-xl border border-black/5 bg-white p-5">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-xs font-medium text-[color:var(--trite-muted)] uppercase tracking-wide">Total Active Users</p>
@@ -336,7 +336,7 @@ export default function AdminUsersPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-black/5 bg-white p-5">
+              <div className="rounded-xl border border-black/5 bg-white p-5">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-xs font-medium text-[color:var(--trite-muted)] uppercase tracking-wide">New This Month</p>
@@ -349,7 +349,7 @@ export default function AdminUsersPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-black/5 bg-white p-5">
+              <div className="rounded-xl border border-black/5 bg-white p-5">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-xs font-medium text-[color:var(--trite-muted)] uppercase tracking-wide">KYC Verified</p>
@@ -405,7 +405,7 @@ export default function AdminUsersPage() {
             </div>
 
             {/* Users Table */}
-            <div className="rounded-2xl border border-black/5 bg-white">
+            <div className="rounded-xl border border-black/5 bg-white">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-black/5 text-left text-xs font-medium text-[color:var(--trite-muted)] uppercase">

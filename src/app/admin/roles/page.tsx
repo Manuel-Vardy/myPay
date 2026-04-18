@@ -160,7 +160,7 @@ export default function AdminRolesPage() {
               <input
                 type="text"
                 placeholder="Search roles or permissions..."
-                className="h-10 w-64 rounded-xl border border-black/10 bg-white pl-10 pr-4 text-sm text-[color:var(--trite-ink)] outline-none focus:border-[color:var(--trite-lime-strong)]"
+                className="h-10 w-56 rounded-xl border border-black/10 bg-white pl-10 pr-4 text-sm text-[color:var(--trite-ink)] outline-none focus:border-[color:var(--trite-lime-strong)]"
               />
             </div>
             <button className="h-10 rounded-xl border border-black/10 bg-white px-4 text-sm font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.02]">
@@ -195,7 +195,7 @@ export default function AdminRolesPage() {
 
       <div className="flex">
         {/* Sidebar */}
-        <aside className="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 border-r border-black/5 bg-white">
+        <aside className="fixed left-0 top-16 h-[calc(100vh-64px)] w-56 border-r border-black/5 bg-white">
           <div className="flex h-full flex-col">
             <div className="flex-1 overflow-y-auto px-3 py-4">
               <ul className="space-y-1">
@@ -246,12 +246,12 @@ export default function AdminRolesPage() {
         </aside>
 
         {/* Main Content */}
-        <main className="ml-64 flex-1 p-6">
+        <main className="ml-56 flex-1 p-5">
           <div className="mx-auto max-w-7xl">
             {/* Page Header */}
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-semibold text-[color:var(--trite-ink)]">Role Management</h1>
+                <h1 className="text-2xl font-semibold text-[color:var(--trite-ink)]">Role Management</h1>
                 <p className="mt-1 text-sm text-[color:var(--trite-muted)]">Define and govern institutional access levels. Ensure security through granular permission-based control across all TRITE PSP systems.</p>
               </div>
               <button className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">
@@ -260,7 +260,7 @@ export default function AdminRolesPage() {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
               {/* Left Column - Active Roles */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -276,7 +276,7 @@ export default function AdminRolesPage() {
                       <button
                         key={role.id}
                         onClick={() => handleRoleSelect(role)}
-                        className={`w-full rounded-2xl border p-4 text-left transition-all ${
+                        className={`w-full rounded-xl border p-4 text-left transition-all ${
                           isSelected
                             ? "border-blue-500 bg-blue-50/50 shadow-sm"
                             : "border-black/5 bg-white hover:bg-black/[0.02]"
@@ -304,7 +304,7 @@ export default function AdminRolesPage() {
                 </div>
 
                 {/* Security Audit Card */}
-                <div className="rounded-2xl bg-[color:var(--trite-ink)] p-5 text-white">
+                <div className="rounded-xl bg-[color:var(--trite-ink)] p-5 text-white">
                   <h3 className="font-semibold">Security Audit</h3>
                   <p className="mt-2 text-xs text-white/70">
                     System scan suggests rotating the Compliance Officer role keys every 90 days. Next rotation due in 12 days.
@@ -318,7 +318,7 @@ export default function AdminRolesPage() {
               {/* Right Column - Role Details */}
               <div className="lg:col-span-2 space-y-6">
                 {/* Role Header */}
-                <div className="rounded-2xl border border-black/5 bg-white p-6">
+                <div className="rounded-xl border border-black/5 bg-white p-5">
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="flex items-center gap-3">
@@ -345,7 +345,7 @@ export default function AdminRolesPage() {
                 </div>
 
                 {/* Permissions */}
-                <div className="rounded-2xl border border-black/5 bg-white p-6">
+                <div className="rounded-xl border border-black/5 bg-white p-5">
                   <h3 className="text-sm font-semibold text-[color:var(--trite-muted)] uppercase tracking-wide mb-4">Permissions & Access Control</h3>
                   
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -384,7 +384,7 @@ export default function AdminRolesPage() {
                 </div>
 
                 {/* Recent Activity Trail */}
-                <div className="rounded-2xl border border-black/5 bg-white p-6">
+                <div className="rounded-xl border border-black/5 bg-white p-5">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-sm font-semibold text-[color:var(--trite-muted)] uppercase tracking-wide">Recent Activity Trail</h3>
                     <button className="text-xs font-medium text-blue-600 hover:text-blue-700">Full Audit History</button>
