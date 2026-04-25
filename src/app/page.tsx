@@ -2,6 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import CanvasAnimation from "./CanvasAnimation";
 import WorldMap from "./WorldMap";
+import AnimatedHeroHeading from "@/components/AnimatedHeroHeading";
+import { Component as AnimatedButton } from "@/components/ui/animated-button";
 
 export default function Home() {
   const ghs = new Intl.NumberFormat("en-GH", {
@@ -29,18 +31,12 @@ export default function Home() {
           </nav>
 
           <div className="flex items-center gap-2">
-            <Link
-              className="hidden rounded-full px-4 py-2 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-black/5 sm:inline-flex"
-              href="/login"
-            >
+            <AnimatedButton href="/login" outline={false} className="p-0">
               Sign in
-            </Link>
-            <Link
-              className="inline-flex h-10 items-center justify-center rounded-full bg-[color:var(--trite-ink)] px-5 text-sm font-semibold text-white hover:bg-black"
-              href="/get-started"
-            >
+            </AnimatedButton>
+            <AnimatedButton href="/get-started" outline={true} className="p-0">
               Get Started
-            </Link>
+            </AnimatedButton>
           </div>
         </div>
       </header>
@@ -58,12 +54,7 @@ export default function Home() {
                 This new standard is built for real payments
               </div>
 
-              <h1 className="mt-6 text-4xl font-semibold leading-[1.05] tracking-tight text-white sm:text-5xl">
-                Financial
-                <span className="text-[color:var(--trite-lime-strong)]"> Architecture</span>
-                <br />
-                for the Modern Enterprise.
-              </h1>
+              <AnimatedHeroHeading />
 
               <p className="mt-5 max-w-xl text-base leading-7 text-white/70 sm:text-lg">
                 Bridge the gap between traditional banking and the digital asset
