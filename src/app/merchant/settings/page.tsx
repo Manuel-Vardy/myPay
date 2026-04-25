@@ -17,6 +17,7 @@ const sidebarItems = [
 export default function SettingsPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("settings");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifications, setNotifications] = useState({
     transactions: true,
     systemUpdates: true,
@@ -49,7 +50,17 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#f6f7fb]">
-      <aside className="fixed left-0 top-0 z-40 h-screen w-56 border-r border-black/5 bg-white">
+      {/* Mobile Sidebar Backdrop */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden" 
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <aside className={`fixed left-0 top-0 z-50 h-screen w-56 border-r border-black/5 bg-white transition-transform duration-300 lg:translate-x-0 ${
+        sidebarOpen ? "translate-x-0" : "-translate-x-full"
+      }`}>
         <div className="flex h-full flex-col">
           <div className="flex h-16 items-center border-b border-black/5 px-4">
             <Link href="/" className="flex items-center gap-3">
@@ -112,19 +123,33 @@ export default function SettingsPage() {
         </div>
       </aside>
 
-      <main className="ml-56">
+      <main className="transition-all duration-300 lg:ml-56">
         <header className="sticky top-0 z-30 border-b border-black/5 bg-white/80 backdrop-blur">
-          <div className="flex h-16 items-center justify-end px-6">
+          <div className="flex h-16 items-center justify-between px-4 sm:px-6">
             <div className="flex items-center gap-4">
-              <button className="flex h-10 w-10 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]">
-                <BellIcon className="h-5 w-5" />
+              <button 
+                onClick={() => setSidebarOpen(true)}
+                className="flex h-10 w-10 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03] lg:hidden"
+              >
+                <MenuIcon className="h-6 w-6" />
               </button>
-              <button className="flex h-10 w-10 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]">
-                <HelpCircleIcon className="h-5 w-5" />
+              <Link href="/" className="lg:hidden">
+                <Image
+                  src="/tritee-logo.png"
+                  alt="Trite logo"
+                  width={90}
+                  height={22}
+                  priority
+                />
+              </Link>
+            </div>
+            <div className="flex items-center gap-3">
+              <button className="flex h-9 w-9 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]">
+                <BellIcon className="h-4 w-4" />
               </button>
-              <div className="flex items-center gap-2 text-sm font-medium text-[color:var(--trite-ink)]">
-                <span>Merchant Dashboard</span>
-                <ChevronDownIcon className="h-4 w-4" />
+              <div className="hidden items-center gap-2 text-xs font-medium text-[color:var(--trite-ink)] sm:flex">
+                <span>Merchant</span>
+                <ChevronDownIcon className="h-3 w-3" />
               </div>
             </div>
           </div>
@@ -132,11 +157,11 @@ export default function SettingsPage() {
 
         <div className="p-5">
           <div className="mb-6">
-            <h1 className="text-2xl font-semibold tracking-tight text-[color:var(--trite-ink)]">
+            <h1 className="text-xl font-semibold tracking-tight text-[color:var(--trite-ink)] sm:text-2xl">
               Account Settings
             </h1>
-            <p className="mt-2 text-sm text-[color:var(--trite-muted)]">
-              Manage your institutional presence, notification protocols, and security layers from one centralized command center.
+            <p className="mt-2 text-xs text-[color:var(--trite-muted)] sm:text-sm">
+              Manage your institutional presence, notification protocols, and security layers.
             </p>
           </div>
 
@@ -148,8 +173,8 @@ export default function SettingsPage() {
                     Profile updated successfully!
                   </div>
                 )}
-                <div className="flex items-start gap-5">
-                  <div className="relative">
+                <div className="flex flex-col sm:flex-row items-start gap-5">
+                  <div className="relative shrink-0">
                     <div className="flex h-24 w-24 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-2xl font-bold text-white overflow-hidden">
                       {profileImage ? (
                         <img src={profileImage} alt="Profile" className="h-full w-full object-cover" />
@@ -167,7 +192,7 @@ export default function SettingsPage() {
                       />
                     </label>
                   </div>
-                  <div className="flex-1 grid grid-cols-2 gap-4">
+                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
                     <div>
                       <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
                         Full Name
@@ -231,7 +256,7 @@ export default function SettingsPage() {
                 </div>
                 <div className="mt-6 space-y-4">
                   <div className="flex items-center justify-between rounded-xl bg-gray-50 p-4">
-                    <div>
+                    <div className="pr-4">
                       <div className="font-medium text-[color:var(--trite-ink)]">Transactions</div>
                       <div className="text-xs text-[color:var(--trite-muted)]">Instant alerts for all processing activities.</div>
                     </div>
@@ -241,7 +266,7 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="flex items-center justify-between rounded-xl bg-gray-50 p-4">
-                    <div>
+                    <div className="pr-4">
                       <div className="font-medium text-[color:var(--trite-ink)]">System Updates</div>
                       <div className="text-xs text-[color:var(--trite-muted)]">Maintenance schedules and security patches.</div>
                     </div>
@@ -251,7 +276,7 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="flex items-center justify-between rounded-xl bg-gray-50 p-4">
-                    <div>
+                    <div className="pr-4">
                       <div className="font-medium text-[color:var(--trite-ink)]">Marketing & Insights</div>
                       <div className="text-xs text-[color:var(--trite-muted)]">Quarterly reports and platform tips.</div>
                     </div>
@@ -351,12 +376,12 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="mt-8 flex items-center justify-between text-xs text-[color:var(--trite-muted)]">
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[color:var(--trite-muted)]">
             <div className="flex gap-4">
               <Link href="#" className="hover:text-[color:var(--trite-ink)]">Documentation</Link>
               <Link href="#" className="hover:text-[color:var(--trite-ink)]">API Privacy</Link>
             </div>
-            <div>
+            <div className="text-center sm:text-right">
               Last updated: Oct 24, 2023 • IP: 102.176.65.1
             </div>
           </div>
@@ -376,6 +401,14 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
         className={`absolute top-1 left-1 h-4 w-4 rounded-full bg-white transition-transform ${checked ? "translate-x-5" : ""}`}
       />
     </button>
+  );
+}
+
+function MenuIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+    </svg>
   );
 }
 

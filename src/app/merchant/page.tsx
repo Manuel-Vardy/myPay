@@ -76,6 +76,7 @@ export default function DashboardPage() {
   const [chartPeriod, setChartPeriod] = useState<"day" | "week" | "month" | "year">("week");
   const [convertModalOpen, setConvertModalOpen] = useState(false);
   const [highContrast, setHighContrast] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Persistence for high contrast
   useState(() => {
@@ -139,7 +140,17 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#f6f7fb]">
-      <aside className="fixed left-0 top-0 z-40 h-screen w-56 border-r border-black/5 bg-white">
+      {/* Mobile Sidebar Backdrop */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden" 
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <aside className={`fixed left-0 top-0 z-50 h-screen w-56 border-r border-black/5 bg-white transition-transform duration-300 lg:translate-x-0 ${
+        sidebarOpen ? "translate-x-0" : "-translate-x-full"
+      }`}>
         <div className="flex h-full flex-col">
           <div className="flex h-16 items-center border-b border-black/5 px-4">
             <Link href="/" className="flex items-center gap-3">
@@ -222,13 +233,30 @@ export default function DashboardPage() {
         </div>
       </aside>
 
-      <main className="ml-56">
+      <main className="transition-all duration-300 lg:ml-56">
         <header className="sticky top-0 z-30 border-b border-black/5 bg-white/80 backdrop-blur">
-          <div className="flex h-16 items-center justify-end px-6">
+          <div className="flex h-16 items-center justify-between px-4 sm:px-6">
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => setSidebarOpen(true)}
+                className="flex h-10 w-10 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03] lg:hidden"
+              >
+                <MenuIcon className="h-6 w-6" />
+              </button>
+              <Link href="/" className="lg:hidden">
+                <Image
+                  src="/tritee-logo.png"
+                  alt="Trite logo"
+                  width={90}
+                  height={22}
+                  priority
+                />
+              </Link>
+            </div>
             <div className="flex items-center gap-4">
               <Link
                 href="#"
-                className="text-sm font-medium text-blue-600 hover:underline"
+                className="text-xs font-medium text-blue-600 hover:underline sm:text-sm"
               >
                 Merchant
               </Link>
@@ -259,14 +287,14 @@ export default function DashboardPage() {
                       Available Institutional Balance
                     </div>
                     <div className="mt-2 flex items-baseline gap-1">
-                      <span className="text-4xl font-bold">{formatGHS(1250)}</span>
+                      <span className="text-2xl font-bold sm:text-4xl">{formatGHS(1250)}</span>
                     </div>
                   </div>
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
                     <WalletIcon className="h-5 w-5" />
                   </div>
                 </div>
-                <div className="mt-6 flex gap-3">
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                   <button
                     onClick={() => setWithdrawModalOpen(true)}
                     className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-500 px-4 text-sm font-semibold text-white hover:bg-blue-600"
@@ -364,15 +392,15 @@ export default function DashboardPage() {
 
           <div className="mt-6 rounded-xl bg-white p-5 ring-1 ring-black/5">
             {/* Enhanced Filters */}
-            <div className="mb-4 flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2">
+            <div className="mb-4 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+              <div className="flex flex-1 items-center gap-2 rounded-lg border border-black/10 px-3 py-1.5 focus-within:border-[color:var(--trite-lime-strong)]">
                 <SearchIcon className="h-4 w-4 text-[color:var(--trite-muted)]" />
                 <input
                   type="text"
                   value={txSearch}
                   onChange={(e) => setTxSearch(e.target.value)}
                   placeholder="Search transactions..."
-                  className="w-48 rounded-lg border border-black/10 px-3 py-1.5 text-sm text-gray-900 outline-none focus:border-[color:var(--trite-lime-strong)]"
+                  className="w-full text-sm text-gray-900 outline-none"
                 />
               </div>
               <select
@@ -415,7 +443,9 @@ export default function DashboardPage() {
                 View All
               </button>
             </div>
-            <table className="w-full">
+
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[600px]">
               <thead>
                 <tr className="border-b border-black/5 text-left">
                   <th className="pb-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
@@ -518,6 +548,7 @@ export default function DashboardPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
 
           {/* Revenue Bar Chart */}
@@ -825,7 +856,8 @@ export default function DashboardPage() {
 
             {/* Settlement Table */}
             <div className="rounded-xl border border-black/5 overflow-hidden">
-              <table className="w-full">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[800px]">
                 <thead className="bg-gray-50">
                   <tr className="text-left">
                     <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Date</th>
@@ -898,6 +930,7 @@ export default function DashboardPage() {
                     })}
                 </tbody>
               </table>
+              </div>
             </div>
 
             {/* Footer Actions */}
@@ -1198,6 +1231,14 @@ function SearchIcon({ className }: { className?: string }) {
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
       <circle cx="11" cy="11" r="8" />
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  );
+}
+
+function MenuIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
     </svg>
   );
 }

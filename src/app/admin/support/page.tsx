@@ -131,6 +131,7 @@ const infrastructureStatus = [
 export default function AdminSupportPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("support");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("all");
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(demoTickets[0]);
   const [response, setResponse] = useState("");
@@ -152,49 +153,41 @@ export default function AdminSupportPage() {
 
   return (
     <div className="min-h-screen bg-[#f6f7fb]">
+      {/* Mobile Sidebar Backdrop */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 z-[60] bg-black/50 lg:hidden" 
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-black/5 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex h-16 items-center justify-between px-6">
+        <div className="mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setSidebarOpen(true)}
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03] lg:hidden"
+            >
+              <HelpCircle className="h-6 w-6" />
+            </button>
             <Link href="/admin" className="flex items-center gap-3">
               <Image
                 src="/tritee-logo.png"
                 alt="Trite logo"
-                width={120}
-                height={28}
+                width={90}
+                height={22}
                 priority
               />
             </Link>
-            <span className="text-xs font-medium text-[color:var(--trite-muted)]">Financial Architect</span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--trite-muted)]" />
-              <input
-                type="text"
-                placeholder="Search tickets..."
-                className="h-10 w-56 rounded-xl border border-black/10 bg-white pl-10 pr-4 text-sm text-[color:var(--trite-ink)] outline-none focus:border-[color:var(--trite-lime-strong)]"
-              />
-            </div>
-            <button className="h-10 rounded-xl border border-black/10 bg-white px-4 text-sm font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.02]">
-              Global Overview
+            <button className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-black/10 bg-white hover:bg-black/[0.02]">
+              <Bell className="h-4 w-4 text-[color:var(--trite-ink)]" />
+              <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-red-500" />
             </button>
-            <button className="h-10 rounded-xl border border-black/10 bg-white px-4 text-sm font-medium text-[color:var(--trite-ink)] hover:bg-black/[0.02]">
-              Audit Trail
-            </button>
-            <button className="h-10 rounded-xl bg-[color:var(--trite-ink)] px-4 text-sm font-medium text-white hover:bg-black">
-              + Create Report
-            </button>
-            <div className="flex items-center gap-3 pl-4 border-l border-black/10">
-              <button className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-black/10 bg-white hover:bg-black/[0.02]">
-                <Bell className="h-5 w-5 text-[color:var(--trite-ink)]" />
-              </button>
-              <button className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-black/10 bg-white hover:bg-black/[0.02]">
-                <HelpCircle className="h-5 w-5 text-[color:var(--trite-ink)]" />
-              </button>
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
-                <span className="text-sm font-medium text-white">JW</span>
-              </div>
+            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-[10px] font-bold text-white">
+              JW
             </div>
           </div>
         </div>
@@ -202,7 +195,9 @@ export default function AdminSupportPage() {
 
       <div className="flex">
         {/* Sidebar */}
-        <aside className="fixed left-0 top-16 h-[calc(100vh-64px)] w-56 border-r border-black/5 bg-white">
+        <aside className={`fixed left-0 top-16 z-50 h-[calc(100vh-64px)] w-56 border-r border-black/5 bg-white transition-transform duration-300 lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}>
           <div className="flex h-full flex-col">
             <div className="flex-1 overflow-y-auto px-3 py-4">
               <ul className="space-y-1">
@@ -253,15 +248,15 @@ export default function AdminSupportPage() {
         </aside>
 
         {/* Main Content */}
-        <main className="ml-56 flex-1 p-5">
+        <main className="flex-1 transition-all duration-300 lg:ml-56 p-5">
           <div className="mx-auto max-w-7xl">
             {/* Page Header */}
             <div className="mb-6">
-              <h1 className="text-4xl font-semibold text-[color:var(--trite-ink)]">
+              <h1 className="text-2xl font-semibold text-[color:var(--trite-ink)] sm:text-3xl">
                 Support <span className="text-blue-500">Center</span>
               </h1>
-              <p className="mt-1 text-sm text-[color:var(--trite-muted)]">
-                Manage merchant inquiries and system escalations with architectural precision.
+              <p className="mt-1 text-xs text-[color:var(--trite-muted)] sm:text-sm">
+                Manage inquiries and escalations.
               </p>
             </div>
 
@@ -269,40 +264,36 @@ export default function AdminSupportPage() {
               {/* Tickets List */}
               <div className="lg:col-span-8">
                 {/* Filter Tabs */}
-                <div className="mb-4 flex items-center gap-2">
+                <div className="mb-4 flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => setActiveFilter("all")}
-                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                       activeFilter === "all"
                         ? "bg-[color:var(--trite-ink)] text-white"
                         : "bg-white text-[color:var(--trite-muted)] hover:bg-black/[0.02]"
                     }`}
                   >
-                    All Tickets ({ticketCounts.all})
+                    All ({ticketCounts.all})
                   </button>
                   <button
                     onClick={() => setActiveFilter("unassigned")}
-                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                       activeFilter === "unassigned"
                         ? "bg-[color:var(--trite-ink)] text-white"
                         : "bg-white text-[color:var(--trite-muted)] hover:bg-black/[0.02]"
                     }`}
                   >
-                    Unassigned ({ticketCounts.unassigned})
+                    Open ({ticketCounts.unassigned})
                   </button>
                   <button
                     onClick={() => setActiveFilter("escalated")}
-                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                       activeFilter === "escalated"
                         ? "bg-[color:var(--trite-ink)] text-white"
                         : "bg-white text-[color:var(--trite-muted)] hover:bg-black/[0.02]"
                     }`}
                   >
                     Escalated ({ticketCounts.escalated})
-                  </button>
-                  <button className="ml-auto flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.02]">
-                    <Filter className="h-4 w-4" />
-                    Filter
                   </button>
                 </div>
 

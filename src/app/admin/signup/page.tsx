@@ -30,44 +30,40 @@ export default function AdminSignupPage() {
     <div className="min-h-[100svh] bg-[#f6f7fb]">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-black/5 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <Link className="flex items-center gap-3" href="/">
             <Image
               src="/tritee-logo.png"
               alt="Trite logo"
-              width={120}
-              height={28}
+              width={90}
+              height={22}
               priority
             />
           </Link>
 
-          <nav className="flex items-center gap-6 text-sm font-medium text-[color:var(--trite-muted)]">
+          <nav className="hidden items-center gap-6 text-xs font-medium text-[color:var(--trite-muted)] sm:flex">
             <Link className="hover:text-[color:var(--trite-ink)]" href="/contact-sales">
               Contact Sales
-            </Link>
-            <Link className="hover:text-[color:var(--trite-ink)]" href="/admin/login">
-              Admin Portal
             </Link>
           </nav>
         </div>
       </header>
 
-      <main className="px-4 py-10 sm:px-6">
-        <div className="mx-auto flex w-full max-w-6xl flex-col items-center">
+      <main className="px-4 py-8 sm:px-6">
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-center text-center sm:text-left">
           <div className="w-full max-w-lg">
             {/* Admin Badge */}
             <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-[color:var(--trite-ink)] px-4 py-1.5">
               <ShieldCheck className="h-4 w-4 text-white" />
-              <span className="text-xs font-semibold text-white uppercase tracking-wide">New Institutional Account</span>
+              <span className="text-[10px] font-bold text-white uppercase tracking-widest sm:text-xs">Institutional Account</span>
             </div>
 
-            <h1 className="text-3xl font-semibold leading-[1.1] tracking-tight text-[color:var(--trite-ink)]">
+            <h1 className="text-2xl font-semibold leading-tight tracking-tight text-[color:var(--trite-ink)] sm:text-3xl">
               Request Ghana Financial
               <span className="text-[color:var(--trite-lime-strong)]"> Admin Access</span>
             </h1>
-            <p className="mt-3 text-sm leading-6 text-[color:var(--trite-muted)]">
-              Apply for institutional oversight access to the Ghanaian payment infrastructure. 
-              Applications are reviewed by the Bank of Ghana compliance team.
+            <p className="mt-3 text-xs leading-5 text-[color:var(--trite-muted)] sm:text-sm sm:leading-6">
+              Apply for institutional oversight. Applications are reviewed by the Bank of Ghana.
             </p>
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-4">

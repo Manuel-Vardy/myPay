@@ -108,48 +108,56 @@ const regionalPerformance = [
 export default function AdminDashboardPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [timeFilter, setTimeFilter] = useState("24H");
 
   return (
     <div className="min-h-screen bg-[#f6f7fb]">
+      {/* Mobile Sidebar Backdrop */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 z-[60] bg-black/50 lg:hidden" 
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-black/5 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex h-16 items-center justify-between px-6">
+        <div className="mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setSidebarOpen(true)}
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03] lg:hidden"
+            >
+              <Activity className="h-6 w-6" />
+            </button>
             <Link href="/admin" className="flex items-center gap-3">
               <Image
                 src="/tritee-logo.png"
                 alt="Trite logo"
-                width={120}
-                height={28}
+                width={90}
+                height={22}
                 priority
               />
             </Link>
-            <span className="text-xs font-medium text-[color:var(--trite-muted)]">Institutional Admin</span>
+            <span className="hidden text-xs font-medium text-[color:var(--trite-muted)] sm:block">Admin</span>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="relative">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="relative hidden md:block">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--trite-muted)]" />
               <input
                 type="text"
-                placeholder="Global system search..."
-                className="h-10 w-56 rounded-xl border border-black/10 bg-white pl-10 pr-4 text-sm text-[color:var(--trite-ink)] outline-none focus:border-[color:var(--trite-lime-strong)]"
+                placeholder="Search system..."
+                className="h-9 w-40 rounded-xl border border-black/10 bg-white pl-9 pr-3 text-xs text-[color:var(--trite-ink)] outline-none focus:border-[color:var(--trite-lime-strong)]"
               />
             </div>
-            <button className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-black/10 bg-white hover:bg-black/[0.02]">
-              <Bell className="h-5 w-5 text-[color:var(--trite-ink)]" />
-              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500" />
+            <button className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-black/10 bg-white hover:bg-black/[0.02]">
+              <Bell className="h-4 w-4 text-[color:var(--trite-ink)]" />
+              <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-red-500" />
             </button>
-            <button className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-black/10 bg-white hover:bg-black/[0.02]">
-              <Shield className="h-5 w-5 text-[color:var(--trite-ink)]" />
-            </button>
-            <div className="flex items-center gap-3 pl-4 border-l border-black/10">
-              <div className="h-10 w-10 rounded-full bg-[color:var(--trite-lime)] flex items-center justify-center">
-                <span className="text-sm font-semibold text-[color:var(--trite-ink)]">ID</span>
-              </div>
-              <div className="hidden md:block">
-                <p className="text-sm font-semibold text-[color:var(--trite-ink)]">Institutional Director</p>
-                <p className="text-xs text-[color:var(--trite-muted)]">System Admin Profile</p>
+            <div className="flex items-center gap-2 border-l border-black/10 pl-2 sm:pl-4">
+              <div className="h-8 w-8 rounded-full bg-[color:var(--trite-lime)] flex items-center justify-center text-[10px] font-bold">
+                AD
               </div>
             </div>
           </div>
@@ -158,7 +166,9 @@ export default function AdminDashboardPage() {
 
       <div className="flex">
         {/* Sidebar */}
-        <aside className="fixed left-0 top-16 h-[calc(100vh-64px)] w-56 border-r border-black/5 bg-white">
+        <aside className={`fixed left-0 top-16 z-50 h-[calc(100vh-64px)] w-56 border-r border-black/5 bg-white transition-transform duration-300 lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}>
           <div className="flex h-full flex-col">
             <div className="flex-1 overflow-y-auto px-3 py-4">
               <ul className="space-y-1">
@@ -209,12 +219,12 @@ export default function AdminDashboardPage() {
         </aside>
 
         {/* Main Content */}
-        <main className="ml-56 flex-1 p-5">
+        <main className="flex-1 transition-all duration-300 lg:ml-56 p-5">
           <div className="mx-auto max-w-7xl">
             {/* Page Header */}
             <div className="mb-6">
-              <h1 className="text-2xl font-semibold text-[color:var(--trite-ink)]">Institutional Oversight</h1>
-              <p className="mt-1 text-sm text-[color:var(--trite-muted)]">Real-time platform performance and security metrics.</p>
+              <h1 className="text-xl font-semibold text-[color:var(--trite-ink)] sm:text-2xl">Oversight</h1>
+              <p className="mt-1 text-xs text-[color:var(--trite-muted)] sm:text-sm">Real-time platform performance and security metrics.</p>
             </div>
 
             {/* Stats Grid */}
@@ -288,30 +298,27 @@ export default function AdminDashboardPage() {
 
                 {/* Recent Activity Table */}
                 <div className="rounded-xl border border-black/5 bg-white p-5">
-                  <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-[color:var(--trite-ink)]">Recent Institutional Activity</h2>
+                  <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <h2 className="text-lg font-semibold text-[color:var(--trite-ink)]">Activity</h2>
                     <div className="flex gap-2">
                       <button className="flex items-center gap-1 rounded-lg border border-black/10 px-3 py-1.5 text-xs font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.02]">
                         <Filter className="h-3.5 w-3.5" />
                         Filter
                       </button>
-                      <button className="flex items-center gap-1 rounded-lg border border-black/10 px-3 py-1.5 text-xs font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.02]">
-                        <ArrowUpDown className="h-3.5 w-3.5" />
-                        Sort
-                      </button>
                     </div>
                   </div>
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-black/5 text-left text-xs font-medium text-[color:var(--trite-muted)] uppercase">
-                        <th className="pb-3 pr-4">Merchant Entity</th>
-                        <th className="pb-3 pr-4">Transaction Type</th>
-                        <th className="pb-3 pr-4">Volume (GHS)</th>
-                        <th className="pb-3 pr-4">Gateway Node</th>
-                        <th className="pb-3 pr-4">Status</th>
-                        <th className="pb-3">Actions</th>
-                      </tr>
-                    </thead>
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[900px]">
+                      <thead>
+                        <tr className="border-b border-black/5 text-left text-xs font-medium text-[color:var(--trite-muted)] uppercase">
+                          <th className="pb-3 pr-4">Merchant Entity</th>
+                          <th className="pb-3 pr-4">Type</th>
+                          <th className="pb-3 pr-4">Volume (GHS)</th>
+                          <th className="pb-3 pr-4">Node</th>
+                          <th className="pb-3 pr-4">Status</th>
+                          <th className="pb-3">Actions</th>
+                        </tr>
+                      </thead>
                     <tbody>
                       {recentActivity.map((activity) => (
                         <tr key={activity.id} className="border-b border-black/5 last:border-0">
@@ -354,6 +361,7 @@ export default function AdminDashboardPage() {
                       ))}
                     </tbody>
                   </table>
+                  </div>
                   <button className="mt-4 text-sm font-medium text-blue-600 hover:text-blue-700">View All Transactions</button>
                 </div>
               </div>

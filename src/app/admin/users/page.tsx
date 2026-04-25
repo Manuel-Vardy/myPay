@@ -144,6 +144,7 @@ const demoUsers: User[] = [
 export default function AdminUsersPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("users");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
   const [tierFilter, setTierFilter] = useState<string>("All");
@@ -207,45 +208,41 @@ export default function AdminUsersPage() {
 
   return (
     <div className="min-h-screen bg-[#f6f7fb]">
+      {/* Mobile Sidebar Backdrop */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 z-[60] bg-black/50 lg:hidden" 
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-black/5 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex h-16 items-center justify-between px-6">
+        <div className="mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setSidebarOpen(true)}
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03] lg:hidden"
+            >
+              <SlidersHorizontal className="h-6 w-6" />
+            </button>
             <Link href="/admin" className="flex items-center gap-3">
               <Image
                 src="/tritee-logo.png"
                 alt="Trite logo"
-                width={120}
-                height={28}
+                width={90}
+                height={22}
                 priority
               />
             </Link>
-            <span className="text-xs font-medium text-[color:var(--trite-muted)]">Institutional Admin</span>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--trite-muted)]" />
-              <input
-                type="text"
-                placeholder="Search by Name, Email, or Merchant ID..."
-                className="h-10 w-80 rounded-xl border border-black/10 bg-white pl-10 pr-4 text-sm text-[color:var(--trite-ink)] outline-none focus:border-[color:var(--trite-lime-strong)]"
-              />
-            </div>
-            <button className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-black/10 bg-white hover:bg-black/[0.02]">
-              <Bell className="h-5 w-5 text-[color:var(--trite-ink)]" />
-              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500" />
+          <div className="flex items-center gap-3">
+            <button className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-black/10 bg-white hover:bg-black/[0.02]">
+              <Bell className="h-4 w-4 text-[color:var(--trite-ink)]" />
+              <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-red-500" />
             </button>
-            <button className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-black/10 bg-white hover:bg-black/[0.02]">
-              <Settings className="h-5 w-5 text-[color:var(--trite-ink)]" />
-            </button>
-            <div className="flex items-center gap-3 pl-4 border-l border-black/10">
-              <div className="h-10 w-10 rounded-full bg-[color:var(--trite-lime)] flex items-center justify-center">
-                <span className="text-sm font-semibold text-[color:var(--trite-ink)]">S1</span>
-              </div>
-              <div className="hidden md:block">
-                <p className="text-sm font-semibold text-[color:var(--trite-ink)]">admin_01</p>
-                <p className="text-xs text-[color:var(--trite-muted)]">SUPERVISOR</p>
-              </div>
+            <div className="h-8 w-8 rounded-full bg-[color:var(--trite-lime)] flex items-center justify-center text-[10px] font-bold">
+              AD
             </div>
           </div>
         </div>
@@ -253,7 +250,9 @@ export default function AdminUsersPage() {
 
       <div className="flex">
         {/* Sidebar */}
-        <aside className="fixed left-0 top-16 h-[calc(100vh-64px)] w-56 border-r border-black/5 bg-white">
+        <aside className={`fixed left-0 top-16 z-50 h-[calc(100vh-64px)] w-56 border-r border-black/5 bg-white transition-transform duration-300 lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}>
           <div className="flex h-full flex-col">
             <div className="flex-1 overflow-y-auto px-3 py-4">
               <ul className="space-y-1">
@@ -304,17 +303,17 @@ export default function AdminUsersPage() {
         </aside>
 
         {/* Main Content */}
-        <main className="ml-56 flex-1 p-5">
+        <main className="flex-1 transition-all duration-300 lg:ml-56 p-5">
           <div className="mx-auto max-w-7xl">
             {/* Page Header */}
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h1 className="text-2xl font-semibold text-[color:var(--trite-ink)]">User Directory</h1>
-                <p className="mt-1 text-sm text-[color:var(--trite-muted)]">Manage and audit institutional and individual user accounts.</p>
+                <h1 className="text-xl font-semibold text-[color:var(--trite-ink)] sm:text-2xl">User Directory</h1>
+                <p className="mt-1 text-xs text-[color:var(--trite-muted)] sm:text-sm">Manage and audit system accounts.</p>
               </div>
               <button className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">
                 <UserPlus className="h-4 w-4" />
-                Register New User
+                Add User
               </button>
             </div>
 
@@ -366,58 +365,58 @@ export default function AdminUsersPage() {
             </div>
 
             {/* Filters */}
-            <div className="mb-4 flex flex-wrap items-center gap-3">
-              <div className="relative flex-1 min-w-[300px] max-w-md">
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="relative flex-1 min-w-0">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--trite-muted)]" />
                 <input
                   type="text"
-                  placeholder="Filter by Name, Email, or Merchant ID..."
+                  placeholder="Search accounts..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="h-10 w-full rounded-xl border border-black/10 bg-white pl-10 pr-4 text-sm outline-none focus:border-[color:var(--trite-lime-strong)]"
                 />
               </div>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="h-10 rounded-xl border border-black/10 bg-white px-4 text-sm outline-none focus:border-[color:var(--trite-lime-strong)]"
-              >
-                <option>Status: All</option>
-                <option>Active</option>
-                <option>Suspended</option>
-                <option>Flagged</option>
-                <option>Pending</option>
-              </select>
-              <select
-                value={tierFilter}
-                onChange={(e) => setTierFilter(e.target.value)}
-                className="h-10 rounded-xl border border-black/10 bg-white px-4 text-sm outline-none focus:border-[color:var(--trite-lime-strong)]"
-              >
-                <option>Tier: All</option>
-                <option>Institutional</option>
-                <option>Merchant</option>
-                <option>Premium</option>
-                <option>Standard</option>
-              </select>
-              <button className="flex h-10 w-10 items-center justify-center rounded-xl border border-black/10 bg-white hover:bg-black/[0.02]">
-                <SlidersHorizontal className="h-4 w-4 text-[color:var(--trite-muted)]" />
-              </button>
+              <div className="flex gap-2">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="h-10 flex-1 rounded-xl border border-black/10 bg-white px-3 text-xs outline-none focus:border-[color:var(--trite-lime-strong)]"
+                >
+                  <option>Status: All</option>
+                  <option>Active</option>
+                  <option>Suspended</option>
+                  <option>Flagged</option>
+                  <option>Pending</option>
+                </select>
+                <select
+                  value={tierFilter}
+                  onChange={(e) => setTierFilter(e.target.value)}
+                  className="h-10 flex-1 rounded-xl border border-black/10 bg-white px-3 text-xs outline-none focus:border-[color:var(--trite-lime-strong)]"
+                >
+                  <option>Tier: All</option>
+                  <option>Institutional</option>
+                  <option>Merchant</option>
+                  <option>Premium</option>
+                  <option>Standard</option>
+                </select>
+              </div>
             </div>
 
             {/* Users Table */}
-            <div className="rounded-xl border border-black/5 bg-white">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-black/5 text-left text-xs font-medium text-[color:var(--trite-muted)] uppercase">
-                    <th className="py-4 px-6">User Entity</th>
-                    <th className="py-4 px-4">Merchant ID</th>
-                    <th className="py-4 px-4">Verification Tier</th>
-                    <th className="py-4 px-4">Account Status</th>
-                    <th className="py-4 px-4">Volume (GHS)</th>
-                    <th className="py-4 px-4">Last Login</th>
-                    <th className="py-4 px-6 text-right">Actions</th>
-                  </tr>
-                </thead>
+            <div className="rounded-xl border border-black/5 bg-white overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[1000px]">
+                  <thead>
+                    <tr className="border-b border-black/5 text-left text-xs font-medium text-[color:var(--trite-muted)] uppercase">
+                      <th className="py-4 px-6">User Entity</th>
+                      <th className="py-4 px-4">Merchant ID</th>
+                      <th className="py-4 px-4">Tier</th>
+                      <th className="py-4 px-4">Status</th>
+                      <th className="py-4 px-4">Volume (GHS)</th>
+                      <th className="py-4 px-4">Last Login</th>
+                      <th className="py-4 px-6 text-right">Actions</th>
+                    </tr>
+                  </thead>
                 <tbody>
                   {filteredUsers.map((user) => (
                     <tr key={user.id} className="border-b border-black/5 last:border-0 hover:bg-black/[0.02]">
@@ -467,6 +466,7 @@ export default function AdminUsersPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
 
               {/* Pagination */}
               <div className="flex items-center justify-between border-t border-black/5 px-6 py-4">

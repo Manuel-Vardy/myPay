@@ -159,6 +159,7 @@ const demoActivity: ActivityItem[] = [
 export default function AdminKycPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("kyc");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
@@ -174,49 +175,41 @@ export default function AdminKycPage() {
 
   return (
     <div className="min-h-screen bg-[#f6f7fb]">
+      {/* Mobile Sidebar Backdrop */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 z-[60] bg-black/50 lg:hidden" 
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-black/5 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex h-16 items-center justify-between px-6">
+        <div className="mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setSidebarOpen(true)}
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03] lg:hidden"
+            >
+              <ShieldCheck className="h-6 w-6" />
+            </button>
             <Link href="/admin" className="flex items-center gap-3">
               <Image
                 src="/tritee-logo.png"
                 alt="Trite logo"
-                width={120}
-                height={28}
+                width={90}
+                height={22}
                 priority
               />
             </Link>
-            <span className="text-xs font-medium text-[color:var(--trite-muted)]">Financial Architect</span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--trite-muted)]" />
-              <input
-                type="text"
-                placeholder="Search KYC requests..."
-                className="h-10 w-56 rounded-xl border border-black/10 bg-white pl-10 pr-4 text-sm outline-none focus:border-[color:var(--trite-lime-strong)]"
-              />
-            </div>
-            <button className="h-10 rounded-xl border border-black/10 bg-white px-4 text-sm font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.02]">
-              Global Overview
+            <button className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-black/10 bg-white hover:bg-black/[0.02]">
+              <Bell className="h-4 w-4 text-[color:var(--trite-ink)]" />
+              <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-red-500" />
             </button>
-            <button className="h-10 rounded-xl border border-black/10 bg-white px-4 text-sm font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.02]">
-              Audit Trail
-            </button>
-            <button className="h-10 rounded-xl bg-[color:var(--trite-ink)] px-4 text-sm font-medium text-white hover:bg-black">
-              + Create Report
-            </button>
-            <div className="flex items-center gap-3 pl-4 border-l border-black/10">
-              <button className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-black/10 bg-white hover:bg-black/[0.02]">
-                <Bell className="h-5 w-5 text-[color:var(--trite-ink)]" />
-              </button>
-              <button className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-black/10 bg-white hover:bg-black/[0.02]">
-                <HelpCircle className="h-5 w-5 text-[color:var(--trite-ink)]" />
-              </button>
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
-                <span className="text-sm font-medium text-white">JW</span>
-              </div>
+            <div className="h-8 w-8 rounded-full bg-[color:var(--trite-lime)] flex items-center justify-center text-[10px] font-bold">
+              JW
             </div>
           </div>
         </div>
@@ -224,7 +217,9 @@ export default function AdminKycPage() {
 
       <div className="flex">
         {/* Sidebar */}
-        <aside className="fixed left-0 top-16 h-[calc(100vh-64px)] w-56 border-r border-black/5 bg-white">
+        <aside className={`fixed left-0 top-16 z-50 h-[calc(100vh-64px)] w-56 border-r border-black/5 bg-white transition-transform duration-300 lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}>
           <div className="flex h-full flex-col">
             <div className="flex-1 overflow-y-auto px-3 py-4">
               <ul className="space-y-1">
@@ -275,12 +270,17 @@ export default function AdminKycPage() {
         </aside>
 
         {/* Main Content */}
-        <main className="ml-56 flex-1 p-5">
+        <main className="flex-1 transition-all duration-300 lg:ml-56 p-5">
           <div className="mx-auto max-w-7xl">
             {/* Page Header */}
-            <div className="mb-6">
-              <h1 className="text-2xl font-semibold text-[color:var(--trite-ink)]">KYC Center</h1>
-              <p className="mt-1 text-sm text-[color:var(--trite-muted)]">Manage user identity verification and compliance status.</p>
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h1 className="text-xl font-semibold text-[color:var(--trite-ink)] sm:text-2xl">KYC Center</h1>
+                <p className="mt-1 text-xs text-[color:var(--trite-muted)] sm:text-sm">Manage identity verification and compliance status.</p>
+              </div>
+              <button className="inline-flex items-center gap-2 rounded-xl bg-[color:var(--trite-ink)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-black">
+                Generate Report
+              </button>
             </div>
 
             {/* Stats Grid */}
@@ -312,40 +312,39 @@ export default function AdminKycPage() {
 
             {/* Verification Queue Table */}
             <div className="mb-6 rounded-xl border border-black/5 bg-white">
-              <div className="flex items-center justify-between border-b border-black/5 px-6 py-4">
-                <h2 className="text-lg font-semibold text-[color:var(--trite-ink)]">Verification Queue</h2>
-                <div className="flex items-center gap-3">
-                  <div className="relative">
+              <div className="flex flex-col gap-4 border-b border-black/5 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <h2 className="text-lg font-semibold text-[color:var(--trite-ink)]">Queue</h2>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <div className="relative flex-1 min-w-0">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--trite-muted)]" />
                     <input
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
-                      placeholder="Search by name or ID..."
-                      className="h-10 w-56 rounded-xl border border-black/10 bg-white pl-10 pr-4 text-sm outline-none focus:border-[color:var(--trite-lime-strong)]"
+                      placeholder="Search name/ID..."
+                      className="h-10 w-full rounded-xl border border-black/10 bg-white pl-10 pr-4 text-sm outline-none focus:border-[color:var(--trite-lime-strong)]"
                     />
                   </div>
-                  <button className="flex h-10 items-center gap-2 rounded-xl border border-black/10 bg-white px-4 text-sm font-medium text-[color:var(--trite-ink)] hover:bg-black/[0.02]">
-                    <Filter className="h-4 w-4" />
-                    Filters
-                  </button>
-                  <button className="flex h-10 items-center gap-2 rounded-xl bg-[color:var(--trite-ink)] px-4 text-sm font-medium text-white hover:bg-black">
-                    <Download className="h-4 w-4" />
-                    Export
-                  </button>
+                  <div className="flex gap-2">
+                    <button className="flex h-10 flex-1 items-center justify-center gap-2 rounded-xl border border-black/10 bg-white px-3 text-xs font-medium text-[color:var(--trite-ink)] sm:flex-none">
+                      <Filter className="h-4 w-4" />
+                      Filter
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-black/5 bg-slate-50 text-left">
-                    <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">User Entity</th>
-                    <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Identity ID</th>
-                    <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Tier</th>
-                    <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Status</th>
-                    <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Submitted</th>
-                    <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Action</th>
-                  </tr>
-                </thead>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[900px]">
+                  <thead>
+                    <tr className="border-b border-black/5 bg-slate-50 text-left">
+                      <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">User</th>
+                      <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Identity ID</th>
+                      <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Tier</th>
+                      <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Status</th>
+                      <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Submitted</th>
+                      <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)] text-right">Action</th>
+                    </tr>
+                  </thead>
                 <tbody className="text-sm">
                   {filtered.map((k) => (
                     <tr key={k.id} className="border-b border-black/5 last:border-b-0 hover:bg-black/[0.02]">
@@ -392,6 +391,7 @@ export default function AdminKycPage() {
                   )}
                 </tbody>
               </table>
+              </div>
 
               {/* Pagination */}
               <div className="flex items-center justify-between border-t border-black/5 px-6 py-4">

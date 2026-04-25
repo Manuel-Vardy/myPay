@@ -176,6 +176,7 @@ const demoTransactions: Transaction[] = [
 export default function AdminTransactionsPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("transactions");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
   const [rowsPerPage, setRowsPerPage] = useState(15);
@@ -220,49 +221,41 @@ export default function AdminTransactionsPage() {
 
   return (
     <div className="min-h-screen bg-[#f6f7fb]">
+      {/* Mobile Sidebar Backdrop */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 z-[60] bg-black/50 lg:hidden" 
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-black/5 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex h-16 items-center justify-between px-6">
+        <div className="mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setSidebarOpen(true)}
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03] lg:hidden"
+            >
+              <Activity className="h-6 w-6" />
+            </button>
             <Link href="/admin" className="flex items-center gap-3">
               <Image
                 src="/tritee-logo.png"
                 alt="Trite logo"
-                width={120}
-                height={28}
+                width={90}
+                height={22}
                 priority
               />
             </Link>
-            <span className="text-xs font-medium text-[color:var(--trite-muted)]">Financial Architect</span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--trite-muted)]" />
-              <input
-                type="text"
-                placeholder="Global Search..."
-                className="h-10 w-56 rounded-xl border border-black/10 bg-white pl-10 pr-4 text-sm text-[color:var(--trite-ink)] outline-none focus:border-[color:var(--trite-lime-strong)]"
-              />
-            </div>
-            <button className="h-10 rounded-xl border border-black/10 bg-white px-4 text-sm font-medium text-[color:var(--trite-ink)] hover:bg-black/[0.02]">
-              Global Overview
+            <button className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-black/10 bg-white hover:bg-black/[0.02]">
+              <Bell className="h-4 w-4 text-[color:var(--trite-ink)]" />
+              <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-red-500" />
             </button>
-            <button className="h-10 rounded-xl border border-black/10 bg-white px-4 text-sm font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.02]">
-              Audit Trail
-            </button>
-            <button className="h-10 rounded-xl border border-black/10 bg-white px-4 text-sm font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.02]">
-              Generate Payment Link
-            </button>
-            <button className="h-10 rounded-xl bg-blue-600 px-4 text-sm font-medium text-white hover:bg-blue-700">
-              Create Report
-            </button>
-            <div className="flex items-center gap-3 pl-4 border-l border-black/10">
-              <button className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-black/10 bg-white hover:bg-black/[0.02]">
-                <Bell className="h-5 w-5 text-[color:var(--trite-ink)]" />
-              </button>
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
-                <span className="text-sm font-medium text-white">A</span>
-              </div>
+            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-[10px] font-bold text-white">
+              A
             </div>
           </div>
         </div>
@@ -270,7 +263,9 @@ export default function AdminTransactionsPage() {
 
       <div className="flex">
         {/* Sidebar */}
-        <aside className="fixed left-0 top-16 h-[calc(100vh-64px)] w-56 border-r border-black/5 bg-white">
+        <aside className={`fixed left-0 top-16 z-50 h-[calc(100vh-64px)] w-56 border-r border-black/5 bg-white transition-transform duration-300 lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}>
           <div className="flex h-full flex-col">
             <div className="flex-1 overflow-y-auto px-3 py-4">
               <ul className="space-y-1">
@@ -321,13 +316,13 @@ export default function AdminTransactionsPage() {
         </aside>
 
         {/* Main Content */}
-        <main className="ml-56 flex-1 p-5">
+        <main className="flex-1 transition-all duration-300 lg:ml-56 p-5">
           <div className="mx-auto max-w-7xl">
             {/* Page Header */}
             <div className="mb-6">
-              <h1 className="text-2xl font-semibold text-[color:var(--trite-ink)]">Transaction Monitoring</h1>
-              <p className="mt-2 text-sm text-[color:var(--trite-muted)]">
-                Real-time architectural overview of platform liquidity and transaction integrity. Maintain security across 14 merchant channels and cross-border gateways.
+              <h1 className="text-xl font-semibold text-[color:var(--trite-ink)] sm:text-2xl">Monitoring</h1>
+              <p className="mt-2 text-xs text-[color:var(--trite-muted)] sm:text-sm">
+                Real-time platform liquidity and transaction integrity.
               </p>
             </div>
 
@@ -389,29 +384,30 @@ export default function AdminTransactionsPage() {
 
             {/* Live Ledger Table */}
             <div className="mb-6 rounded-xl border border-black/5 bg-white">
-              <div className="flex items-center justify-between border-b border-black/5 px-6 py-4">
+              <div className="flex flex-col gap-4 border-b border-black/5 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h2 className="text-lg font-semibold text-[color:var(--trite-ink)]">Live Ledger</h2>
-                  <p className="text-xs text-[color:var(--trite-muted)]">Showing 1-{Math.min(filteredTransactions.length, rowsPerPage)} of 2,492 transactions</p>
+                  <h2 className="text-lg font-semibold text-[color:var(--trite-ink)]">Ledger</h2>
+                  <p className="text-xs text-[color:var(--trite-muted)]">Live activity stream</p>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-[color:var(--trite-muted)]">
-                  <Calendar className="h-4 w-4" />
-                  Oct 12 - Oct 19, 2023
+                <div className="flex items-center gap-2 text-[10px] font-medium text-[color:var(--trite-muted)] uppercase tracking-wider">
+                  <Calendar className="h-3 w-3" />
+                  Oct 12 - Oct 19
                 </div>
               </div>
 
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-black/5 text-left text-xs font-medium text-[color:var(--trite-muted)] uppercase">
-                    <th className="py-3 px-6">TX ID</th>
-                    <th className="py-3 px-4">User/Merchant</th>
-                    <th className="py-3 px-4">Amount</th>
-                    <th className="py-3 px-4">Currency</th>
-                    <th className="py-3 px-4">Method</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-6">Flag</th>
-                  </tr>
-                </thead>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[1000px]">
+                  <thead>
+                    <tr className="border-b border-black/5 text-left text-xs font-medium text-[color:var(--trite-muted)] uppercase">
+                      <th className="py-3 px-6">TX ID</th>
+                      <th className="py-3 px-4">Entity</th>
+                      <th className="py-3 px-4">Amount</th>
+                      <th className="py-3 px-4">Currency</th>
+                      <th className="py-3 px-4">Method</th>
+                      <th className="py-3 px-4">Status</th>
+                      <th className="py-3 px-6">Flag</th>
+                    </tr>
+                  </thead>
                 <tbody>
                   {filteredTransactions.slice(0, rowsPerPage).map((tx) => (
                     <tr key={tx.id} className="border-b border-black/5 last:border-0 hover:bg-black/[0.02]">
@@ -469,6 +465,7 @@ export default function AdminTransactionsPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
 
               {/* Pagination */}
               <div className="flex items-center justify-between border-t border-black/5 px-6 py-4">

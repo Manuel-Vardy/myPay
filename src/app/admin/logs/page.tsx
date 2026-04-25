@@ -138,6 +138,7 @@ const activityData = [
 
 export default function AdminLogsPage() {
   const [activeTab, setActiveTab] = useState("logs");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLive, setIsLive] = useState(true);
   const [rowsPerPage, setRowsPerPage] = useState(50);
@@ -182,51 +183,41 @@ export default function AdminLogsPage() {
 
   return (
     <div className="min-h-screen bg-[#f6f7fb]">
+      {/* Mobile Sidebar Backdrop */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 z-[60] bg-black/50 lg:hidden" 
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-black/5 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex h-16 items-center justify-between px-6">
+        <div className="mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setSidebarOpen(true)}
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03] lg:hidden"
+            >
+              <Terminal className="h-6 w-6" />
+            </button>
             <Link href="/admin" className="flex items-center gap-3">
               <Image
                 src="/tritee-logo.png"
                 alt="Trite logo"
-                width={120}
-                height={28}
+                width={90}
+                height={22}
                 priority
               />
             </Link>
-            <span className="text-xs font-medium text-[color:var(--trite-muted)]">Financial Architect</span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--trite-muted)]" />
-              <input
-                type="text"
-                placeholder="Search logs, sources, or IPs..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-10 w-56 rounded-xl border border-black/10 bg-white pl-10 pr-4 text-sm text-[color:var(--trite-ink)] outline-none focus:border-[color:var(--trite-lime-strong)]"
-              />
-            </div>
-            <button className="h-10 rounded-xl border border-black/10 bg-white px-4 text-sm font-medium text-[color:var(--trite-ink)] hover:bg-black/[0.02]">
-              Global Overview
+            <button className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-black/10 bg-white hover:bg-black/[0.02]">
+              <Bell className="h-4 w-4 text-[color:var(--trite-ink)]" />
+              <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-red-500" />
             </button>
-            <button className="h-10 rounded-xl border border-black/10 bg-white px-4 text-sm font-medium text-[color:var(--trite-ink)] hover:bg-black/[0.02]">
-              Audit Trail
-            </button>
-            <button className="h-10 rounded-xl bg-[color:var(--trite-ink)] px-4 text-sm font-medium text-white hover:bg-black">
-              Create Report
-            </button>
-            <div className="flex items-center gap-3 pl-4 border-l border-black/10">
-              <button className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-black/10 bg-white hover:bg-black/[0.02]">
-                <Bell className="h-5 w-5 text-[color:var(--trite-ink)]" />
-              </button>
-              <button className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-black/10 bg-white hover:bg-black/[0.02]">
-                <HelpCircle className="h-5 w-5 text-[color:var(--trite-ink)]" />
-              </button>
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
-                <span className="text-sm font-medium text-white">A</span>
-              </div>
+            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-[10px] font-bold text-white">
+              A
             </div>
           </div>
         </div>
@@ -234,7 +225,9 @@ export default function AdminLogsPage() {
 
       <div className="flex">
         {/* Sidebar */}
-        <aside className="fixed left-0 top-16 h-[calc(100vh-64px)] w-56 border-r border-black/5 bg-white">
+        <aside className={`fixed left-0 top-16 z-50 h-[calc(100vh-64px)] w-56 border-r border-black/5 bg-white transition-transform duration-300 lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}>
           <div className="flex h-full flex-col">
             <div className="flex-1 overflow-y-auto px-3 py-4">
               <ul className="space-y-1">
@@ -285,22 +278,18 @@ export default function AdminLogsPage() {
         </aside>
 
         {/* Main Content */}
-        <main className="ml-56 flex-1 p-5">
+        <main className="flex-1 transition-all duration-300 lg:ml-56 p-5">
           <div className="mx-auto max-w-7xl">
             {/* Page Header */}
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h1 className="text-2xl font-semibold text-[color:var(--trite-ink)]">System Logs</h1>
-                <p className="mt-1 text-sm text-[color:var(--trite-muted)]">Real-time security auditing and compliance monitoring engine.</p>
+                <h1 className="text-xl font-semibold text-[color:var(--trite-ink)] sm:text-2xl">System Logs</h1>
+                <p className="mt-1 text-xs text-[color:var(--trite-muted)] sm:text-sm">Real-time auditing engine.</p>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 rounded-lg border border-black/10 bg-white px-3 py-2">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 rounded-lg border border-black/10 bg-white px-3 py-1.5">
                   <span className={`h-2 w-2 rounded-full ${isLive ? "animate-pulse bg-emerald-500" : "bg-gray-400"}`} />
-                  <span className="text-xs font-medium text-[color:var(--trite-muted)]">LIVE FEED</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-lg border border-black/10 bg-white px-3 py-2">
-                  <span className="text-xs font-medium text-[color:var(--trite-muted)]">RETENTION</span>
-                  <span className="text-xs font-semibold text-[color:var(--trite-ink)]">90 Days</span>
+                  <span className="text-[10px] font-bold text-[color:var(--trite-muted)]">LIVE</span>
                 </div>
               </div>
             </div>
@@ -358,39 +347,36 @@ export default function AdminLogsPage() {
 
             {/* Console Output */}
             <div className="mb-6 rounded-xl border border-black/5 bg-white overflow-hidden">
-              <div className="flex items-center justify-between border-b border-black/5 bg-[color:var(--trite-ink)] px-4 py-3">
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-1.5">
-                    <span className="h-3 w-3 rounded-full bg-red-500" />
-                    <span className="h-3 w-3 rounded-full bg-amber-400" />
-                    <span className="h-3 w-3 rounded-full bg-emerald-500" />
+              <div className="flex flex-col gap-4 border-b border-black/5 bg-[color:var(--trite-ink)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex gap-1">
+                    <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
                   </div>
-                  <span className="ml-3 text-xs font-mono text-white/60">CONSOLE OUTPUT — TTY/DEV/LOGS</span>
+                  <span className="text-[10px] font-mono text-white/50 uppercase tracking-widest">Console</span>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                   <button
                     onClick={() => setIsLive(!isLive)}
-                    className="flex items-center gap-1.5 text-xs font-mono text-white/80 hover:text-white"
+                    className="flex items-center gap-1.5 text-[10px] font-mono text-white/80 hover:text-white"
                   >
-                    {isLive ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
-                    {isLive ? "Pause Feed" : "Resume Feed"}
-                  </button>
-                  <button className="flex items-center gap-1.5 text-xs font-mono text-white/80 hover:text-white">
-                    <Download className="h-3.5 w-3.5" />
-                    Export .JSON
+                    {isLive ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+                    {isLive ? "PAUSE" : "RESUME"}
                   </button>
                 </div>
               </div>
 
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-black/5 bg-slate-50 text-left text-xs font-medium text-[color:var(--trite-muted)] uppercase">
-                    <th className="py-3 px-6 font-mono">Timestamp</th>
-                    <th className="py-3 px-4">Level</th>
-                    <th className="py-3 px-4 font-mono">Source</th>
-                    <th className="py-3 px-4">Event Description</th>
-                  </tr>
-                </thead>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[800px]">
+                  <thead>
+                    <tr className="border-b border-black/5 bg-slate-50 text-left text-xs font-medium text-[color:var(--trite-muted)] uppercase">
+                      <th className="py-3 px-6 font-mono">Timestamp</th>
+                      <th className="py-3 px-4">Level</th>
+                      <th className="py-3 px-4 font-mono">Source</th>
+                      <th className="py-3 px-4">Event Description</th>
+                    </tr>
+                  </thead>
                 <tbody className="font-mono text-sm">
                   {filteredLogs.map((log) => (
                     <tr key={log.id} className="border-b border-black/5 last:border-0 hover:bg-black/[0.02]">
@@ -407,6 +393,7 @@ export default function AdminLogsPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
 
               {/* Pagination */}
               <div className="flex items-center justify-between border-t border-black/5 px-6 py-3">

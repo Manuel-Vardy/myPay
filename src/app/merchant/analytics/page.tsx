@@ -47,6 +47,7 @@ const marketHubs = [
 export default function AnalyticsPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("analytics");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const formatGHS = (amount: number) => {
     return new Intl.NumberFormat("en-GH", {
@@ -58,7 +59,17 @@ export default function AnalyticsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#f6f7fb]">
-      <aside className="fixed left-0 top-0 z-40 h-screen w-56 border-r border-black/5 bg-white">
+      {/* Mobile Sidebar Backdrop */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden" 
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <aside className={`fixed left-0 top-0 z-50 h-screen w-56 border-r border-black/5 bg-white transition-transform duration-300 lg:translate-x-0 ${
+        sidebarOpen ? "translate-x-0" : "-translate-x-full"
+      }`}>
         <div className="flex h-full flex-col">
           <div className="flex h-16 items-center border-b border-black/5 px-4">
             <Link href="/" className="flex items-center gap-3">
@@ -118,49 +129,60 @@ export default function AnalyticsPage() {
         </div>
       </aside>
 
-      <main className="ml-56">
+      <main className="transition-all duration-300 lg:ml-56">
         <header className="sticky top-0 z-30 border-b border-black/5 bg-white/80 backdrop-blur">
-          <div className="flex h-16 items-center justify-between px-6">
-            <div className="flex h-10 flex-1 max-w-md items-center gap-2 rounded-lg border border-black/10 bg-white px-3 text-sm text-[color:var(--trite-muted)]">
-              <SearchIcon className="h-4 w-4" />
-              <input
-                placeholder="Search analytics..."
-                className="w-full bg-transparent text-gray-900 outline-none placeholder:text-black/30"
-              />
-            </div>
+          <div className="flex h-16 items-center justify-between px-4 sm:px-6">
             <div className="flex items-center gap-4">
-              <button className="flex h-10 w-10 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]">
-                <BellIcon className="h-5 w-5" />
+              <button 
+                onClick={() => setSidebarOpen(true)}
+                className="flex h-10 w-10 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03] lg:hidden"
+              >
+                <MenuIcon className="h-6 w-6" />
               </button>
-              <button className="flex h-10 w-10 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]">
-                <HelpCircleIcon className="h-5 w-5" />
+              <Link href="/" className="lg:hidden">
+                <Image
+                  src="/tritee-logo.png"
+                  alt="Trite logo"
+                  width={90}
+                  height={22}
+                  priority
+                />
+              </Link>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex h-9 max-w-xs items-center gap-2 rounded-lg border border-black/10 bg-white px-3 text-xs text-[color:var(--trite-muted)] md:flex">
+                <SearchIcon className="h-3.5 w-3.5" />
+                <input placeholder="Search analytics..." className="w-full bg-transparent outline-none" />
+              </div>
+              <button className="flex h-9 w-9 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]">
+                <BellIcon className="h-4 w-4" />
               </button>
-              <div className="flex items-center gap-2 text-sm font-medium text-[color:var(--trite-ink)]">
-                <span>Merchant Dashboard</span>
-                <ChevronDownIcon className="h-4 w-4" />
+              <div className="hidden items-center gap-2 text-xs font-medium text-[color:var(--trite-ink)] sm:flex">
+                <span>Merchant</span>
+                <ChevronDownIcon className="h-3 w-3" />
               </div>
             </div>
           </div>
         </header>
 
         <div className="p-5">
-          <div className="mb-6 flex items-center justify-between">
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <div className="text-xs font-semibold uppercase tracking-wider text-blue-600">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-blue-600">
                 Performance Overview
               </div>
-              <h1 className="text-2xl font-semibold tracking-tight text-[color:var(--trite-ink)]">
+              <h1 className="text-xl font-semibold tracking-tight text-[color:var(--trite-ink)] sm:text-2xl">
                 Institutional Analytics
               </h1>
             </div>
             <div className="flex gap-2">
-              <button className="flex h-10 items-center gap-2 rounded-lg border border-black/10 bg-white px-4 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-black/[0.02]">
-                <FileTextIcon className="h-4 w-4" />
+              <button className="flex h-9 items-center gap-2 rounded-lg border border-black/10 bg-white px-3 text-xs font-semibold text-[color:var(--trite-ink)] hover:bg-black/[0.02]">
+                <FileTextIcon className="h-3.5 w-3.5" />
                 Export PDF
               </button>
-              <button className="flex h-10 items-center gap-2 rounded-lg bg-[color:var(--trite-ink)] px-4 text-sm font-semibold text-white hover:bg-black">
-                <DownloadIcon className="h-4 w-4" />
-                Export CSV
+              <button className="flex h-9 items-center gap-2 rounded-lg bg-[color:var(--trite-ink)] px-3 text-xs font-semibold text-white hover:bg-black">
+                <DownloadIcon className="h-3.5 w-3.5" />
+                CSV
               </button>
             </div>
           </div>
@@ -360,11 +382,12 @@ export default function AnalyticsPage() {
               <h2 className="text-lg font-semibold text-[color:var(--trite-ink)]">
                 Settlement Reports
               </h2>
-              <button className="text-sm font-medium text-blue-600 hover:underline">
-                View all schedules
+              <button className="text-xs font-medium text-blue-600 hover:underline">
+                View all
               </button>
             </div>
-            <table className="w-full">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[700px]">
               <thead>
                 <tr className="border-b border-black/5 text-left">
                   <th className="pb-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
@@ -416,6 +439,7 @@ export default function AnalyticsPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
       </main>
@@ -462,6 +486,14 @@ function UsersIcon({ className }: { className?: string }) {
       <circle cx="9" cy="7" r="4" />
       <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
       <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
+
+function MenuIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
     </svg>
   );
 }

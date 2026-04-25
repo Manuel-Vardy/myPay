@@ -70,6 +70,7 @@ const demoSubscriptions = [
 export default function SubscriptionsPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("subscriptions");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filter, setFilter] = useState<"all" | "active" | "paused" | "canceled">("all");
 
   const formatUSD = (amount: number) => {
@@ -85,7 +86,17 @@ export default function SubscriptionsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#f6f7fb]">
-      <aside className="fixed left-0 top-0 z-40 h-screen w-56 border-r border-black/5 bg-white">
+      {/* Mobile Sidebar Backdrop */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden" 
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <aside className={`fixed left-0 top-0 z-50 h-screen w-56 border-r border-black/5 bg-white transition-transform duration-300 lg:translate-x-0 ${
+        sidebarOpen ? "translate-x-0" : "-translate-x-full"
+      }`}>
         <div className="flex h-full flex-col">
           <div className="flex h-16 items-center border-b border-black/5 px-4">
             <Link href="/" className="flex items-center gap-3">
@@ -145,41 +156,51 @@ export default function SubscriptionsPage() {
         </div>
       </aside>
 
-      <main className="ml-56">
+      <main className="transition-all duration-300 lg:ml-56">
         <header className="sticky top-0 z-30 border-b border-black/5 bg-white/80 backdrop-blur">
-          <div className="flex h-16 items-center justify-between px-6">
-            <div className="flex h-10 flex-1 max-w-md items-center gap-2 rounded-lg border border-black/10 bg-white px-3 text-sm text-[color:var(--trite-muted)]">
-              <SearchIcon className="h-4 w-4" />
-              <input
-                placeholder="Search subscriptions..."
-                className="w-full bg-transparent text-gray-900 outline-none placeholder:text-black/30"
-              />
-            </div>
+          <div className="flex h-16 items-center justify-between px-4 sm:px-6">
             <div className="flex items-center gap-4">
-              <button className="flex h-10 w-10 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]">
-                <PlusIcon className="h-5 w-5" />
+              <button 
+                onClick={() => setSidebarOpen(true)}
+                className="flex h-10 w-10 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03] lg:hidden"
+              >
+                <MenuIcon className="h-6 w-6" />
               </button>
-              <div className="flex items-center gap-2 text-sm font-medium text-[color:var(--trite-ink)]">
-                <span>Kwame Asante</span>
-                <ChevronDownIcon className="h-4 w-4" />
+              <Link href="/" className="lg:hidden">
+                <Image
+                  src="/tritee-logo.png"
+                  alt="Trite logo"
+                  width={90}
+                  height={22}
+                  priority
+                />
+              </Link>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex h-9 max-w-xs items-center gap-2 rounded-lg border border-black/10 bg-white px-3 text-xs text-[color:var(--trite-muted)] md:flex">
+                <SearchIcon className="h-3.5 w-3.5" />
+                <input placeholder="Search..." className="w-full bg-transparent outline-none" />
               </div>
+              <button className="flex h-9 w-9 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]">
+                <PlusIcon className="h-4 w-4" />
+              </button>
             </div>
           </div>
         </header>
 
         <div className="p-5">
-          <div className="mb-6 flex items-end justify-between">
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <div className="text-xs font-semibold uppercase tracking-wider text-green-600">Stablecoin Yield</div>
-              <h1 className="text-2xl font-semibold tracking-tight text-[color:var(--trite-ink)]">
-                Manage Subscriptions
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-green-600">Stablecoin Yield</div>
+              <h1 className="text-xl font-semibold tracking-tight text-[color:var(--trite-ink)] sm:text-2xl">
+                Subscriptions
               </h1>
-              <p className="mt-2 text-sm text-[color:var(--trite-muted)]">
-                Real-time overview of your recurring institutional revenue via stablecoins.
+              <p className="mt-1 text-xs text-[color:var(--trite-muted)] sm:text-sm">
+                Recurring institutional revenue via stablecoins.
               </p>
             </div>
             <div className="flex gap-2">
-              <button className="flex h-10 items-center gap-2 rounded-lg border border-black/10 bg-white px-4 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-black/[0.02]">
+              <button className="flex h-9 items-center gap-2 rounded-lg bg-[color:var(--trite-ink)] px-3 text-xs font-semibold text-white hover:bg-black">
                 New Plan
               </button>
             </div>
@@ -187,25 +208,25 @@ export default function SubscriptionsPage() {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
-              <div className="text-sm font-medium text-[color:var(--trite-muted)]">Monthly Recurring Revenue (MRR)</div>
-              <div className="mt-2 text-2xl font-semibold text-[color:var(--trite-ink)]">
+              <div className="text-xs font-medium text-[color:var(--trite-muted)]">MRR</div>
+              <div className="mt-1 text-xl font-semibold text-[color:var(--trite-ink)]">
                 {formatUSD(48250.00)}
               </div>
-              <div className="mt-1 text-xs text-green-600">↑ 8.4% from last month</div>
+              <div className="mt-1 text-[10px] text-green-600">↑ 8.4%</div>
             </div>
             <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
-              <div className="text-sm font-medium text-[color:var(--trite-muted)]">Active Subscribers</div>
-              <div className="mt-2 text-2xl font-semibold text-[color:var(--trite-ink)]">
+              <div className="text-xs font-medium text-[color:var(--trite-muted)]">Subscribers</div>
+              <div className="mt-1 text-xl font-semibold text-[color:var(--trite-ink)]">
                 124
               </div>
-              <div className="mt-1 text-xs text-[color:var(--trite-muted)]">Stable retention</div>
+              <div className="mt-1 text-[10px] text-[color:var(--trite-muted)]">Stable</div>
             </div>
             <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
-              <div className="text-sm font-medium text-[color:var(--trite-muted)]">Churn Rate</div>
-              <div className="mt-2 text-2xl font-semibold text-[color:var(--trite-ink)]">
+              <div className="text-xs font-medium text-[color:var(--trite-muted)]">Churn</div>
+              <div className="mt-1 text-xl font-semibold text-[color:var(--trite-ink)]">
                 0.82%
               </div>
-              <div className="mt-1 text-xs text-green-600">Exceptional performance</div>
+              <div className="mt-1 text-[10px] text-green-600">Excellent</div>
             </div>
           </div>
 
@@ -227,7 +248,8 @@ export default function SubscriptionsPage() {
                 </div>
               </div>
             </div>
-            <table className="w-full">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[800px]">
               <thead>
                 <tr className="text-left border-b border-black/5">
                   <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-[color:var(--trite-muted)]">Customer</th>
@@ -273,6 +295,7 @@ export default function SubscriptionsPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
       </main>
@@ -374,6 +397,14 @@ function MoreHorizontalIcon({ className }: { className?: string }) {
       <circle cx="12" cy="12" r="1" />
       <circle cx="19" cy="12" r="1" />
       <circle cx="5" cy="12" r="1" />
+    </svg>
+  );
+}
+
+function MenuIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
     </svg>
   );
 }
