@@ -21,8 +21,9 @@ export default function Home() {
             <Image
               src="/tritee-logo.png"
               alt="Trite logo"
-              width={120}
-              height={28}
+              width={100}
+              height={24}
+              className="w-[90px] sm:w-[120px]"
               priority
             />
           </div>
@@ -30,11 +31,11 @@ export default function Home() {
           <nav className="hidden items-center gap-6 text-sm font-medium text-[color:var(--trite-muted)] md:flex">
           </nav>
 
-          <div className="flex items-center gap-2">
-            <AnimatedButton href="/login" outline={false} className="p-0">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <AnimatedButton href="/login" variant="ghost" className="px-2 sm:px-4">
               Sign in
             </AnimatedButton>
-            <AnimatedButton href="/get-started" outline={true} className="p-0">
+            <AnimatedButton href="/get-started" variant="primary" className="px-3 sm:px-4">
               Get Started
             </AnimatedButton>
           </div>
@@ -44,7 +45,7 @@ export default function Home() {
       <main>
         <section className="relative overflow-hidden bg-black">
           <CanvasAnimation />
-          <div className="relative z-10 mx-auto max-w-6xl px-4 py-24 sm:px-6 sm:py-32">
+          <div className="relative z-10 mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-32">
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold text-white/70 backdrop-blur">
                 <span
@@ -64,13 +65,13 @@ export default function Home() {
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link
-                  className="inline-flex h-12 items-center justify-center rounded-full border border-white/20 bg-white/10 px-8 text-sm font-semibold text-white backdrop-blur hover:bg-white/20"
+                  className="inline-flex h-11 sm:h-12 items-center justify-center rounded-full border border-white/20 bg-white/10 px-8 text-sm font-semibold text-white backdrop-blur hover:bg-white/20"
                   href="/login"
                 >
                   Merchant Signup
                 </Link>
                 <Link
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[color:var(--trite-lime-strong)] px-8 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-[color:var(--trite-lime)]"
+                  className="inline-flex h-11 sm:h-12 items-center justify-center gap-2 rounded-full bg-[color:var(--trite-lime-strong)] px-8 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-[color:var(--trite-lime)]"
                   href="/connect"
                 >
                   <WalletIcon className="h-5 w-5" />

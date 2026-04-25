@@ -5,29 +5,39 @@ interface AnimatedButtonProps {
   href?: string;
   children?: React.ReactNode;
   className?: string;
-  outline?: boolean;
+  variant?: "primary" | "outline" | "ghost";
 }
 
 export const Component = ({ 
   href = "#", 
-  children = "Animation Button", 
+  children = "Button", 
   className,
-  outline = true 
+  variant = "primary" 
 }: AnimatedButtonProps) => {
+  const variants = {
+    primary: "bg-[color:var(--trite-ink)] text-white hover:bg-black/90",
+    outline: "border border-[color:var(--trite-ink)] text-[color:var(--trite-ink)] hover:bg-[color:var(--trite-ink)] hover:text-white",
+    ghost: "text-[color:var(--trite-ink)] hover:bg-black/5",
+  };
+
   return (
-    <div className={cn("flex flex-col items-center gap-4", className)}>
-      <Link 
-        href={href} 
-        className={cn(
-          "relative inline-flex items-center justify-start px-6 py-2 overflow-hidden font-medium transition-all bg-white rounded-full hover:bg-white group",
-          outline ? "outline outline-1 outline-black" : ""
-        )}
-      >
-        <span className="w-48 h-48 rounded-full rotate-[-40deg] bg-black absolute bottom-0 left-0 -translate-x-full ease-out duration-500 transition-all translate-y-full mb-9 ml-9 group-hover:ml-0 group-hover:mb-32 group-hover:translate-x-0"></span>
-        <span className="relative w-full text-left text-black transition-colors duration-300 ease-in-out group-hover:text-white">
-          {children}
-        </span>
-      </Link>
-    </div>
+    <Link 
+      href={href} 
+      className={cn(
+        "relative inline-flex items-center justify-center px-4 py-1.5 overflow-hidden text-sm font-semibold transition-all rounded-full group",
+        variants[variant],
+        className
+      )}
+    >
+      <span className="relative z-10 flex items-center gap-1.5">
+        {children}
+      </span>
+      
+      {/* Subtle modern animation overlay */}
+      {variant !== "ghost" && (
+        <span className="absolute inset-0 block h-full w-full bg-white/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      )}
+    </Link>
   );
 };
+
