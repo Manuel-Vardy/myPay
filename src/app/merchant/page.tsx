@@ -4,290 +4,98 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { useMerchantFetch } from "@/lib/hooks/useMerchantFetch";
 
-const sidebarItems = [
-  { id: "dashboard", label: "Dashboard", href: "/merchant", icon: LayoutGridIcon },
-  { id: "analytics", label: "Analytics", href: "/merchant/analytics", icon: BarChartIcon },
-  { id: "transactions", label: "Transactions", href: "/merchant/transactions", icon: ReceiptIcon },
-  { id: "subscriptions", label: "Subscriptions", href: "/merchant/subscriptions", icon: RefreshCcwIcon },
-  { id: "customers", label: "Customers", href: "/merchant/customers", icon: UsersIcon },
-  { id: "settings", label: "Settings", href: "/merchant/settings", icon: SettingsIcon },
-];
 
-const demoTransactions = [
-  {
-    id: "TRX-8821-XL-81",
-    date: "Oct 24, 2023",
-    time: "14:23 UTC",
-    method: "Visa ending in 4421",
-    status: "success",
-    amount: 450.0,
-    type: "deposit",
-  },
-  {
-    id: "TRX-1382-ZN-99",
-    date: "Oct 24, 2023",
-    time: "12:05 UTC",
-    method: "BTC Lightning",
-    status: "success",
-    amount: 1200.5,
-    type: "deposit",
-  },
-  {
-    id: "TRX-4429-LX-12",
-    date: "Oct 23, 2023",
-    time: "22:18 UTC",
-    method: "USDC (ERC-20)",
-    status: "pending",
-    amount: 3000.0,
-    type: "withdrawal",
-  },
-  {
-    id: "TRX-9912-BN-44",
-    date: "Oct 23, 2023",
-    time: "09:15 UTC",
-    method: "Mobile Money",
-    status: "success",
-    amount: 2600.0,
-    type: "deposit",
-  },
-  {
-    id: "TRX-7733-KP-88",
-    date: "Oct 22, 2023",
-    time: "16:30 UTC",
-    method: "Bank Transfer",
-    status: "success",
-    amount: 500.0,
-    type: "transfer",
-  },
-];
+
+type DashboardData = {
+  available_balance: number;
+  balance_currency: string;
+  daily_volume: number;
+  total_transactions: number;
+  gateway_health: "OPERATIONAL" | "DEGRADED" | "DOWN";
+  merchant: { business_name: string; merchant_display_id: string; tier: string };
+  stablecoin_holdings: { USDC: number; USDT: number; Total: number };
+  revenue_chart: {
+    day: { label: string; value: number }[];
+    week: { label: string; value: number }[];
+    month: { label: string; value: number }[];
+    year: { label: string; value: number }[];
+  };
+};
+
+type TxRow = {
+  id: string;
+  tx_id_display: string;
+  method: string;
+  status: string;
+  amount: number;
+  created_at: string;
+};
+
+type SettlementRow = {
+  id: string;
+  settlement_id_display: string;
+  gross_amount: number;
+  fees: number;
+  method: string;
+  net_amount: number;
+  status: string;
+  date_range_start: string;
+  date_range_end: string;
+};
+
+const formatGHS = (amount: number) => {
+  return new Intl.NumberFormat("en-GH", {
+    style: "currency",
+    currency: "GHS",
+    minimumFractionDigits: 2,
+  }).format(amount);
+};
 
 export default function DashboardPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
-  const [ledgerModalOpen, setLedgerModalOpen] = useState(false);
   const [withdrawMethod, setWithdrawMethod] = useState("bank");
   const [txFilter, setTxFilter] = useState<"all" | "fiat" | "stablecoin" | "crypto">("all");
   const [txStatus, setTxStatus] = useState<"all" | "success" | "pending" | "failed">("all");
   const [txSearch, setTxSearch] = useState("");
   const [dateRange, setDateRange] = useState<"7d" | "30d" | "90d" | "all">("30d");
-  const [ledgerFilter, setLedgerFilter] = useState<"all" | "deposits" | "withdrawals" | "transfers">("all");
   const [chartPeriod, setChartPeriod] = useState<"day" | "week" | "month" | "year">("week");
   const [convertModalOpen, setConvertModalOpen] = useState(false);
-  const [highContrast, setHighContrast] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  // Persistence for high contrast
-  useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("high-contrast") === "true";
-      setHighContrast(saved);
-      if (saved) document.documentElement.classList.add("high-contrast");
-    }
-  });
-
-  const toggleHighContrast = () => {
-    const newVal = !highContrast;
-    setHighContrast(newVal);
-    localStorage.setItem("high-contrast", String(newVal));
-    if (newVal) document.documentElement.classList.add("high-contrast");
-    else document.documentElement.classList.remove("high-contrast");
-  };
-  const [convertFrom, setConvertFrom] = useState<"USDC" | "USDT">("USDC");
-  const [exchangeRate, setExchangeRate] = useState(15.5);
   const [convertAmount, setConvertAmount] = useState("");
-  const [ghsAmount, setGhsAmount] = useState("");
+  const [convertFrom, setConvertFrom] = useState<"USDC" | "USDT">("USDC");
 
-  const FEE_PERCENT = 0.005; // 0.5% conversion fee
+  const { data: dashData } = useMerchantFetch<DashboardData>("/api/merchant/dashboard");
+  const { data: txData } = useMerchantFetch<{ data: TxRow[] }>("/api/merchant/transactions", { per_page: "10" });
+  const { data: settlementData } = useMerchantFetch<{ data: SettlementRow[] }>("/api/merchant/settlements");
 
-  const handleUsdChange = (val: string) => {
-    setConvertAmount(val);
-    if (!val || isNaN(Number(val))) {
-      setGhsAmount("");
-      return;
-    }
-    const ghs = Number(val) * exchangeRate * (1 - FEE_PERCENT);
-    setGhsAmount(ghs.toFixed(2));
-  };
-
-  const handleGhsChange = (val: string) => {
-    setGhsAmount(val);
-    if (!val || isNaN(Number(val))) {
-      setConvertAmount("");
-      return;
-    }
-    const usd = Number(val) / (exchangeRate * (1 - FEE_PERCENT));
-    setConvertAmount(usd.toFixed(2));
-  };
-
-  const handleRateChange = (val: string) => {
-    const rate = Number(val);
-    setExchangeRate(rate);
-    if (convertAmount && !isNaN(rate)) {
-      const ghs = Number(convertAmount) * rate * (1 - FEE_PERCENT);
-      setGhsAmount(ghs.toFixed(2));
-    }
-  };
-
-  const formatGHS = (amount: number) => {
-    return new Intl.NumberFormat("en-GH", {
-      style: "currency",
-      currency: "GHS",
-      minimumFractionDigits: 2,
-    }).format(amount);
-  };
+  const transactions = txData?.data ?? [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-[#f6f7fb]">
-      {/* Mobile Sidebar Backdrop */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden" 
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      <aside className={`fixed left-0 top-0 z-50 h-screen w-56 border-r border-black/5 bg-white transition-transform duration-300 lg:translate-x-0 ${
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      }`}>
-        <div className="flex h-full flex-col">
-          <div className="flex h-16 items-center border-b border-black/5 px-4">
-            <Link href="/" className="flex items-center gap-3">
-              <Image
-                src="/tritee-logo.png"
-                alt="Trite logo"
-                width={120}
-                height={28}
-                priority
-              />
-            </Link>
-          </div>
-
-          <nav className="flex-1 overflow-y-auto px-3 py-4">
-            <ul className="space-y-1">
-              {sidebarItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <li key={item.id}>
-                    <button
-                      onClick={() => {
-                        if (item.id === "analytics") {
-                          router.push("/merchant/analytics");
-                        } else if (item.id === "transactions") {
-                          router.push("/merchant/transactions");
-                        } else if (item.id === "customers") {
-                          router.push("/merchant/customers");
-                        } else if (item.id === "subscriptions") {
-                          router.push("/merchant/subscriptions");
-                        } else {
-                          setActiveTab(item.id);
-                          router.push(item.href);
-                        }
-                      }}
-                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                        isActive
-                          ? "bg-[color:var(--trite-lime)] text-[color:var(--trite-ink)]"
-                          : "text-[color:var(--trite-muted)] hover:bg-black/[0.03] hover:text-[color:var(--trite-ink)]"
-                      }`}
-                    >
-                      <Icon className="h-5 w-5" />
-                      {item.label}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
-
-          <div className="px-3 py-2">
-            <button
-              onClick={toggleHighContrast}
-              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-semibold transition-colors ${
-                highContrast
-                  ? "bg-black text-white hover:bg-zinc-800"
-                  : "text-[color:var(--trite-muted)] hover:bg-black/[0.03] hover:text-[color:var(--trite-ink)]"
-              }`}
-            >
-              <WindIcon className="h-4 w-4" />
-              {highContrast ? "Standard Contrast" : "High Contrast Mode"}
-            </button>
-          </div>
-
-          <div className="border-t border-black/5 p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--trite-ink)]">
-                <span className="text-sm font-semibold text-white">KA</span>
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-[color:var(--trite-ink)]">
-                  Kwame Asante
-                </div>
-                <div className="text-xs text-[color:var(--trite-muted)]">
-                  Merchant Account
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      <main className="transition-all duration-300 lg:ml-56">
-        <header className="sticky top-0 z-30 border-b border-black/5 bg-white/80 backdrop-blur">
-          <div className="flex h-16 items-center justify-between px-4 sm:px-6">
-            <div className="flex items-center gap-4">
-              <button 
-                onClick={() => setSidebarOpen(true)}
-                className="flex h-10 w-10 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03] lg:hidden"
-              >
-                <MenuIcon className="h-6 w-6" />
-              </button>
-              <Link href="/" className="lg:hidden">
-                <Image
-                  src="/tritee-logo.png"
-                  alt="Trite logo"
-                  width={90}
-                  height={22}
-                  priority
-                />
-              </Link>
-            </div>
-            <div className="flex items-center gap-4">
-              <Link
-                href="#"
-                className="text-xs font-medium text-blue-600 hover:underline sm:text-sm"
-              >
-                Merchant
-              </Link>
-            </div>
-          </div>
-        </header>
-
-        <div className="p-5">
-          <div className="mb-6">
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold tracking-tight text-[color:var(--trite-ink)]">
-                Welcome back, Merchant.
-              </h1>
-              <VerifiedBadge className="h-6 w-6 mt-1" />
-            </div>
+    <>
+        <div className="px-4 py-5 sm:p-6">
+          <div className="mb-8">
+            <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--trite-ink)]">
+              Welcome back, Merchant.
+            </h1>
             <p className="mt-2 text-sm text-[color:var(--trite-muted)]">
               Your institutional portal is ready. Global markets are stable, and your
               transaction success rate is currently exceeding the 98th percentile.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <div className="rounded-xl bg-gradient-to-br from-[#1a1f2e] to-[#0f1419] p-5 text-white">
+              <div className="rounded-2xl bg-gradient-to-br from-[#1a1f2e] to-[#0f1419] p-6 text-white">
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="text-[11px] font-semibold uppercase tracking-wide text-white/60">
                       Available Institutional Balance
                     </div>
                     <div className="mt-2 flex items-baseline gap-1">
-                      <span className="text-2xl font-bold sm:text-4xl">{formatGHS(1250)}</span>
+                      <span className="text-2xl font-bold sm:text-4xl">{formatGHS(dashData?.available_balance ?? 0)}</span>
                     </div>
                   </div>
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
@@ -303,19 +111,40 @@ export default function DashboardPage() {
                     Withdraw Funds
                   </button>
                   <button
-                    onClick={() => setLedgerModalOpen(true)}
+                    onClick={() => router.push("/merchant/transactions")}
                     className="inline-flex h-10 items-center justify-center rounded-lg border border-white/20 bg-white/10 px-4 text-sm font-semibold text-white hover:bg-white/20"
                     type="button"
                   >
-                    View Ledger
+                    View Transactions
                   </button>
                 </div>
+              </div>
+
+              <div className="mt-6 rounded-2xl bg-[color:var(--trite-ink)] p-6 text-white ring-1 ring-black/10">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="text-sm font-medium text-white/60">Settlement Status</div>
+                    <div className="mt-2 text-2xl font-bold">Next: Today 18:00</div>
+                    <p className="mt-2 text-xs leading-5 text-white/60">
+                      Auto-settlement to GCB Bank account ending in 4421. Expected: {formatGHS(dashData ? Math.max(0, dashData.available_balance * 0.985) : 0)}
+                    </p>
+                  </div>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
+                    <HistoryIcon className="h-5 w-5 text-white" />
+                  </div>
+                </div>
+                <button 
+                  onClick={() => router.push("/merchant/settlements")}
+                  className="mt-4 inline-flex h-9 items-center justify-center rounded-lg bg-[color:var(--trite-lime-strong)] px-4 text-xs font-semibold text-[color:var(--trite-ink)] hover:bg-[color:var(--trite-lime)]"
+                >
+                  Manage Settlements
+                </button>
               </div>
             </div>
 
             <div className="space-y-4">
               {/* Stablecoin Balance Card */}
-              <div className="rounded-xl bg-gradient-to-br from-green-50 to-teal-50 p-5 ring-1 ring-green-200">
+              <div className="rounded-2xl bg-gradient-to-br from-green-50 to-teal-50 p-5 ring-1 ring-green-200">
                 <div className="flex items-center justify-between">
                   <div className="text-sm font-medium text-green-800">
                     Stablecoin Holdings
@@ -327,21 +156,27 @@ export default function DashboardPage() {
                 <div className="mt-3 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-green-700">USDC</span>
-                    <span className="text-sm font-semibold text-green-900">$12,450.00</span>
+                    <span className="text-sm font-semibold text-green-900">
+                      ${(dashData?.stablecoin_holdings?.USDC ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-green-700">USDT</span>
-                    <span className="text-sm font-semibold text-green-900">$8,230.50</span>
+                    <span className="text-sm font-semibold text-green-900">
+                      ${(dashData?.stablecoin_holdings?.USDT ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
                   </div>
                   <div className="mt-2 border-t border-green-200 pt-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-medium text-green-800">Total</span>
-                      <span className="text-lg font-semibold text-green-900">$20,680.50</span>
+                      <span className="text-lg font-semibold text-green-900">
+                        ${(dashData?.stablecoin_holdings?.Total ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
                     </div>
                   </div>
                 </div>
                 <div className="mt-3 flex gap-2">
-                  <button 
+                  <button
                     onClick={() => setConvertModalOpen(true)}
                     className="flex-1 rounded-lg bg-green-600 py-1.5 text-xs font-medium text-white hover:bg-green-700"
                   >
@@ -350,7 +185,7 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
+              <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
                 <div className="flex items-center justify-between">
                   <div className="text-sm font-medium text-[color:var(--trite-muted)]">
                     Daily Volume
@@ -360,7 +195,7 @@ export default function DashboardPage() {
                   </span>
                 </div>
                 <div className="mt-2 text-2xl font-semibold text-[color:var(--trite-ink)]">
-                  {formatGHS(48902)}
+                  {formatGHS(dashData?.daily_volume ?? 0)}
                 </div>
                 <div className="mt-2 h-2 w-full rounded-full bg-black/[0.04]">
                   <div className="h-2 w-3/4 rounded-full bg-blue-500" />
@@ -368,29 +203,28 @@ export default function DashboardPage() {
                 <div className="mt-1 text-xs text-[color:var(--trite-muted)]">Last 24h</div>
               </div>
 
-              <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
+              <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
                 <div className="flex items-center justify-between">
                   <div className="text-sm font-medium text-[color:var(--trite-muted)]">
                     Success Rate
                   </div>
                   <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[color:var(--trite-lime)]">
-                    <CheckIcon className="h-4 w-4 text-[color:var(--trite-ink)]" />
+                    <CheckIcon className="h-4 w-4 text-green-600" />
                   </div>
                 </div>
                 <div className="mt-2 flex items-baseline gap-2">
-                  <span className="text-2xl font-semibold text-[color:var(--trite-ink)]">
-                    99.2%
+                  <span className="text-xl font-semibold text-[color:var(--trite-ink)]">
+                    {dashData?.gateway_health ?? "—"}
                   </span>
-                  <span className="text-xs text-[color:var(--trite-muted)]">Average</span>
                 </div>
-                <div className="mt-1 text-xs text-[color:var(--trite-lime-strong)]">
-                  Exceptional operational stability detected
+                <div className="mt-1 text-xs text-[color:var(--trite-muted)]">
+                  Stability detected
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 rounded-xl bg-white p-5 ring-1 ring-black/5">
+          <div className="mt-6 rounded-2xl bg-white p-6 ring-1 ring-black/5">
             {/* Enhanced Filters */}
             <div className="mb-4 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
               <div className="flex flex-1 items-center gap-2 rounded-lg border border-black/10 px-3 py-1.5 focus-within:border-[color:var(--trite-lime-strong)]">
@@ -443,9 +277,8 @@ export default function DashboardPage() {
                 View All
               </button>
             </div>
-
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[600px]">
+            <table className="w-full min-w-[600px]">
               <thead>
                 <tr className="border-b border-black/5 text-left">
                   <th className="pb-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
@@ -466,43 +299,32 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="text-sm">
-                {demoTransactions
+                {transactions
                   .filter((tx) => {
-                    // Search filter
-                    if (txSearch && !tx.id.toLowerCase().includes(txSearch.toLowerCase()) && 
-                        !tx.method.toLowerCase().includes(txSearch.toLowerCase())) {
-                      return false;
-                    }
-                    // Currency filter
-                    if (txFilter === "stablecoin" && !tx.method.includes("USDC") && !tx.method.includes("USDT")) {
-                      return false;
-                    }
-                    if (txFilter === "fiat" && (tx.method.includes("USDC") || tx.method.includes("USDT") || tx.method.includes("BTC"))) {
-                      return false;
-                    }
-                    if (txFilter === "crypto" && !tx.method.includes("BTC")) {
-                      return false;
-                    }
-                    // Status filter
-                    if (txStatus !== "all" && tx.status !== txStatus) {
-                      return false;
-                    }
+                    if (txSearch && !tx.tx_id_display.toLowerCase().includes(txSearch.toLowerCase()) &&
+                        !tx.method.toLowerCase().includes(txSearch.toLowerCase())) return false;
+                    if (txFilter === "stablecoin" && tx.method !== "CRYPTO" && tx.method !== "DIGITAL_WALLET") return false;
+                    if (txFilter === "fiat" && (tx.method === "CRYPTO" || tx.method === "DIGITAL_WALLET")) return false;
+                    if (txFilter === "crypto" && tx.method !== "CRYPTO") return false;
+                    if (txStatus !== "all" && tx.status.toLowerCase() !== txStatus) return false;
                     return true;
                   })
-                  .map((tx) => (
+                  .map((tx) => {
+                    const d = new Date(tx.created_at);
+                    return (
                   <tr key={tx.id} className="border-b border-black/5 last:border-b-0">
                     <td className="py-4">
                       <div className="font-medium text-[color:var(--trite-ink)]">
-                        {tx.date}
+                        {d.toLocaleDateString("en-GH", { month: "short", day: "numeric", year: "numeric" })}
                       </div>
-                      <div className="text-xs text-[color:var(--trite-muted)]">{tx.time}</div>
+                      <div className="text-xs text-[color:var(--trite-muted)]">{d.toLocaleTimeString("en-GH", { hour: "2-digit", minute: "2-digit" })} UTC</div>
                     </td>
-                    <td className="py-4 text-[color:var(--trite-muted)]">{tx.id}</td>
+                    <td className="py-4 text-[color:var(--trite-muted)]">{tx.tx_id_display}</td>
                     <td className="py-4">
                       <div className="flex items-center gap-2">
-                        {tx.method.includes("Visa") ? (
+                        {tx.method === "CARD" ? (
                           <CreditCardIcon className="h-4 w-4 text-blue-500" />
-                        ) : tx.method.includes("BTC") ? (
+                        ) : tx.method === "CRYPTO" ? (
                           <CoinIcon className="h-4 w-4 text-orange-500" />
                         ) : tx.method.includes("USDC") ? (
                           <div className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100">
@@ -531,9 +353,9 @@ export default function DashboardPage() {
                     <td className="py-4">
                       <span
                         className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
-                          tx.status === "success"
+                          tx.status === "SUCCESS"
                             ? "bg-[color:var(--trite-lime)]/20 text-[color:var(--trite-ink)]"
-                            : tx.status === "pending"
+                            : tx.status === "PROCESSING" || tx.status === "PENDING"
                             ? "bg-yellow-100 text-yellow-700"
                             : "bg-red-100 text-red-700"
                         }`}
@@ -545,14 +367,15 @@ export default function DashboardPage() {
                       {formatGHS(tx.amount)}
                     </td>
                   </tr>
-                ))}
+                    );
+                  })}
               </tbody>
             </table>
             </div>
           </div>
 
           {/* Revenue Bar Chart */}
-          <div className="mt-6 rounded-xl bg-white p-5 ring-1 ring-black/5">
+          <div className="mt-6 rounded-2xl bg-white p-6 ring-1 ring-black/5">
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-[color:var(--trite-ink)]">Revenue Overview</h2>
@@ -574,11 +397,11 @@ export default function DashboardPage() {
                 ))}
               </div>
             </div>
-            <BarChart period={chartPeriod} />
+            <BarChart period={chartPeriod} data={dashData?.revenue_chart?.[chartPeriod] ?? []} />
           </div>
 
           <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <div className="rounded-xl bg-gradient-to-br from-[#eef2ff] to-[#e0e7ff] p-5 ring-1 ring-black/5">
+            <div className="rounded-2xl bg-gradient-to-br from-[#eef2ff] to-[#e0e7ff] p-5 ring-1 ring-black/5">
               <div className="text-sm font-semibold text-[color:var(--trite-ink)]">
                 Merchant Intelligence
               </div>
@@ -592,7 +415,7 @@ export default function DashboardPage() {
               </button>
             </div>
 
-            <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
+            <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
                   <ShieldCheckIcon className="h-5 w-5 text-blue-600" />
@@ -611,7 +434,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
+            <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--trite-lime)]">
                   <KeyIcon className="h-5 w-5 text-[color:var(--trite-ink)]" />
@@ -621,7 +444,7 @@ export default function DashboardPage() {
                     API Key Health
                   </div>
                   <div className="text-sm font-semibold text-[color:var(--trite-ink)]">
-                    9 Active Keys
+                    {dashData ? `${dashData.total_transactions} Transactions` : "—"}
                   </div>
                   <div className="text-xs text-[color:var(--trite-muted)]">
                     Last rotated 12 days ago
@@ -631,12 +454,11 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-      </main>
 
       {/* Withdraw Funds Modal */}
       {withdrawModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-xl bg-white p-5 shadow-2xl">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-xl font-semibold text-[color:var(--trite-ink)]">Withdraw Funds</h2>
               <button
@@ -649,7 +471,7 @@ export default function DashboardPage() {
 
             <div className="mb-6 rounded-xl bg-gray-50 p-4">
               <div className="text-xs text-[color:var(--trite-muted)]">Available Balance</div>
-              <div className="text-2xl font-bold text-[color:var(--trite-ink)]">{formatGHS(1250)}</div>
+              <div className="text-2xl font-bold text-[color:var(--trite-ink)]">{formatGHS(dashData?.available_balance ?? 0)}</div>
             </div>
 
             <div className="space-y-4">
@@ -756,209 +578,11 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* View Ledger / Settlement Reports Modal */}
-      {ledgerModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-4xl rounded-xl bg-white p-5 shadow-2xl max-h-[85vh] overflow-y-auto">
-            <div className="mb-6 flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-semibold text-[color:var(--trite-ink)]">Settlement Reports</h2>
-                <p className="text-xs text-[color:var(--trite-muted)]">View your complete transaction and settlement history</p>
-              </div>
-              <button
-                onClick={() => setLedgerModalOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]"
-              >
-                <XIcon className="h-5 w-5" />
-              </button>
-            </div>
 
-            {/* Settlement Summary Cards */}
-            <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-4">
-              <div className="rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 p-4 ring-1 ring-blue-100">
-                <div className="text-xs font-medium text-blue-700">Total Settlements</div>
-                <div className="mt-1 text-xl font-bold text-blue-900">{formatGHS(45280)}</div>
-                <div className="mt-1 text-[10px] text-blue-600">24 transactions</div>
-              </div>
-              <div className="rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 p-4 ring-1 ring-green-100">
-                <div className="text-xs font-medium text-green-700">Stablecoin Settlements</div>
-                <div className="mt-1 text-xl font-bold text-green-900">$20,680.50</div>
-                <div className="mt-1 text-[10px] text-green-600">8 settlements</div>
-              </div>
-              <div className="rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 p-4 ring-1 ring-amber-100">
-                <div className="text-xs font-medium text-amber-700">Pending Settlements</div>
-                <div className="mt-1 text-xl font-bold text-amber-900">{formatGHS(3240)}</div>
-                <div className="mt-1 text-[10px] text-amber-600">3 in processing</div>
-              </div>
-              <div className="rounded-xl bg-gradient-to-br from-gray-50 to-slate-50 p-4 ring-1 ring-gray-200">
-                <div className="text-xs font-medium text-gray-700">Total Fees</div>
-                <div className="mt-1 text-xl font-bold text-gray-900">{formatGHS(452.50)}</div>
-                <div className="mt-1 text-[10px] text-gray-600">1.0% avg rate</div>
-              </div>
-            </div>
-
-            {/* Enhanced Filters */}
-            <div className="mb-4 flex flex-wrap items-center gap-2">
-              <button
-                onClick={() => setLedgerFilter("all")}
-                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                  ledgerFilter === "all"
-                    ? "bg-[color:var(--trite-ink)] text-white"
-                    : "bg-black/[0.04] text-[color:var(--trite-ink)] hover:bg-black/[0.06]"
-                }`}
-              >
-                All
-              </button>
-              <button
-                onClick={() => setLedgerFilter("deposits")}
-                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                  ledgerFilter === "deposits"
-                    ? "bg-[color:var(--trite-ink)] text-white"
-                    : "bg-black/[0.04] text-[color:var(--trite-ink)] hover:bg-black/[0.06]"
-                }`}
-              >
-                Deposits
-              </button>
-              <button
-                onClick={() => setLedgerFilter("withdrawals")}
-                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                  ledgerFilter === "withdrawals"
-                    ? "bg-[color:var(--trite-ink)] text-white"
-                    : "bg-black/[0.04] text-[color:var(--trite-ink)] hover:bg-black/[0.06]"
-                }`}
-              >
-                Withdrawals
-              </button>
-              <button
-                onClick={() => setLedgerFilter("transfers")}
-                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                  ledgerFilter === "transfers"
-                    ? "bg-[color:var(--trite-ink)] text-white"
-                    : "bg-black/[0.04] text-[color:var(--trite-ink)] hover:bg-black/[0.06]"
-                }`}
-              >
-                Transfers
-              </button>
-              <div className="mx-2 h-4 w-px bg-black/10" />
-              <select className="rounded-lg border border-black/10 px-3 py-1.5 text-xs outline-none focus:border-[color:var(--trite-lime-strong)]">
-                <option>All Currencies</option>
-                <option>GHS</option>
-                <option>USDC</option>
-                <option>USDT</option>
-              </select>
-              <select className="rounded-lg border border-black/10 px-3 py-1.5 text-xs outline-none focus:border-[color:var(--trite-lime-strong)]">
-                <option>This Month</option>
-                <option>Last Month</option>
-                <option>Last 3 Months</option>
-                <option>Custom Range</option>
-              </select>
-            </div>
-
-            {/* Settlement Table */}
-            <div className="rounded-xl border border-black/5 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[800px]">
-                <thead className="bg-gray-50">
-                  <tr className="text-left">
-                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Date</th>
-                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Settlement ID</th>
-                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Type</th>
-                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Status</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Gross</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Fee</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Net</th>
-                  </tr>
-                </thead>
-                <tbody className="text-sm">
-                  {demoTransactions
-                    .filter((t) => ledgerFilter === "all" || t.type === ledgerFilter.slice(0, -1))
-                    .map((t) => {
-                      const fee = t.amount * 0.01;
-                      const net = t.amount - fee;
-                      const isStable = t.method.includes("USDC") || t.method.includes("USDT");
-                      return (
-                        <tr key={t.id} className="border-b border-black/5 last:border-b-0 hover:bg-gray-50">
-                          <td className="px-4 py-3">
-                            <div className="font-medium text-[color:var(--trite-ink)]">{t.date}</div>
-                            <div className="text-xs text-[color:var(--trite-muted)]">{t.time}</div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="font-medium text-[color:var(--trite-ink)]">{t.id}</div>
-                            <div className="text-xs text-[color:var(--trite-muted)]">{t.method}</div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-2">
-                              {t.type === "deposit" && (
-                                <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Deposit</span>
-                              )}
-                              {t.type === "withdrawal" && (
-                                <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Withdrawal</span>
-                              )}
-                              {t.type === "transfer" && (
-                                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">Transfer</span>
-                              )}
-                              {isStable && (
-                                <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-semibold text-teal-700">STABLE</span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <span
-                              className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${
-                                t.status === "success"
-                                  ? "bg-green-100 text-green-700"
-                                  : t.status === "pending"
-                                  ? "bg-amber-100 text-amber-700"
-                                  : "bg-red-100 text-red-700"
-                              }`}
-                            >
-                              <span className={`h-1.5 w-1.5 rounded-full ${t.status === "success" ? "bg-green-500" : t.status === "pending" ? "bg-amber-500" : "bg-red-500"}`} />
-                              {t.status.charAt(0).toUpperCase() + t.status.slice(1)}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-right font-medium text-[color:var(--trite-ink)]">
-                            {formatGHS(t.amount)}
-                          </td>
-                          <td className="px-4 py-3 text-right text-xs text-red-600">
-                            -{formatGHS(fee)}
-                          </td>
-                          <td className="px-4 py-3 text-right font-semibold text-[color:var(--trite-ink)]">
-                            {formatGHS(net)}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                </tbody>
-              </table>
-              </div>
-            </div>
-
-            {/* Footer Actions */}
-            <div className="mt-6 flex items-center justify-between">
-              <div className="flex gap-2">
-                <button className="flex items-center gap-2 rounded-lg border border-black/10 px-4 py-2 text-sm font-medium text-[color:var(--trite-ink)] hover:bg-black/[0.03]">
-                  <DownloadIcon className="h-4 w-4" />
-                  Export CSV
-                </button>
-                <button className="flex items-center gap-2 rounded-lg border border-black/10 px-4 py-2 text-sm font-medium text-[color:var(--trite-ink)] hover:bg-black/[0.03]">
-                  <ReceiptIcon className="h-4 w-4" />
-                  Download PDF
-                </button>
-              </div>
-              <button
-                onClick={() => setLedgerModalOpen(false)}
-                className="rounded-lg bg-[color:var(--trite-ink)] px-6 py-2 text-sm font-semibold text-white hover:bg-black"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       {/* Convert to GHS Modal */}
       {convertModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-xl bg-white p-5 shadow-2xl">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-xl font-semibold text-[color:var(--trite-ink)]">Convert Stablecoin to GHS</h2>
               <button
@@ -971,8 +595,13 @@ export default function DashboardPage() {
 
             <div className="mb-6 rounded-xl bg-green-50 p-4">
               <div className="text-xs text-green-700">Available Stablecoin Balance</div>
-              <div className="text-2xl font-bold text-green-900">$20,680.50</div>
-              <div className="mt-1 text-xs text-green-600">USDC: $12,450.00 | USDT: $8,230.50</div>
+              <div className="text-2xl font-bold text-green-900">
+                ${(dashData?.stablecoin_holdings?.Total ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+              <div className="mt-1 text-xs text-green-600">
+                USDC: ${(dashData?.stablecoin_holdings?.USDC ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} | 
+                USDT: ${(dashData?.stablecoin_holdings?.USDT ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -1009,14 +638,14 @@ export default function DashboardPage() {
                 <input
                   type="number"
                   value={convertAmount}
-                  onChange={(e) => handleUsdChange(e.target.value)}
+                  onChange={(e) => setConvertAmount(e.target.value)}
                   placeholder="0.00"
                   className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-green-500"
                 />
                 <div className="mt-1 flex justify-between text-xs">
                   <span className="text-[color:var(--trite-muted)]">Available: {convertFrom === "USDC" ? "$12,450.00" : "$8,230.50"}</span>
-                  <button 
-                    onClick={() => handleUsdChange(convertFrom === "USDC" ? "12450" : "8230.50")}
+                  <button
+                    onClick={() => setConvertAmount(convertFrom === "USDC" ? "12450" : "8230.50")}
                     className="text-green-600 hover:underline"
                   >
                     Max
@@ -1024,43 +653,21 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="text-sm font-medium text-[color:var(--trite-ink)]">Amount to Receive (GHS)</label>
-                <input
-                  type="number"
-                  value={ghsAmount}
-                  onChange={(e) => handleGhsChange(e.target.value)}
-                  placeholder="₵0.00"
-                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-green-500"
-                />
-                <p className="mt-1 text-xs text-[color:var(--trite-muted)]">
-                  Enter the exact Cedis amount you wish to receive
-                </p>
-              </div>
-
               <div className="rounded-xl bg-gray-50 p-3">
-                <div className="flex justify-between items-center text-sm">
+                <div className="flex justify-between text-sm">
                   <span className="text-[color:var(--trite-muted)]">Exchange Rate</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-[color:var(--trite-muted)]">1 USD = ₵</span>
-                    <input
-                      type="number"
-                      value={exchangeRate}
-                      onChange={(e) => handleRateChange(e.target.value)}
-                      className="w-16 rounded border border-black/10 bg-white px-1 py-0.5 text-right font-medium text-[color:var(--trite-ink)] outline-none focus:border-green-500"
-                    />
-                  </div>
+                  <span className="font-medium text-[color:var(--trite-ink)]">1 USD = ₵15.50</span>
                 </div>
                 <div className="mt-1 flex justify-between text-sm">
                   <span className="text-[color:var(--trite-muted)]">Conversion Fee (0.5%)</span>
                   <span className="font-medium text-[color:var(--trite-ink)]">
-                    {convertAmount ? formatGHS(Number(convertAmount) * FEE_PERCENT * exchangeRate) : "₵0.00"}
+                    {convertAmount ? formatGHS(Number(convertAmount) * 0.005 * 15.50) : "₵0.00"}
                   </span>
                 </div>
                 <div className="mt-2 border-t border-black/10 pt-2 flex justify-between text-sm">
                   <span className="font-medium text-[color:var(--trite-ink)]">You Will Receive</span>
                   <span className="font-bold text-green-700">
-                    {ghsAmount ? formatGHS(Number(ghsAmount)) : "₵0.00"}
+                    {convertAmount ? formatGHS(Number(convertAmount) * 15.50 * 0.995) : "₵0.00"}
                   </span>
                 </div>
               </div>
@@ -1089,55 +696,13 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 
-function BarChart({ period }: { period: "day" | "week" | "month" | "year" }) {
-  // Sample data for different periods
-  const data = {
-    day: [
-      { label: "00:00", value: 1200 },
-      { label: "04:00", value: 800 },
-      { label: "08:00", value: 2500 },
-      { label: "12:00", value: 4200 },
-      { label: "16:00", value: 3800 },
-      { label: "20:00", value: 2100 },
-    ],
-    week: [
-      { label: "Mon", value: 8500 },
-      { label: "Tue", value: 12000 },
-      { label: "Wed", value: 9800 },
-      { label: "Thu", value: 14200 },
-      { label: "Fri", value: 18500 },
-      { label: "Sat", value: 11200 },
-      { label: "Sun", value: 7600 },
-    ],
-    month: [
-      { label: "Week 1", value: 45000 },
-      { label: "Week 2", value: 52000 },
-      { label: "Week 3", value: 48000 },
-      { label: "Week 4", value: 61000 },
-    ],
-    year: [
-      { label: "Jan", value: 180000 },
-      { label: "Feb", value: 195000 },
-      { label: "Mar", value: 220000 },
-      { label: "Apr", value: 205000 },
-      { label: "May", value: 245000 },
-      { label: "Jun", value: 280000 },
-      { label: "Jul", value: 265000 },
-      { label: "Aug", value: 310000 },
-      { label: "Sep", value: 290000 },
-      { label: "Oct", value: 325000 },
-      { label: "Nov", value: 340000 },
-      { label: "Dec", value: 380000 },
-    ],
-  };
-
-  const currentData = data[period];
-  const maxValue = Math.max(...currentData.map((d) => d.value));
-  const total = currentData.reduce((sum, d) => sum + d.value, 0);
+function BarChart({ period, data }: { period: "day" | "week" | "month" | "year", data: { label: string; value: number }[] }) {
+  const maxValue = Math.max(...data.map((d) => d.value), 1);
+  const total = data.reduce((sum, d) => sum + d.value, 0);
 
   return (
     <div>
@@ -1153,18 +718,24 @@ function BarChart({ period }: { period: "day" | "week" | "month" | "year" }) {
           Total {period === "day" ? "today" : period === "week" ? "this week" : period === "month" ? "this month" : "this year"}
         </span>
       </div>
-      <div className="flex items-end justify-between gap-2">
-        {currentData.map((item, index) => {
-          const heightPercent = (item.value / maxValue) * 100;
+      <div className="flex items-end justify-between gap-2 h-40">
+        {data.map((item, index) => {
+          const heightPercent = maxValue > 0 ? (item.value / maxValue) * 100 : 0;
           return (
             <div key={index} className="flex flex-1 flex-col items-center gap-2">
-              <div className="relative w-full">
+              <div className="relative w-full flex items-end justify-center h-32">
                 <div
                   className="w-full rounded-t-md bg-gradient-to-t from-blue-600 to-blue-400 transition-all duration-500"
-                  style={{ height: `${heightPercent * 1.5}px` }}
-                />
+                  style={{ height: `${heightPercent}%` }}
+                >
+                  {item.value > 0 && (
+                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 rounded bg-black px-1.5 py-0.5 text-[10px] text-white opacity-0 transition-opacity group-hover:opacity-100 whitespace-nowrap">
+                      {formatGHS(item.value)}
+                    </div>
+                  )}
+                </div>
               </div>
-              <span className="text-xs text-[color:var(--trite-muted)]">{item.label}</span>
+              <span className="text-[10px] text-[color:var(--trite-muted)] whitespace-nowrap">{item.label}</span>
             </div>
           );
         })}
@@ -1235,14 +806,6 @@ function SearchIcon({ className }: { className?: string }) {
   );
 }
 
-function MenuIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-    </svg>
-  );
-}
-
 function WalletIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -1297,6 +860,16 @@ function ShieldCheckIcon({ className }: { className?: string }) {
   );
 }
 
+function HistoryIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+      <path d="M3 3v5h5" />
+      <path d="M12 7v5l4 2" />
+    </svg>
+  );
+}
+
 function KeyIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -1347,34 +920,5 @@ function DownloadIcon({ className }: { className?: string }) {
       <polyline points="7 10 12 15 17 10" />
       <line x1="12" y1="15" x2="12" y2="3" />
     </svg>
-  );
-}
-
-function RefreshCcwIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-      <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
-      <polyline points="21 3 21 8 16 8" />
-    </svg>
-  );
-}
-
-function WindIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-      <path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2" />
-      <path d="M9.6 4.6A2 2 0 1 1 11 8H2" />
-      <path d="M12.6 19.4A2 2 0 1 0 14 16H2" />
-    </svg>
-  );
-}
-
-function VerifiedBadge({ className }: { className?: string }) {
-  return (
-    <div className={`flex shrink-0 items-center justify-center rounded-full bg-[color:var(--trite-lime-strong)] p-0.5 ${className}`}>
-      <svg className="h-full w-full text-[color:var(--trite-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
-        <polyline points="20 6 9 17 4 12" />
-      </svg>
-    </div>
   );
 }

@@ -4,39 +4,28 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useMerchantFetch } from "@/lib/hooks/useMerchantFetch";
 
-const sidebarItems = [
-  { id: "dashboard", label: "Dashboard", href: "/merchant", icon: LayoutGridIcon },
-  { id: "analytics", label: "Analytics", href: "/merchant/analytics", icon: BarChartIcon },
-  { id: "transactions", label: "Transactions", href: "/merchant/transactions", icon: ReceiptIcon },
-  { id: "subscriptions", label: "Subscriptions", href: "/merchant/subscriptions", icon: RefreshCcwIcon },
-  { id: "customers", label: "Customers", href: "/merchant/customers", icon: UsersIcon },
-  { id: "settings", label: "Settings", href: "/merchant/settings", icon: SettingsIcon },
-];
 
-const demoSettlements = [
-  {
-    id: "SETL-9281-XM",
-    dateRange: "Oct 24 - Oct 31",
-    grossAmount: 842900.0,
-    fees: -14210.0,
-    status: "completed",
-  },
-  {
-    id: "SETL-8821-LQ",
-    dateRange: "Oct 17 - Oct 23",
-    grossAmount: 1029450.0,
-    fees: -18490.0,
-    status: "completed",
-  },
-  {
-    id: "SETL-7742-BZ",
-    dateRange: "Oct 10 - Oct 16",
-    grossAmount: 921000.0,
-    fees: -15800.0,
-    status: "pending",
-  },
-];
+type AnalyticsData = {
+  total_revenue: number;
+  aov: number;
+  conversion_rate: number;
+  method_mix: Record<string, { amount: number; count: number }>;
+  revenue_by_region: Record<string, number>;
+  revenue_trend: { date: string; amount: number }[];
+};
+
+type SettlementRow = {
+  id: string;
+  settlement_id_display: string;
+  gross_amount: number;
+  fees: number;
+  net_amount: number;
+  status: string;
+  date_range_start: string;
+  date_range_end: string;
+};
 
 const marketHubs = [
   { code: "GH", name: "Ghana", volume: "₵2.1M", velocity: "High", color: "text-[color:var(--trite-lime-strong)]" },
@@ -47,7 +36,11 @@ const marketHubs = [
 export default function AnalyticsPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("analytics");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [period, setPeriod] = useState("30d");
+
+  const { data: analytics } = useMerchantFetch<AnalyticsData>("/api/merchant/analytics", { period });
+  const { data: settlementData } = useMerchantFetch<{ data: SettlementRow[] }>("/api/merchant/settlements");
+  const settlements = settlementData?.data ?? [];
 
   const formatGHS = (amount: number) => {
     return new Intl.NumberFormat("en-GH", {
@@ -58,117 +51,11 @@ export default function AnalyticsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-[#f6f7fb]">
-      {/* Mobile Sidebar Backdrop */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden" 
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      <aside className={`fixed left-0 top-0 z-50 h-screen w-56 border-r border-black/5 bg-white transition-transform duration-300 lg:translate-x-0 ${
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      }`}>
-        <div className="flex h-full flex-col">
-          <div className="flex h-16 items-center border-b border-black/5 px-4">
-            <Link href="/" className="flex items-center gap-3">
-              <Image
-                src="/tritee-logo.png"
-                alt="Trite logo"
-                width={120}
-                height={28}
-                priority
-              />
-            </Link>
-          </div>
-
-          <nav className="flex-1 overflow-y-auto px-3 py-4">
-            <ul className="space-y-1">
-              {sidebarItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <li key={item.id}>
-                    <button
-                      onClick={() => {
-                        setActiveTab(item.id);
-                        router.push(item.href);
-                      }}
-                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                        isActive
-                          ? "bg-[color:var(--trite-lime)] text-[color:var(--trite-ink)]"
-                          : "text-[color:var(--trite-muted)] hover:bg-black/[0.03] hover:text-[color:var(--trite-ink)]"
-                      }`}
-                    >
-                      <Icon className="h-5 w-5" />
-                      {item.label}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
-
-          <div className="border-t border-black/5 p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--trite-ink)]">
-                <span className="text-sm font-semibold text-white">KA</span>
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-[color:var(--trite-ink)]">
-                  Kwame Asante
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="text-xs text-[color:var(--trite-muted)]">Verified Merchant</div>
-                  <VerifiedBadge className="h-3 w-3" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      <main className="transition-all duration-300 lg:ml-56">
-        <header className="sticky top-0 z-30 border-b border-black/5 bg-white/80 backdrop-blur">
-          <div className="flex h-16 items-center justify-between px-4 sm:px-6">
-            <div className="flex items-center gap-4">
-              <button 
-                onClick={() => setSidebarOpen(true)}
-                className="flex h-10 w-10 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03] lg:hidden"
-              >
-                <MenuIcon className="h-6 w-6" />
-              </button>
-              <Link href="/" className="lg:hidden">
-                <Image
-                  src="/tritee-logo.png"
-                  alt="Trite logo"
-                  width={90}
-                  height={22}
-                  priority
-                />
-              </Link>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="hidden sm:flex h-9 max-w-xs items-center gap-2 rounded-lg border border-black/10 bg-white px-3 text-xs text-[color:var(--trite-muted)] md:flex">
-                <SearchIcon className="h-3.5 w-3.5" />
-                <input placeholder="Search analytics..." className="w-full bg-transparent outline-none" />
-              </div>
-              <button className="flex h-9 w-9 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]">
-                <BellIcon className="h-4 w-4" />
-              </button>
-              <div className="hidden items-center gap-2 text-xs font-medium text-[color:var(--trite-ink)] sm:flex">
-                <span>Merchant</span>
-                <ChevronDownIcon className="h-3 w-3" />
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <div className="p-5">
+    <>
+        <div className="px-4 py-5 sm:p-6">
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-blue-600">
+              <div className="text-xs font-semibold uppercase tracking-wider text-blue-600">
                 Performance Overview
               </div>
               <h1 className="text-xl font-semibold tracking-tight text-[color:var(--trite-ink)] sm:text-2xl">
@@ -176,19 +63,19 @@ export default function AnalyticsPage() {
               </h1>
             </div>
             <div className="flex gap-2">
-              <button className="flex h-9 items-center gap-2 rounded-lg border border-black/10 bg-white px-3 text-xs font-semibold text-[color:var(--trite-ink)] hover:bg-black/[0.02]">
-                <FileTextIcon className="h-3.5 w-3.5" />
+              <button className="flex h-10 items-center gap-2 rounded-lg border border-black/10 bg-white px-4 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-black/[0.02]">
+                <FileTextIcon className="h-4 w-4" />
                 Export PDF
               </button>
-              <button className="flex h-9 items-center gap-2 rounded-lg bg-[color:var(--trite-ink)] px-3 text-xs font-semibold text-white hover:bg-black">
-                <DownloadIcon className="h-3.5 w-3.5" />
-                CSV
+              <button className="flex h-10 items-center gap-2 rounded-lg bg-[color:var(--trite-ink)] px-4 text-sm font-semibold text-white hover:bg-black">
+                <DownloadIcon className="h-4 w-4" />
+                Export CSV
               </button>
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
+            <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-[color:var(--trite-muted)]">Total Revenue</span>
                 <span className="rounded-full bg-[color:var(--trite-lime)] px-1.5 py-0.5 text-[10px] font-semibold text-[color:var(--trite-ink)]">
@@ -196,12 +83,12 @@ export default function AnalyticsPage() {
                 </span>
               </div>
               <div className="mt-2 text-2xl font-semibold text-[color:var(--trite-ink)]">
-                {formatGHS(4281092)}
+                {formatGHS(analytics?.total_revenue ?? 0)}
               </div>
               <div className="mt-1 text-xs text-[color:var(--trite-muted)]">vs last 30 days</div>
             </div>
 
-            <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
+            <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-[color:var(--trite-muted)]">Avg. Order Value</span>
                 <span className="rounded-full bg-[color:var(--trite-lime)] px-1.5 py-0.5 text-[10px] font-semibold text-[color:var(--trite-ink)]">
@@ -209,40 +96,34 @@ export default function AnalyticsPage() {
                 </span>
               </div>
               <div className="mt-2 text-2xl font-semibold text-[color:var(--trite-ink)]">
-                {formatGHS(142.5)}
+                {formatGHS(analytics?.aov ?? 0)}
               </div>
               <div className="mt-1 text-xs text-[color:var(--trite-muted)]">Stable growth</div>
             </div>
 
-            <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
+            <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-[color:var(--trite-muted)]">Conversion Rate</span>
-                <span className="rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-600">
-                  -0.4%
-                </span>
               </div>
               <div className="mt-2 text-2xl font-semibold text-[color:var(--trite-ink)]">
-                3.82%
+                {analytics ? `${analytics.conversion_rate}%` : "—"}
               </div>
               <div className="mt-1 text-xs text-[color:var(--trite-muted)]">Optimization needed</div>
             </div>
 
-            <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
+            <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-[color:var(--trite-muted)]">Success Rate</span>
-                <span className="rounded-full bg-[color:var(--trite-lime)] px-1.5 py-0.5 text-[10px] font-semibold text-[color:var(--trite-ink)]">
-                  99.8%
-                </span>
               </div>
               <div className="mt-2 text-2xl font-semibold text-[color:var(--trite-ink)]">
-                99.94%
+                {analytics ? `${analytics.conversion_rate}%` : "—"}
               </div>
               <div className="mt-1 text-xs text-[color:var(--trite-muted)]">Across all gateways</div>
             </div>
           </div>
 
           <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <div className="rounded-xl bg-white p-5 ring-1 ring-black/5 lg:col-span-2">
+            <div className="rounded-2xl bg-white p-6 ring-1 ring-black/5 lg:col-span-2">
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <div className="text-lg font-semibold text-[color:var(--trite-ink)]">
@@ -252,7 +133,7 @@ export default function AnalyticsPage() {
                     Daily processed volume for current month
                   </div>
                 </div>
-                <button className="flex items-center gap-1 text-xs font-medium text-[color:var(--trite-muted)] hover:text-[color:var(--trite-ink)]">
+                <button onClick={() => setPeriod("30d")} className="flex items-center gap-1 text-xs font-medium text-[color:var(--trite-muted)] hover:text-[color:var(--trite-ink)]">
                   Last 30 Days
                   <ChevronDownIcon className="h-3 w-3" />
                 </button>
@@ -287,52 +168,54 @@ export default function AnalyticsPage() {
               </div>
             </div>
 
-            <div className="rounded-xl bg-gradient-to-br from-[#1a1f2e] to-[#0f1419] p-5 text-white">
+            <div className="rounded-2xl bg-gradient-to-br from-[#1a1f2e] to-[#0f1419] p-6 text-white">
               <div className="text-lg font-semibold">Method Mix</div>
               <div className="mt-1 text-xs text-white/60">Distribution of incoming funds</div>
               <div className="mt-6 space-y-4">
-                <div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-white/80">Credit / Debit Cards</span>
-                    <span className="font-semibold">64%</span>
-                  </div>
-                  <div className="mt-2 h-2 w-full rounded-full bg-white/10">
-                    <div className="h-2 w-[64%] rounded-full bg-blue-500" />
-                  </div>
-                </div>
-                <div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-white/80">Digital Wallets</span>
-                    <span className="font-semibold">28%</span>
-                  </div>
-                  <div className="mt-2 h-2 w-full rounded-full bg-white/10">
-                    <div className="h-2 w-[28%] rounded-full bg-purple-500" />
-                  </div>
-                </div>
-                <div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-white/80">Bank Transfers</span>
-                    <span className="font-semibold">8%</span>
-                  </div>
-                  <div className="mt-2 h-2 w-full rounded-full bg-white/10">
-                    <div className="h-2 w-[8%] rounded-full bg-emerald-500" />
-                  </div>
-                </div>
-              </div>
+                {Object.entries(analytics?.method_mix ?? { CARD: { amount: 0, count: 0 }, DIGITAL_WALLET: { amount: 0, count: 0 }, BANK_TRANSFER: { amount: 0, count: 0 } }).map(([method, val]) => {
+                  const total = Object.values(analytics?.method_mix ?? {}).reduce((s, v) => s + v.amount, 0);
+                  const pct = total > 0 ? Math.round((val.amount / total) * 100) : 0;
+                  return (
+                    <div key={method}>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-white/80">{method.replace("_", " ")}</span>
+                        <span className="font-semibold">{pct}%</span>
+                      </div>
+                      <div className="mt-2 h-2 w-full rounded-full bg-white/10">
+                        <div className="h-2 rounded-full bg-blue-500" style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
               <button className="mt-6 inline-flex items-center gap-1 text-sm font-medium text-blue-400 hover:text-blue-300">
                 View regional insights
                 <ArrowRightIcon className="h-4 w-4" />
               </button>
             </div>
           </div>
+          </div>
 
           <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
+            <div className="rounded-2xl bg-white p-6 ring-1 ring-black/5">
               <div className="mb-4 text-lg font-semibold text-[color:var(--trite-ink)]">
                 Top Market Hubs
               </div>
               <div className="space-y-4">
-                {marketHubs.map((hub) => (
+                {Object.entries(analytics?.revenue_by_region ?? {}).length > 0
+                  ? Object.entries(analytics!.revenue_by_region).map(([region, amount]) => (
+                    <div key={region} className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-black/[0.04] text-xs font-semibold text-[color:var(--trite-ink)]">
+                          {region.slice(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="font-medium text-[color:var(--trite-ink)]">{region}</div>
+                          <div className="text-xs text-[color:var(--trite-muted)]">{formatGHS(amount)} Volume</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                  : marketHubs.map((hub) => (
                   <div key={hub.code} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-black/[0.04] text-xs font-semibold text-[color:var(--trite-ink)]">
@@ -349,7 +232,7 @@ export default function AnalyticsPage() {
               </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-[#1a1f2e] to-[#0f1419] p-5 text-white">
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1a1f2e] to-[#0f1419] p-6 text-white">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.15),transparent_50%)]" />
               <div className="relative">
                 <div className="flex items-center gap-2">
@@ -377,17 +260,17 @@ export default function AnalyticsPage() {
             </div>
           </div>
 
-          <div className="mt-6 rounded-xl bg-white p-5 ring-1 ring-black/5">
+          <div className="mt-6 rounded-2xl bg-white p-6 ring-1 ring-black/5">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-[color:var(--trite-ink)]">
                 Settlement Reports
               </h2>
-              <button className="text-xs font-medium text-blue-600 hover:underline">
-                View all
+              <button className="text-sm font-medium text-blue-600 hover:underline">
+                View all schedules
               </button>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[700px]">
+            <table className="w-full min-w-[700px]">
               <thead>
                 <tr className="border-b border-black/5 text-left">
                   <th className="pb-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
@@ -409,25 +292,22 @@ export default function AnalyticsPage() {
                 </tr>
               </thead>
               <tbody className="text-sm">
-                {demoSettlements.map((s) => (
+                {settlements.map((s) => (
                   <tr key={s.id} className="border-b border-black/5 last:border-b-0">
-                    <td className="py-4 font-medium text-[color:var(--trite-ink)]">{s.id}</td>
-                    <td className="py-4 text-[color:var(--trite-muted)]">{s.dateRange}</td>
-                    <td className="py-4 font-medium text-[color:var(--trite-ink)]">
-                      {formatGHS(s.grossAmount)}
+                    <td className="py-4 font-medium text-[color:var(--trite-ink)]">{s.settlement_id_display}</td>
+                    <td className="py-4 text-[color:var(--trite-muted)]">
+                      {new Date(s.date_range_start).toLocaleDateString("en-GH", { month: "short", day: "numeric" })} –{" "}
+                      {new Date(s.date_range_end).toLocaleDateString("en-GH", { month: "short", day: "numeric" })}
                     </td>
-                    <td className="py-4 text-red-600">{formatGHS(s.fees)}</td>
+                    <td className="py-4 font-medium text-[color:var(--trite-ink)]">{formatGHS(s.gross_amount)}</td>
+                    <td className="py-4 text-red-600">-{formatGHS(s.fees)}</td>
                     <td className="py-4">
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${
-                          s.status === "completed"
-                            ? "bg-[color:var(--trite-lime)]/20 text-[color:var(--trite-ink)]"
-                            : "bg-blue-50 text-blue-600"
-                        }`}
-                      >
-                        {s.status === "completed" && <CheckIcon className="h-3 w-3" />}
-                        {s.status === "pending" && <ClockIcon className="h-3 w-3" />}
-                        {s.status.charAt(0).toUpperCase() + s.status.slice(1)}
+                      <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                        s.status === "COMPLETED" ? "bg-[color:var(--trite-lime)]/20 text-[color:var(--trite-ink)]" : "bg-blue-50 text-blue-600"
+                      }`}>
+                        {s.status === "COMPLETED" && <CheckIcon className="h-3 w-3" />}
+                        {s.status === "PENDING" && <ClockIcon className="h-3 w-3" />}
+                        {s.status.charAt(0) + s.status.slice(1).toLowerCase()}
                       </span>
                     </td>
                     <td className="py-4 text-right">
@@ -442,8 +322,7 @@ export default function AnalyticsPage() {
             </div>
           </div>
         </div>
-      </main>
-    </div>
+    </>
   );
 }
 
@@ -471,15 +350,16 @@ function BarChartIcon({ className }: { className?: string }) {
 function ReceiptIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-      <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1z" />
-      <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
-      <path d="M12 17.5V19" />
-      <path d="M12 5v1.5" />
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+      <polyline points="10 9 9 9 8 9" />
     </svg>
   );
 }
 
-function UsersIcon({ className }: { className?: string }) {
+function CustomersIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
       <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -490,19 +370,11 @@ function UsersIcon({ className }: { className?: string }) {
   );
 }
 
-function MenuIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-    </svg>
-  );
-}
-
 function SettingsIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
       <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1-1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
     </svg>
   );
 }
@@ -598,24 +470,5 @@ function MoreVerticalIcon({ className }: { className?: string }) {
       <circle cx="12" cy="5" r="1" />
       <circle cx="12" cy="19" r="1" />
     </svg>
-  );
-}
-
-function RefreshCcwIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-      <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
-      <polyline points="21 3 21 8 16 8" />
-    </svg>
-  );
-}
-
-function VerifiedBadge({ className }: { className?: string }) {
-  return (
-    <div className={`flex shrink-0 items-center justify-center rounded-full bg-[color:var(--trite-lime-strong)] p-0.5 ${className}`}>
-      <svg className="h-full w-full text-[color:var(--trite-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
-        <polyline points="20 6 9 17 4 12" />
-      </svg>
-    </div>
   );
 }

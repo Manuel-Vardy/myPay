@@ -4,300 +4,127 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { useMerchantFetch } from "@/lib/hooks/useMerchantFetch";
 
-const sidebarItems = [
-  { id: "dashboard", label: "Dashboard", href: "/merchant", icon: LayoutGridIcon },
-  { id: "analytics", label: "Analytics", href: "/merchant/analytics", icon: BarChartIcon },
-  { id: "transactions", label: "Transactions", href: "/merchant/transactions", icon: ReceiptIcon },
-  { id: "subscriptions", label: "Subscriptions", href: "/merchant/subscriptions", icon: RefreshCcwIcon },
-  { id: "customers", label: "Customers", href: "/merchant/customers", icon: UsersIcon },
-  { id: "settings", label: "Settings", href: "/merchant/settings", icon: SettingsIcon },
-];
+type TxStatus = "SUCCESS" | "PENDING" | "FAILED" | "PROCESSING";
+type TxMethod = "CARD" | "MOBILE_MONEY" | "BANK_TRANSFER" | "CRYPTO" | string;
 
-type TxStatus = "completed" | "pending" | "failed" | "flagged";
-type TxMethod = "Card" | "Mobile Money" | "Bank Transfer" | "Crypto";
 
-type Transaction = {
+export type APITransaction = {
   id: string;
-  date: string;
-  time: string;
-  customer: string;
-  email: string;
+  tx_id_display: string;
+  customer_id: string;
+  payer_email: string;
   method: TxMethod;
   status: TxStatus;
   amount: number;
-  reference: string;
+  created_at: string;
 };
-
-const demoTransactions: Transaction[] = [
-  {
-    id: "TXN-9281-XM",
-    date: "Oct 24, 2023",
-    time: "14:23 UTC",
-    customer: "Kofi Mensah",
-    email: "kofi@example.com",
-    method: "Mobile Money",
-    status: "completed",
-    amount: 12500.0,
-    reference: "REF-8821",
-  },
-  {
-    id: "TXN-8821-LQ",
-    date: "Oct 24, 2023",
-    time: "12:05 UTC",
-    customer: "Ama Owusu",
-    email: "ama@trite.app",
-    method: "Card",
-    status: "completed",
-    amount: 8420.5,
-    reference: "REF-7732",
-  },
-  {
-    id: "TXN-7742-BZ",
-    date: "Oct 23, 2023",
-    time: "22:18 UTC",
-    customer: "Kwame Asante",
-    email: "kwame@biz.com",
-    method: "Bank Transfer",
-    status: "pending",
-    amount: 45000.0,
-    reference: "REF-5541",
-  },
-  {
-    id: "TXN-6612-KR",
-    date: "Oct 23, 2023",
-    time: "18:45 UTC",
-    customer: "Nana Yaa",
-    email: "nana@shop.com",
-    method: "Mobile Money",
-    status: "completed",
-    amount: 3200.0,
-    reference: "REF-3321",
-  },
-  {
-    id: "TXN-5531-PT",
-    date: "Oct 22, 2023",
-    time: "09:12 UTC",
-    customer: "Yaw Boateng",
-    email: "yaw@tech.io",
-    method: "Crypto",
-    status: "flagged",
-    amount: 8900.0,
-    reference: "REF-9912",
-  },
-  {
-    id: "TXN-4429-LX",
-    date: "Oct 22, 2023",
-    time: "16:30 UTC",
-    customer: "Abena Kumi",
-    email: "abena@retail.com",
-    method: "Card",
-    status: "failed",
-    amount: 5600.0,
-    reference: "REF-2234",
-  },
-];
-
-const methodMix = [
-  { name: "Mobile Money", percent: 52, color: "bg-[color:var(--trite-lime-strong)]" },
-  { name: "Credit / Debit Cards", percent: 31, color: "bg-blue-500" },
-  { name: "Bank Transfers", percent: 12, color: "bg-purple-500" },
-  { name: "Crypto", percent: 5, color: "bg-orange-500" },
-];
 
 export default function TransactionsPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("transactions");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<TxStatus | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<string | "all" | "success" | "pending" | "failed">("all");
+  const [page, setPage] = useState(1);
+  const [currencyFilter, setCurrencyFilter] = useState<"all" | "fiat" | "stablecoin" | "crypto">("all");
+  const [dateRange, setDateRange] = useState<"7" | "30" | "90" | "all">("30");
 
-  const formatGHS = (amount: number) => {
-    return new Intl.NumberFormat("en-GH", {
-      style: "currency",
-      currency: "GHS",
-      minimumFractionDigits: 2,
-    }).format(amount);
+  const { data: fetchRes, loading } = useMerchantFetch<{ 
+    data: APITransaction[]; 
+    global_stats: {
+      total_volume: number;
+      completed_count: number;
+      pending_count: number;
+      failed_count: number;
+      volume_change_percentage_24h: number;
+      method_mix: { name: string; count: number; percent: number; color: string }[];
+    };
+    pagination: { page: number; per_page: number; total: number; total_pages: number };
+  }>(
+    "/api/merchant/transactions",
+    {
+      search: query || "",
+      status: statusFilter === "all" ? "" : statusFilter.toUpperCase(),
+      currency: currencyFilter === "all" ? "" : currencyFilter.toUpperCase(),
+      page: page.toString(),
+      per_page: "10",
+      ...dateRange != 'all' && {
+        dateRange: dateRange
+      }
+    }
+  );
+
+  const transactions = fetchRes?.data ?? [];
+  const stats = fetchRes?.global_stats ?? {
+    total_volume: 0,
+    completed_count: 0,
+    pending_count: 0,
+    failed_count: 0,
+    volume_change_percentage_24h: 0,
+    method_mix: []
   };
+  const pagination = fetchRes?.pagination ?? { page: 1, per_page: 10, total: 0, total_pages: 1 };
 
-  const filteredTransactions = useMemo(() => {
-    return demoTransactions.filter((tx) => {
-      const matchesQuery =
-        query.length === 0 ||
-        tx.id.toLowerCase().includes(query.toLowerCase()) ||
-        tx.customer.toLowerCase().includes(query.toLowerCase()) ||
-        tx.email.toLowerCase().includes(query.toLowerCase()) ||
-        tx.reference.toLowerCase().includes(query.toLowerCase());
-
-      const matchesStatus = statusFilter === "all" || tx.status === statusFilter;
-
-      return matchesQuery && matchesStatus;
-    });
-  }, [query, statusFilter]);
-
-  const stats = useMemo(() => {
-    const total = filteredTransactions.reduce((sum, tx) => sum + tx.amount, 0);
-    const completed = filteredTransactions.filter((tx) => tx.status === "completed").length;
-    const pending = filteredTransactions.filter((tx) => tx.status === "pending").length;
-    const failed = filteredTransactions.filter((tx) => tx.status === "failed").length;
-    const flagged = filteredTransactions.filter((tx) => tx.status === "flagged").length;
-    return { total, completed, pending, failed, flagged, count: filteredTransactions.length };
-  }, [filteredTransactions]);
+  const dominantMethod = useMemo(() => {
+    if (!stats.method_mix.length) return null;
+    return stats.method_mix[0]; // Already sorted by count descending in API
+  }, [stats.method_mix]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-[#f6f7fb]">
-      {/* Mobile Sidebar Backdrop */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden" 
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      <aside className={`fixed left-0 top-0 z-50 h-screen w-56 border-r border-black/5 bg-white transition-transform duration-300 lg:translate-x-0 ${
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      }`}>
-        <div className="flex h-full flex-col">
-          <div className="flex h-16 items-center border-b border-black/5 px-4">
-            <Link href="/" className="flex items-center gap-3">
-              <Image
-                src="/tritee-logo.png"
-                alt="Trite logo"
-                width={120}
-                height={28}
-                priority
-              />
-            </Link>
-          </div>
-
-          <nav className="flex-1 overflow-y-auto px-3 py-4">
-            <ul className="space-y-1">
-              {sidebarItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <li key={item.id}>
-                    <button
-                      onClick={() => {
-                        setActiveTab(item.id);
-                        router.push(item.href);
-                      }}
-                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                        isActive
-                          ? "bg-[color:var(--trite-lime)] text-[color:var(--trite-ink)]"
-                          : "text-[color:var(--trite-muted)] hover:bg-black/[0.03] hover:text-[color:var(--trite-ink)]"
-                      }`}
-                    >
-                      <Icon className="h-5 w-5" />
-                      {item.label}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
-
-          <div className="border-t border-black/5 p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--trite-ink)]">
-                <span className="text-sm font-semibold text-white">KA</span>
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-[color:var(--trite-ink)]">
-                  Kwame Asante
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="text-xs text-[color:var(--trite-muted)]">Verified Merchant</div>
-                  <VerifiedBadge className="h-3 w-3" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      <main className="transition-all duration-300 lg:ml-56">
-        <header className="sticky top-0 z-30 border-b border-black/5 bg-white/80 backdrop-blur">
-          <div className="flex h-16 items-center justify-between px-4 sm:px-6">
-            <div className="flex items-center gap-4">
-              <button 
-                onClick={() => setSidebarOpen(true)}
-                className="flex h-10 w-10 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03] lg:hidden"
-              >
-                <MenuIcon className="h-6 w-6" />
-              </button>
-              <Link href="/" className="lg:hidden">
-                <Image
-                  src="/tritee-logo.png"
-                  alt="Trite logo"
-                  width={90}
-                  height={22}
-                  priority
-                />
-              </Link>
-            </div>
-            <div className="flex items-center gap-3">
-              <button className="flex h-9 w-9 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]">
-                <BellIcon className="h-4 w-4" />
-              </button>
-              <div className="hidden items-center gap-2 text-xs font-medium text-[color:var(--trite-ink)] sm:flex">
-                <span>Merchant</span>
-                <ChevronDownIcon className="h-3 w-3" />
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <div className="p-5">
+    <>
+      <div className="px-4 py-5 sm:p-6">
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-blue-600">
+              <div className="text-xs font-semibold uppercase tracking-wider text-blue-600">
                 Transaction Overview
               </div>
               <h1 className="text-xl font-semibold tracking-tight text-[color:var(--trite-ink)] sm:text-2xl">
-                Monitoring
+                Transaction Monitoring
               </h1>
             </div>
             <div className="flex gap-2">
-              <button className="flex h-9 items-center gap-2 rounded-lg border border-black/10 bg-white px-3 text-xs font-semibold text-[color:var(--trite-ink)] hover:bg-black/[0.02]">
-                <FileTextIcon className="h-3.5 w-3.5" />
-                PDF
+              <button className="flex h-10 items-center gap-2 rounded-lg border border-black/10 bg-white px-4 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-black/[0.02]">
+                <FileTextIcon className="h-4 w-4" />
+                Export PDF
               </button>
-              <button className="flex h-9 items-center gap-2 rounded-lg bg-[color:var(--trite-ink)] px-3 text-xs font-semibold text-white hover:bg-black">
-                <DownloadIcon className="h-3.5 w-3.5" />
-                CSV
+              <button className="flex h-10 items-center gap-2 rounded-lg bg-[color:var(--trite-ink)] px-4 text-sm font-semibold text-white hover:bg-black">
+                <DownloadIcon className="h-4 w-4" />
+                Export CSV
               </button>
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
+            <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-[color:var(--trite-muted)]">Total Volume</span>
-                <span className="rounded-full bg-[color:var(--trite-lime)] px-1.5 py-0.5 text-[10px] font-semibold text-[color:var(--trite-ink)]">
-                  +18.2%
+                <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+                  stats.volume_change_percentage_24h >= 0 ? "bg-[color:var(--trite-lime)] text-[color:var(--trite-ink)]" : "bg-red-100 text-red-600"
+                }`}>
+                  {stats.volume_change_percentage_24h > 0 ? "+" : ""}{stats.volume_change_percentage_24h}%
                 </span>
               </div>
               <div className="mt-2 text-2xl font-semibold text-[color:var(--trite-ink)]">
-                {formatGHS(stats.total)}
+                {formatGHS(stats.total_volume)}
               </div>
-              <div className="mt-1 text-xs text-[color:var(--trite-muted)]">{stats.count} transactions</div>
+              <div className="mt-1 text-xs text-[color:var(--trite-muted)]">{pagination.total} transactions total</div>
             </div>
 
-            <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
+            <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-[color:var(--trite-muted)]">Completed</span>
                 <span className="rounded-full bg-[color:var(--trite-lime)] px-1.5 py-0.5 text-[10px] font-semibold text-[color:var(--trite-ink)]">
-                  {Math.round((stats.completed / (stats.count || 1)) * 100)}%
+                  {Math.round((stats.completed_count / (pagination.total || 1)) * 100)}%
                 </span>
               </div>
               <div className="mt-2 text-2xl font-semibold text-[color:var(--trite-ink)]">
-                {stats.completed}
+                {stats.completed_count}
               </div>
               <div className="mt-1 text-xs text-[color:var(--trite-muted)]">Successful payments</div>
             </div>
 
-            <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
+            <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-[color:var(--trite-muted)]">Pending</span>
                 <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-semibold text-blue-600">
@@ -305,31 +132,31 @@ export default function TransactionsPage() {
                 </span>
               </div>
               <div className="mt-2 text-2xl font-semibold text-[color:var(--trite-ink)]">
-                {stats.pending}
+                {stats.pending_count}
               </div>
               <div className="mt-1 text-xs text-[color:var(--trite-muted)]">Awaiting confirmation</div>
             </div>
 
-            <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
+            <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-[color:var(--trite-muted)]">Issues</span>
                 <span className="rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-600">
-                  {stats.failed + stats.flagged}
+                  {stats.failed_count}
                 </span>
               </div>
               <div className="mt-2 text-2xl font-semibold text-[color:var(--trite-ink)]">
-                {stats.failed + stats.flagged}
+                {stats.failed_count}
               </div>
-              <div className="mt-1 text-xs text-[color:var(--trite-muted)]">Failed + Flagged</div>
+              <div className="mt-1 text-xs text-[color:var(--trite-muted)]">Failed</div>
             </div>
           </div>
 
-          <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <div className="rounded-xl bg-white p-5 ring-1 ring-black/5 lg:col-span-2">
+          <div className="mt-6 grid grid-cols-1">
+            <div className="rounded-2xl bg-white p-6 ring-1 ring-black/5 lg:col-span-2">
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <div className="text-lg font-semibold text-[color:var(--trite-ink)]">
-                    Recent Transactions
+                    Transactions
                   </div>
                   <div className="text-xs text-[color:var(--trite-muted)]">
                     View and manage all payment transactions
@@ -349,6 +176,38 @@ export default function TransactionsPage() {
               </div>
 
               <div className="mb-4 flex flex-wrap gap-2">
+                <select
+                    value={currencyFilter}
+                    onChange={(e) => setCurrencyFilter(e.target.value as any)}
+                    className="rounded-lg border border-black/10 px-3 py-1.5 text-sm text-gray-900 outline-none focus:border-[color:var(--trite-lime-strong)]"
+                >
+                  <option value="all">All Currencies</option>
+                  <option value="fiat">Fiat (GHS)</option>
+                  <option value="stablecoin">Stablecoins (USDC/USDT)</option>
+                  <option value="crypto">Crypto (BTC)</option>
+                </select>
+                <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value as any)}
+                    className="rounded-lg border border-black/10 px-3 py-1.5 text-sm text-gray-900 outline-none focus:border-[color:var(--trite-lime-strong)]"
+                >
+                  <option value="all">All Status</option>
+                  <option value="success">Success</option>
+                  <option value="pending">Pending</option>
+                  <option value="failed">Failed</option>
+                </select>
+                <select
+                    value={dateRange}
+                    onChange={(e) => setDateRange(e.target.value as any)}
+                    className="rounded-lg border border-black/10 px-3 py-1.5 text-sm text-gray-900 outline-none focus:border-[color:var(--trite-lime-strong)]"
+                >
+                  <option value="7">Last 7 days</option>
+                  <option value="30">Last 30 days</option>
+                  <option value="90">Last 90 days</option>
+                  <option value="all">All time</option>
+                </select>
+              </div>
+              <div className="mb-4 flex flex-wrap gap-2">
                 <FilterChip
                   label="All"
                   active={statusFilter === "all"}
@@ -356,8 +215,8 @@ export default function TransactionsPage() {
                 />
                 <FilterChip
                   label="Completed"
-                  active={statusFilter === "completed"}
-                  onClick={() => setStatusFilter("completed")}
+                  active={statusFilter === "success"}
+                  onClick={() => setStatusFilter("success")}
                   variant="success"
                 />
                 <FilterChip
@@ -372,18 +231,15 @@ export default function TransactionsPage() {
                   onClick={() => setStatusFilter("failed")}
                   variant="danger"
                 />
-                <FilterChip
-                  label="Flagged"
-                  active={statusFilter === "flagged"}
-                  onClick={() => setStatusFilter("flagged")}
-                  variant="warning"
-                />
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[800px]">
                 <thead>
                   <tr className="border-b border-black/5 text-left">
+                    <th className="pb-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
+                      Date
+                    </th>
                     <th className="pb-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
                       Transaction
                     </th>
@@ -402,22 +258,28 @@ export default function TransactionsPage() {
                   </tr>
                 </thead>
                 <tbody className="text-sm">
-                  {filteredTransactions.map((tx) => (
+                  {transactions.map((tx) => {
+                    const d = new Date(tx.created_at);
+                    return (
                     <tr key={tx.id} className="border-b border-black/5 last:border-b-0">
-                      <td className="py-4">
-                        <div className="font-medium text-[color:var(--trite-ink)]">{tx.id}</div>
-                        <div className="text-xs text-[color:var(--trite-muted)]">
-                          {tx.date} • {tx.time}
+                      <td className="py-4 whitespace-nowrap">
+                        <div className="font-medium text-[color:var(--trite-ink)]">
+                          {d.toLocaleDateString("en-GH", { month: "short", day: "numeric", year: "numeric" })}
                         </div>
+                        <div className="text-[10px] text-[color:var(--trite-muted)]">
+                          {d.toLocaleTimeString("en-GH", { hour: "2-digit", minute: "2-digit" })} UTC
+                        </div>
+                      </td>
+                      <td className="py-4">
+                        <div className="font-medium text-[color:var(--trite-ink)]">{tx.tx_id_display}</div>
                       </td>
                       <td className="py-4">
                         <div className="flex items-center gap-2">
                           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--trite-ink)] text-xs font-semibold text-white">
-                            {tx.customer.charAt(0)}
+                            {tx.payer_email ? tx.payer_email.charAt(0).toUpperCase() : "?"}
                           </div>
                           <div>
-                            <div className="font-medium text-[color:var(--trite-ink)]">{tx.customer}</div>
-                            <div className="text-xs text-[color:var(--trite-muted)]">{tx.email}</div>
+                            <div className="font-medium text-[color:var(--trite-ink)]">{tx.payer_email || "Anonymous"}</div>
                           </div>
                         </div>
                       </td>
@@ -431,17 +293,27 @@ export default function TransactionsPage() {
                         <StatusBadge status={tx.status} />
                       </td>
                       <td className="py-4 text-right font-semibold text-[color:var(--trite-ink)]">
-                        {formatGHS(tx.amount)}
+                        {formatGHS(Number(tx.amount))}
                       </td>
                     </tr>
-                  ))}
-                  {filteredTransactions.length === 0 && (
+                  )})}
+                  {transactions.length === 0 && !loading && (
+                    <tr>
+                      <td
+                        className="py-10 text-center text-sm text-[color:var(--trite-muted)]"
+                        colSpan={6}
+                      >
+                        No transactions found matching your filters.
+                      </td>
+                    </tr>
+                  )}
+                  {loading && (
                     <tr>
                       <td
                         className="py-10 text-center text-sm text-[color:var(--trite-muted)]"
                         colSpan={5}
                       >
-                        No transactions found matching your filters.
+                        Loading...
                       </td>
                     </tr>
                   )}
@@ -451,89 +323,68 @@ export default function TransactionsPage() {
 
               <div className="mt-4 flex items-center justify-between">
                 <div className="text-xs text-[color:var(--trite-muted)]">
-                  Showing {filteredTransactions.length} of {demoTransactions.length} transactions
+                  Showing {transactions.length} of {pagination.total} transactions
                 </div>
                 <div className="flex items-center gap-2">
-                  <button className="flex h-8 items-center justify-center rounded-lg border border-black/10 px-3 text-xs font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.02]">
+                  <button 
+                    disabled={page <= 1}
+                    onClick={() => setPage(page - 1)}
+                    className="flex h-8 items-center justify-center rounded-lg border border-black/10 px-3 text-xs font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50"
+                  >
                     Previous
                   </button>
-                  <button className="flex h-8 items-center justify-center rounded-lg bg-[color:var(--trite-ink)] px-3 text-xs font-medium text-white">
-                    1
-                  </button>
-                  <button className="flex h-8 items-center justify-center rounded-lg border border-black/10 px-3 text-xs font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.02]">
-                    2
-                  </button>
-                  <button className="flex h-8 items-center justify-center rounded-lg border border-black/10 px-3 text-xs font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.02]">
+                  <span className="text-xs font-medium text-[color:var(--trite-ink)]">
+                    Page {page} of {pagination.total_pages || 1}
+                  </span>
+                  <button 
+                    disabled={page >= pagination.total_pages}
+                    onClick={() => setPage(page + 1)}
+                    className="flex h-8 items-center justify-center rounded-lg border border-black/10 px-3 text-xs font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50"
+                  >
                     Next
                   </button>
                 </div>
               </div>
             </div>
-
-            <div className="rounded-xl bg-gradient-to-br from-[#1a1f2e] to-[#0f1419] p-5 text-white">
-              <div className="text-lg font-semibold">Payment Method Mix</div>
-              <div className="mt-1 text-xs text-white/60">Distribution by transaction count</div>
-              <div className="mt-6 space-y-4">
-                {methodMix.map((method) => (
-                  <div key={method.name}>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-white/80">{method.name}</span>
-                      <span className="font-semibold">{method.percent}%</span>
-                    </div>
-                    <div className="mt-2 h-2 w-full rounded-full bg-white/10">
-                      <div className={`h-2 rounded-full ${method.color}`} style={{ width: `${method.percent}%` }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <button className="mt-6 inline-flex items-center gap-1 text-sm font-medium text-blue-400 hover:text-blue-300">
-                View detailed breakdown
-                <ArrowRightIcon className="h-4 w-4" />
-              </button>
-            </div>
           </div>
 
           <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <div className="rounded-xl bg-[color:var(--trite-lime)] p-5 ring-1 ring-black/5">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="text-sm font-medium text-[color:var(--trite-ink)]/70">
-                    Mobile Money Dominance
-                  </div>
-                  <div className="mt-2 text-2xl font-bold text-[color:var(--trite-ink)]">
-                    52% of transactions
-                  </div>
-                  <p className="mt-2 text-xs leading-5 text-[color:var(--trite-ink)]/70">
-                    Ghana&apos;s preferred payment method. MTN MoMo and Vodafone Cash leading adoption.
-                  </p>
+            <div className="rounded-2xl bg-[color:var(--trite-lime)] p-6 ring-1 ring-black/5 flex items-start justify-between">
+              <div>
+                <div className="text-sm font-medium text-[color:var(--trite-ink)]/70">
+                  {dominantMethod ? `${dominantMethod.name.replace("_", " ")} Dominance` : "Dominance Intelligence"}
                 </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[color:var(--trite-ink)]/10">
-                  <SmartphoneIcon className="h-5 w-5 text-[color:var(--trite-ink)]" />
+                <div className="mt-2 text-2xl font-bold text-[color:var(--trite-ink)]">
+                  {dominantMethod ? `${dominantMethod.percent}% of active transactions` : "Processing Data..."}
                 </div>
+                <p className="mt-2 text-xs leading-5 text-[color:var(--trite-ink)]/70">
+                  Preferred payment method aggregated across all completed and requested orders locally.
+                </p>
+              </div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[color:var(--trite-ink)]/10">
+                <BarChartIcon className="h-5 w-5 text-[color:var(--trite-ink)]" />
               </div>
             </div>
-
-            <div className="rounded-xl bg-[color:var(--trite-ink)] p-5 text-white ring-1 ring-black/10">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="text-sm font-medium text-white/60">Settlement Status</div>
-                  <div className="mt-2 text-2xl font-bold">Next: Today 18:00</div>
-                  <p className="mt-2 text-xs leading-5 text-white/60">
-                    Auto-settlement to GCB Bank account ending in 4421. Expected: {formatGHS(stats.total * 0.985)}
-                  </p>
-                </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
-                  <BankIcon className="h-5 w-5 text-white" />
-                </div>
+            <div className="rounded-2xl bg-gradient-to-br from-[#1a1f2e] to-[#0f1419] p-6 text-white">
+              <div className="text-lg font-semibold">Payment Method Mix</div>
+              <div className="mt-1 text-xs text-white/60">Distribution by transaction count</div>
+              <div className="mt-6 space-y-4">
+                {stats.method_mix.map((method) => (
+                    <div key={method.name}>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-white/80">{method.name}</span>
+                        <span className="font-semibold">{method.percent}%</span>
+                      </div>
+                      <div className="mt-2 h-2 w-full rounded-full bg-white/10">
+                        <div className={`h-2 rounded-full ${method.color}`} style={{ width: `${method.percent}%` }} />
+                      </div>
+                    </div>
+                ))}
               </div>
-              <button className="mt-4 inline-flex h-9 items-center justify-center rounded-lg bg-[color:var(--trite-lime-strong)] px-4 text-xs font-semibold text-[color:var(--trite-ink)] hover:bg-[color:var(--trite-lime)]">
-                Manage Settlements
-              </button>
             </div>
           </div>
         </div>
-      </main>
-    </div>
+    </>
   );
 }
 
@@ -568,35 +419,33 @@ function FilterChip({
   );
 }
 
-function StatusBadge({ status }: { status: TxStatus }) {
-  const config = {
-    completed: { text: "Completed", color: "bg-[color:var(--trite-lime)]/20 text-[color:var(--trite-ink)]" },
-    pending: { text: "Pending", color: "bg-blue-50 text-blue-600" },
-    failed: { text: "Failed", color: "bg-red-50 text-red-600" },
-    flagged: { text: "Flagged", color: "bg-amber-50 text-amber-600" },
-  };
+function StatusBadge({ status }: { status: string }) {
+  let color = "bg-gray-100 text-gray-700";
+  if (status === "SUCCESS") color = "bg-[color:var(--trite-lime)]/20 text-[color:var(--trite-ink)]";
+  else if (status === "PENDING" || status === "PROCESSING") color = "bg-yellow-100 text-yellow-700";
+  else if (status === "FAILED") color = "bg-red-50 text-red-600";
 
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${config[status].color}`}>
-      {config[status].text}
+    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${color}`}>
+      {status}
     </span>
   );
 }
 
-function MethodIcon({ method }: { method: TxMethod }) {
-  if (method === "Mobile Money") return <SmartphoneIcon className="h-4 w-4 text-[color:var(--trite-lime-strong)]" />;
-  if (method === "Card") return <CreditCardIcon className="h-4 w-4 text-blue-500" />;
-  if (method === "Bank Transfer") return <BankIcon className="h-4 w-4 text-purple-500" />;
+function MethodIcon({ method }: { method: string }) {
+  if (method === "MOBILE_MONEY") return <SmartphoneIcon className="h-4 w-4 text-[color:var(--trite-lime-strong)]" />;
+  if (method === "CARD") return <CreditCardIcon className="h-4 w-4 text-blue-500" />;
+  if (method === "BANK_TRANSFER") return <BankIcon className="h-4 w-4 text-purple-500" />;
   return <CoinIcon className="h-4 w-4 text-orange-500" />;
 }
 
-function MenuIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-    </svg>
-  );
-}
+const formatGHS = (amount: number) => {
+  return new Intl.NumberFormat("en-GH", {
+    style: "currency",
+    currency: "GHS",
+    minimumFractionDigits: 2,
+  }).format(amount);
+};
 
 function LayoutGridIcon({ className }: { className?: string }) {
   return (
@@ -760,22 +609,3 @@ function CoinIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-
-function RefreshCcwIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-      <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
-      <polyline points="21 3 21 8 16 8" />
-    </svg>
-  );
-}
-
-function VerifiedBadge({ className }: { className?: string }) {
-  return (
-    <div className={`flex shrink-0 items-center justify-center rounded-full bg-[color:var(--trite-lime-strong)] p-0.5 ${className}`}>
-      <svg className="h-full w-full text-[color:var(--trite-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
-        <polyline points="20 6 9 17 4 12" />
-      </svg>    </div>
-  );
-}
-

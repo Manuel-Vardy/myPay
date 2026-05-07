@@ -3,33 +3,232 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useMerchantFetch } from "@/lib/hooks/useMerchantFetch";
 
-const sidebarItems = [
-  { id: "dashboard", label: "Dashboard", href: "/merchant", icon: LayoutGridIcon },
-  { id: "analytics", label: "Analytics", href: "/merchant/analytics", icon: BarChartIcon },
-  { id: "transactions", label: "Transactions", href: "/merchant/transactions", icon: ReceiptIcon },
-  { id: "subscriptions", label: "Subscriptions", href: "/merchant/subscriptions", icon: RefreshCcwIcon },
-  { id: "customers", label: "Customers", href: "/merchant/customers", icon: UsersIcon },
-  { id: "settings", label: "Settings", href: "/merchant/settings", icon: SettingsIcon },
-];
+
+type SettingsData = {
+  user: { 
+    id: string;
+    two_factor_enabled: boolean;
+    passkeys: any[];
+    first_name: string; 
+    last_name: string; 
+    full_name: string; 
+    email: string; 
+    mobile_number?: string; 
+    city?: string; 
+    country?: string 
+  };
+  merchant_display_id: string;
+  business_name: string;
+  notification_email: string | null;
+  notification_settings: {
+    transactions: boolean;
+    systemUpdates: boolean;
+    marketing: boolean;
+  };
+  region: string | null;
+  api_keys: { key_id: string; label: string; prefix: string; is_active: boolean; last_used: string | null }[];
+  active_key_count: number;
+  webhook_config: { url: string | null; events: string[] };
+};
+
+type SubTab = "general" | "notifications" | "security" | "integrations";
 
 export default function SettingsPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("settings");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeSubTab, setActiveSubTab] = useState<SubTab>("general");
   const [notifications, setNotifications] = useState({
     transactions: true,
     systemUpdates: true,
     marketing: false,
   });
-
-  // Profile form state
-  const [fullName, setFullName] = useState("Kwame Asante");
-  const [email, setEmail] = useState("kwame.asante@trite.com.gh");
+  const [user, setUser] = useState<Partial<SettingsData["user"]>>({});
+  const [business_name, setBusinessName] = useState("");
+  const [email, setEmail] = useState("");
   const [region, setRegion] = useState("Greater Accra (Ghana)");
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [webhookUrl, setWebhookUrl] = useState("");
+  const [webhookEvents, setWebhookEvents] = useState<string[]>([]);
+  const [newKeyLabel, setNewKeyLabel] = useState("");
+  const [generatedKey, setGeneratedKey] = useState<{ id: string; key: string } | null>(null);
+  const [apiKeys, setApiKeys] = useState<{ key_id: string; label: string; prefix: string; is_active: boolean; last_used: string | null }[]>([]);
   const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState("");
+
+  const [passwordModal, setPasswordModal] = useState(false);
+  const [passkeyModal, setPasskeyModal] = useState(false);
+
+  const [passwords, setPasswords] = useState({ current: "", new: "", confirm: "" });
+  const [passkeyName, setPasskeyName] = useState("");
+
+  const { data: settings } = useMerchantFetch<SettingsData>("/api/merchant/settings");
+
+  useEffect(() => {
+    if (settings) {
+      setUser(settings.user);
+      setBusinessName(settings.business_name);
+      setEmail(settings.notification_email ?? "");
+      setRegion(settings.region ?? "Greater Accra (Ghana)");
+      setWebhookUrl(settings.webhook_config?.url ?? "");
+      setWebhookEvents(settings.webhook_config?.events ?? []);
+      if (settings.api_keys) setApiKeys(settings.api_keys);
+      if (settings.notification_settings) {
+        setNotifications(settings.notification_settings);
+      }
+    }
+  }, [settings]);
+
+  async function handleUpdateProfile() {
+    setSaving(true);
+    const res = await fetch("/api/merchant/settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        notification_email: email,
+        business_name: business_name,
+        region: region,
+        user_data: {
+          first_name: user.first_name,
+          last_name: user.last_name,
+          email: user.email,
+          mobile_number: user.mobile_number,
+          city: user.city,
+          country: user.country
+        }
+      }),
+    });
+    const json = await res.json();
+    setSaveMsg(json.message ?? json.error ?? "");
+    setSaving(false);
+    if (res.ok) setUpdateSuccess(true);
+    setTimeout(() => {
+      setSaveMsg("");
+      setUpdateSuccess(false);
+    }, 3000);
+  }
+
+  async function handleUpdateNotifications() {
+    setSaving(true);
+    const res = await fetch("/api/merchant/settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        notification_settings: notifications
+      }),
+    });
+    const json = await res.json();
+    setSaveMsg(json.message ?? json.error ?? "");
+    setSaving(false);
+    setTimeout(() => setSaveMsg(""), 3000);
+  }
+
+  async function handleUpdate2FA(enabled: boolean) {
+    setSaving(true);
+    const res = await fetch("/api/merchant/settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        user_data: { two_factor_enabled: enabled }
+      }),
+    });
+    const json = await res.json();
+    if (res.ok) {
+      setUser(u => ({ ...u, two_factor_enabled: enabled }));
+    }
+    setSaveMsg(json.message ?? json.error ?? "");
+    setSaving(false);
+    setTimeout(() => setSaveMsg(""), 3000);
+  }
+
+  async function handleUpdatePassword() {
+    if (passwords.new !== passwords.confirm) {
+      setSaveMsg("Passwords do not match");
+      return;
+    }
+    setSaving(true);
+    const res = await fetch("/api/merchant/settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        password_change: {
+          current_password: passwords.current,
+          new_password: passwords.new
+        }
+      }),
+    });
+    const json = await res.json();
+    if (res.ok) {
+      setPasswordModal(false);
+      setPasswords({ current: "", new: "", confirm: "" });
+    }
+    setSaveMsg(json.message ?? json.error ?? "");
+    setSaving(false);
+    setTimeout(() => setSaveMsg(""), 3000);
+  }
+
+  async function handleSaveWebhooks() {
+    setSaving(true);
+    const res = await fetch("/api/merchant/settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        webhook_url: webhookUrl,
+        webhook_events: webhookEvents
+      }),
+    });
+    const json = await res.json();
+    setSaveMsg(json.message ?? json.error ?? "");
+    setSaving(false);
+    setTimeout(() => setSaveMsg(""), 3000);
+  }
+
+  async function handleGenerateKey() {
+    setSaving(true);
+    const res = await fetch("/api/merchant/settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        generate_api_key: { label: newKeyLabel }
+      }),
+    });
+    const json = await res.json();
+    if (res.ok && json.new_api_key) {
+      setGeneratedKey({ id: json.new_api_key.key_id, key: json.new_api_key.full_key });
+      setApiKeys(prev => [{
+        key_id: json.new_api_key.key_id,
+        label: newKeyLabel,
+        prefix: json.new_api_key.full_key.substring(0, 12),
+        is_active: true,
+        last_used: null
+      }, ...prev]);
+      setNewKeyLabel("");
+    }
+    setSaveMsg(json.message ?? json.error ?? "");
+    setSaving(false);
+    setTimeout(() => setSaveMsg(""), 3000);
+  }
+
+  async function handleRevokeKey(keyId: string) {
+    if (!confirm("Are you sure you want to revoke this API key? This action is irreversible.")) return;
+    
+    setSaving(true);
+    const res = await fetch(`/api/merchant/settings/keys/${keyId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ }),
+    });
+    const json = await res.json();
+    if (res.ok) {
+      setApiKeys(prev => prev.map(k => k.key_id === keyId ? { ...k, is_active: false } : k));
+    }
+    setSaveMsg(json.message ?? json.error ?? "");
+    setSaving(false);
+    setTimeout(() => setSaveMsg(""), 3000);
+  }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -42,121 +241,9 @@ export default function SettingsPage() {
     }
   };
 
-  const handleUpdateProfile = () => {
-    // Simulate profile update
-    setUpdateSuccess(true);
-    setTimeout(() => setUpdateSuccess(false), 3000);
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-[#f6f7fb]">
-      {/* Mobile Sidebar Backdrop */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden" 
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      <aside className={`fixed left-0 top-0 z-50 h-screen w-56 border-r border-black/5 bg-white transition-transform duration-300 lg:translate-x-0 ${
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      }`}>
-        <div className="flex h-full flex-col">
-          <div className="flex h-16 items-center border-b border-black/5 px-4">
-            <Link href="/" className="flex items-center gap-3">
-              <Image
-                src="/tritee-logo.png"
-                alt="Trite logo"
-                width={120}
-                height={28}
-                priority
-              />
-            </Link>
-          </div>
-
-          <nav className="flex-1 overflow-y-auto px-3 py-4">
-            <ul className="space-y-1">
-              {sidebarItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <li key={item.id}>
-                    <button
-                      onClick={() => {
-                        setActiveTab(item.id);
-                        router.push(item.href);
-                      }}
-                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                        isActive
-                          ? "bg-[color:var(--trite-lime)] text-[color:var(--trite-ink)]"
-                          : "text-[color:var(--trite-muted)] hover:bg-black/[0.03] hover:text-[color:var(--trite-ink)]"
-                      }`}
-                    >
-                      <Icon className="h-5 w-5" />
-                      {item.label}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
-
-          <div className="border-t border-black/5 p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--trite-ink)]">
-                <span className="text-sm font-semibold text-white">KA</span>
-              </div>
-              <div className="flex-1">
-                <div className="text-sm font-semibold text-[color:var(--trite-ink)]">
-                  Kwame Asante
-                </div>
-                <div className="text-xs text-[color:var(--trite-muted)]">Admin Access</div>
-              </div>
-            </div>
-            <button
-              onClick={() => router.push("/")}
-              className="mt-3 text-xs font-medium text-red-500 hover:text-red-600"
-            >
-              Sign Out
-            </button>
-          </div>
-        </div>
-      </aside>
-
-      <main className="transition-all duration-300 lg:ml-56">
-        <header className="sticky top-0 z-30 border-b border-black/5 bg-white/80 backdrop-blur">
-          <div className="flex h-16 items-center justify-between px-4 sm:px-6">
-            <div className="flex items-center gap-4">
-              <button 
-                onClick={() => setSidebarOpen(true)}
-                className="flex h-10 w-10 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03] lg:hidden"
-              >
-                <MenuIcon className="h-6 w-6" />
-              </button>
-              <Link href="/" className="lg:hidden">
-                <Image
-                  src="/tritee-logo.png"
-                  alt="Trite logo"
-                  width={90}
-                  height={22}
-                  priority
-                />
-              </Link>
-            </div>
-            <div className="flex items-center gap-3">
-              <button className="flex h-9 w-9 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]">
-                <BellIcon className="h-4 w-4" />
-              </button>
-              <div className="hidden items-center gap-2 text-xs font-medium text-[color:var(--trite-ink)] sm:flex">
-                <span>Merchant</span>
-                <ChevronDownIcon className="h-3 w-3" />
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <div className="p-5">
-          <div className="mb-6">
+        <div className="px-4 py-5 sm:p-6">
+          <div className="mb-8">
             <h1 className="text-xl font-semibold tracking-tight text-[color:var(--trite-ink)] sm:text-2xl">
               Account Settings
             </h1>
@@ -165,194 +252,492 @@ export default function SettingsPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-            <div className="lg:col-span-2 space-y-6">
-              <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
-                {updateSuccess && (
-                  <div className="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-700">
-                    Profile updated successfully!
-                  </div>
+          <div className="mb-8 flex border-b border-black/5">
+            {[
+              { id: "general", label: "General" },
+              { id: "notifications", label: "Notifications" },
+              { id: "security", label: "Security" },
+              { id: "integrations", label: "Integrations" },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveSubTab(tab.id as SubTab)}
+                className={`relative px-4 py-3 text-xs font-medium transition-colors sm:px-6 sm:text-sm ${
+                  activeSubTab === tab.id
+                    ? "text-[color:var(--trite-ink)]"
+                    : "text-[color:var(--trite-muted)] hover:text-[color:var(--trite-ink)]"
+                }`}
+              >
+                {tab.label}
+                {activeSubTab === tab.id && (
+                  <div className="absolute bottom-0 left-0 h-0.5 w-full bg-[color:var(--trite-lime-strong)]" />
                 )}
-                <div className="flex flex-col sm:flex-row items-start gap-5">
-                  <div className="relative shrink-0">
-                    <div className="flex h-24 w-24 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-2xl font-bold text-white overflow-hidden">
-                      {profileImage ? (
-                        <img src={profileImage} alt="Profile" className="h-full w-full object-cover" />
-                      ) : (
-                        fullName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
-                      )}
+              </button>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2 space-y-6">
+              {activeSubTab === "general" && (
+                <>
+                  <div className="rounded-2xl bg-white p-6 ring-1 ring-black/5">
+                    {updateSuccess && (
+                      <div className="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-700">
+                        Profile updated successfully!
+                      </div>
+                    )}
+                    <h3 className="mb-6 text-lg font-semibold text-[color:var(--trite-ink)]">Personal Information</h3>
+                    <div className="flex flex-col sm:flex-row items-start gap-5">
+                      <div className="relative">
+                        <div className="flex h-24 w-24 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-2xl font-bold text-white overflow-hidden">
+                          {profileImage ? (
+                            <img src={profileImage} alt="Profile" className="h-full w-full object-cover" />
+                          ) : (
+                            user.full_name?.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)
+                          )}
+                        </div>
+                        <label className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg cursor-pointer hover:bg-blue-700">
+                          <CameraIcon className="h-4 w-4" />
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                      <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
+                              First Name
+                            </label>
+                            <input
+                              type="text"
+                              value={user.first_name ?? ""}
+                              onChange={(e) => setUser({ ...user, first_name: e.target.value })}
+                              className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
+                              Last Name
+                            </label>
+                            <input
+                              type="text"
+                              value={user.last_name ?? ""}
+                              onChange={(e) => setUser({ ...user, last_name: e.target.value })}
+                              className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
+                            Email Address
+                          </label>
+                          <input
+                            type="email"
+                            value={user.email ?? ""}
+                            onChange={(e) => setUser({ ...user, email: e.target.value })}
+                            className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none focus:border-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
+                            Mobile Number
+                          </label>
+                          <input
+                            type="text"
+                            value={user.mobile_number ?? ""}
+                            onChange={(e) => setUser({ ...user, mobile_number: e.target.value })}
+                            className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none"
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
+                              City
+                            </label>
+                            <input
+                              type="text"
+                              value={user.city ?? ""}
+                              onChange={(e) => setUser({ ...user, city: e.target.value })}
+                              className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
+                              Country
+                            </label>
+                            <input
+                              type="text"
+                              value={user.country ?? ""}
+                              onChange={(e) => setUser({ ...user, country: e.target.value })}
+                              className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none"
+                            />
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <label className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg cursor-pointer hover:bg-blue-700">
-                      <CameraIcon className="h-4 w-4" />
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                      />
-                    </label>
                   </div>
-                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
-                    <div>
-                      <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
-                        Full Name
-                      </label>
-                      <input
-                        type="text"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-500"
+
+                  {/* Business Details */}
+                  <div className="rounded-2xl bg-white p-6 ring-1 ring-black/5">
+                    <h3 className="mb-6 text-lg font-semibold text-[color:var(--trite-ink)]">Business Details</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
+                          Business Name
+                        </label>
+                        <input
+                          type="text"
+                          value={business_name}
+                          onChange={(e) => setBusinessName(e.target.value)}
+                          className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
+                          Notification Email
+                        </label>
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
+                          Merchant ID
+                        </label>
+                        <div className="mt-1 flex items-center justify-between rounded-lg border border-black/10 bg-gray-50 px-3 py-2">
+                          <span className="text-sm font-mono text-[color:var(--trite-ink)]">{settings?.merchant_display_id ?? "—"}</span>
+                          <button 
+                            onClick={() => navigator.clipboard.writeText(settings?.merchant_display_id ?? "")}
+                            className="text-[color:var(--trite-muted)] hover:text-[color:var(--trite-ink)]"
+                          >
+                            <CopyIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
+                          Region
+                        </label>
+                        <input
+                          type="text"
+                          value={region}
+                          onChange={(e) => setRegion(e.target.value)}
+                          className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-3 pb-4">
+                    {saveMsg && <span className="text-xs text-green-600">{saveMsg}</span>}
+                    <button
+                      onClick={handleUpdateProfile}
+                      disabled={saving}
+                      className="flex h-10 items-center justify-center rounded-lg bg-blue-600 px-6 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+                    >
+                      {saving ? "Saving..." : "Update Profile"}
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {activeSubTab === "notifications" && (
+                <div className="rounded-2xl bg-white p-6 ring-1 ring-black/5">
+                  <div className="flex items-center gap-2">
+                    <MailIcon className="h-5 w-5 text-blue-600" />
+                    <h3 className="text-lg font-semibold text-[color:var(--trite-ink)]">Email Notifications</h3>
+                  </div>
+                  <div className="mt-6 space-y-4">
+                    <div className="flex items-center justify-between rounded-xl bg-gray-50 p-4">
+                      <div>
+                        <div className="font-medium text-[color:var(--trite-ink)]">Transactions</div>
+                        <div className="text-xs text-[color:var(--trite-muted)]">Instant alerts for all processing activities.</div>
+                      </div>
+                      <Toggle
+                        checked={notifications.transactions}
+                        onChange={() => setNotifications((n) => ({ ...n, transactions: !n.transactions }))}
                       />
                     </div>
-                    <div>
-                      <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
-                        Email Address
-                      </label>
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-500"
+                    <div className="flex items-center justify-between rounded-xl bg-gray-50 p-4">
+                      <div>
+                        <div className="font-medium text-[color:var(--trite-ink)]">System Updates</div>
+                        <div className="text-xs text-[color:var(--trite-muted)]">Maintenance schedules and security patches.</div>
+                      </div>
+                      <Toggle
+                        checked={notifications.systemUpdates}
+                        onChange={() => setNotifications((n) => ({ ...n, systemUpdates: !n.systemUpdates }))}
                       />
                     </div>
-                    <div>
-                      <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
-                        Merchant ID
-                      </label>
-                      <div className="mt-1 flex items-center gap-2 rounded-lg border border-black/10 bg-gray-50 px-3 py-2">
-                        <span className="text-sm text-[color:var(--trite-ink)]">MID-8832-7710-GH</span>
-                        <button className="text-[color:var(--trite-muted)] hover:text-[color:var(--trite-ink)]">
-                          <CopyIcon className="h-4 w-4" />
+                    <div className="flex items-center justify-between rounded-xl bg-gray-50 p-4">
+                      <div>
+                        <div className="font-medium text-[color:var(--trite-ink)]">Marketing & Insights</div>
+                        <div className="text-xs text-[color:var(--trite-muted)]">Quarterly reports and platform tips.</div>
+                      </div>
+                      <Toggle
+                        checked={notifications.marketing}
+                        onChange={() => setNotifications((n) => ({ ...n, marketing: !n.marketing }))}
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-6 flex justify-end">
+                    <button onClick={handleUpdateNotifications} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Save Preferences</button>
+                  </div>
+                </div>
+              )}
+
+              {activeSubTab === "security" && (
+                <div className="space-y-6">
+                  <div className="rounded-2xl bg-white p-6 ring-1 ring-black/5">
+                    <h3 className="text-lg font-semibold text-[color:var(--trite-ink)]">Authentication</h3>
+                    <div className="mt-6 space-y-4">
+                      <div className="flex items-center justify-between py-2">
+                        <div className="font-medium text-[color:var(--trite-ink)]">Password</div>
+                        <button 
+                          onClick={() => setPasswordModal(true)}
+                          className="inline-flex h-9 items-center justify-center rounded-lg border border-black/10 bg-white px-4 text-sm font-medium text-[color:var(--trite-ink)] hover:bg-gray-50"
+                        >
+                          Change Password
+                        </button>
+                      </div>
+                      <div className="border-t border-black/5" />
+                      <div className="flex items-center justify-between py-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-[color:var(--trite-ink)]">2-Step Verification</span>
+                          <div className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600 uppercase">Email Confirmations</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Toggle 
+                            checked={user.two_factor_enabled ?? false} 
+                            onChange={() => handleUpdate2FA(!user.two_factor_enabled)} 
+                          />
+                          <span className="text-sm text-[color:var(--trite-muted)]">
+                            {user.two_factor_enabled ? "Enabled" : "Disabled"}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="border-t border-black/5" />
+                      <div className="flex items-center justify-between py-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-[color:var(--trite-ink)]">Passkeys</span>
+                        </div>
+                        <button 
+                          onClick={() => setPasskeyModal(true)}
+                          className="inline-flex h-9 items-center justify-center rounded-lg border border-black/10 bg-white px-4 text-sm font-medium text-[color:var(--trite-ink)] hover:bg-gray-50"
+                        >
+                          Add Passkey
                         </button>
                       </div>
                     </div>
-                    <div>
-                      <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
-                        Region
-                      </label>
-                      <input
-                        type="text"
-                        value={region}
-                        onChange={(e) => setRegion(e.target.value)}
-                        className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-500"
-                      />
-                    </div>
                   </div>
-                </div>
-                <div className="mt-6 flex justify-end">
-                  <button
-                    onClick={handleUpdateProfile}
-                    className="flex h-10 items-center justify-center rounded-lg bg-blue-600 px-6 text-sm font-semibold text-white hover:bg-blue-700"
-                  >
-                    Update Profile
-                  </button>
-                </div>
-              </div>
 
-              <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
-                <div className="flex items-center gap-2">
-                  <MailIcon className="h-5 w-5 text-blue-600" />
-                  <h3 className="text-lg font-semibold text-[color:var(--trite-ink)]">Email Notifications</h3>
-                </div>
-                <div className="mt-6 space-y-4">
-                  <div className="flex items-center justify-between rounded-xl bg-gray-50 p-4">
-                    <div className="pr-4">
-                      <div className="font-medium text-[color:var(--trite-ink)]">Transactions</div>
-                      <div className="text-xs text-[color:var(--trite-muted)]">Instant alerts for all processing activities.</div>
-                    </div>
-                    <Toggle
-                      checked={notifications.transactions}
-                      onChange={() => setNotifications((n) => ({ ...n, transactions: !n.transactions }))}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between rounded-xl bg-gray-50 p-4">
-                    <div className="pr-4">
-                      <div className="font-medium text-[color:var(--trite-ink)]">System Updates</div>
-                      <div className="text-xs text-[color:var(--trite-muted)]">Maintenance schedules and security patches.</div>
-                    </div>
-                    <Toggle
-                      checked={notifications.systemUpdates}
-                      onChange={() => setNotifications((n) => ({ ...n, systemUpdates: !n.systemUpdates }))}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between rounded-xl bg-gray-50 p-4">
-                    <div className="pr-4">
-                      <div className="font-medium text-[color:var(--trite-ink)]">Marketing & Insights</div>
-                      <div className="text-xs text-[color:var(--trite-muted)]">Quarterly reports and platform tips.</div>
-                    </div>
-                    <Toggle
-                      checked={notifications.marketing}
-                      onChange={() => setNotifications((n) => ({ ...n, marketing: !n.marketing }))}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
-                <h3 className="text-lg font-semibold text-[color:var(--trite-ink)]">Authentication</h3>
-                <div className="mt-6 space-y-4">
-                  <div className="flex items-center justify-between py-2">
-                    <div className="font-medium text-[color:var(--trite-ink)]">Password</div>
-                    <button className="inline-flex h-9 items-center justify-center rounded-lg border border-black/10 bg-white px-4 text-sm font-medium text-[color:var(--trite-ink)] hover:bg-gray-50">
-                      Change Password
-                    </button>
-                  </div>
-                  <div className="border-t border-black/5" />
-                  <div className="flex items-center justify-between py-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-[color:var(--trite-ink)]">Two-factor Auth</span>
-                      <InfoIcon className="h-4 w-4 text-[color:var(--trite-muted)]" />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Toggle checked={false} onChange={() => {}} />
-                      <span className="text-sm text-[color:var(--trite-muted)]">Disabled</span>
-                    </div>
-                  </div>
-                  <div className="border-t border-black/5" />
-                  <div className="flex items-center justify-between py-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-[color:var(--trite-ink)]">Passkeys</span>
-                      <InfoIcon className="h-4 w-4 text-[color:var(--trite-muted)]" />
-                    </div>
-                    <button className="inline-flex h-9 items-center justify-center rounded-lg border border-black/10 bg-white px-4 text-sm font-medium text-[color:var(--trite-ink)] hover:bg-gray-50">
-                      Add a passkey
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
-                <div className="flex items-center gap-2">
-                  <ShieldIcon className="h-5 w-5 text-blue-600" />
-                  <h3 className="text-lg font-semibold text-[color:var(--trite-ink)]">Two-Step Verification (2FA)</h3>
-                </div>
-                <div className="mt-4 rounded-xl bg-blue-50 p-4">
-                  <div className="flex items-start gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white">
-                      <LockIcon className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium text-[color:var(--trite-ink)]">Two-Factor Auth is Disabled</div>
-                      <p className="mt-1 text-xs text-[color:var(--trite-muted)]">
-                        Add an extra layer of security to your merchant account by requiring a code from your mobile device.
-                      </p>
-                      <button className="mt-4 inline-flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700">
-                        <SmartphoneIcon className="h-4 w-4" />
-                        Set up Authenticator
-                        <ArrowRightIcon className="h-4 w-4" />
-                      </button>
-                      <div className="mt-3 flex items-center gap-2 text-xs text-[color:var(--trite-muted)]">
-                        <CheckCircleIcon className="h-3 w-3" />
-                        Recommended for high-volume merchant accounts.
+                  <div className="rounded-2xl bg-white p-6 ring-1 ring-black/5">
+                    <h3 className="text-lg font-semibold text-[color:var(--trite-ink)]">Active Sessions</h3>
+                    <p className="mt-1 text-sm text-[color:var(--trite-muted)]">Manage your active instances across high-velocity nodes.</p>
+                    
+                    <div className="mt-6 space-y-4">
+                      <div className="flex items-center justify-between rounded-xl bg-gray-50 p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white shadow-sm ring-1 ring-black/5">
+                            <SmartphoneIcon className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-[color:var(--trite-ink)]">iPhone 14 Pro</div>
+                            <div className="text-[10px] text-[color:var(--trite-muted)]">Accra, Ghana • Active Now</div>
+                          </div>
+                        </div>
+                        <button className="text-xs font-semibold text-red-600 hover:text-red-700">Revoke</button>
+                      </div>
+                      <div className="flex items-center justify-between rounded-xl bg-gray-50 p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white shadow-sm ring-1 ring-black/5">
+                            <MonitorIcon className="h-5 w-5 text-[color:var(--trite-muted)]" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-[color:var(--trite-ink)]">MacBook Pro M2</div>
+                            <div className="text-[10px] text-[color:var(--trite-muted)]">Accra, Ghana • 2 hours ago</div>
+                          </div>
+                        </div>
+                        <button className="text-xs font-semibold text-red-600 hover:text-red-700">Revoke</button>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
+
+              {activeSubTab === "integrations" && (
+                <div className="space-y-6">
+                  <div className="rounded-2xl bg-white p-6 ring-1 ring-black/5">
+                    <div className="flex items-center gap-2 mb-6">
+                      <GlobeIcon className="h-5 w-5 text-blue-600" />
+                      <h3 className="text-lg font-semibold text-[color:var(--trite-ink)]">Webhook Configuration</h3>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
+                          Endpoint URL
+                        </label>
+                        <div className="mt-1 flex gap-2">
+                          <input
+                            type="url"
+                            value={webhookUrl}
+                            onChange={(e) => setWebhookUrl(e.target.value)}
+                            placeholder="https://your-api.com/webhooks"
+                            className="flex-1 rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none focus:border-blue-500"
+                          />
+                          <button
+                            onClick={handleSaveWebhooks}
+                            disabled={saving}
+                            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+                          >
+                            Save
+                          </button>
+                        </div>
+                        <p className="mt-1 text-[10px] text-[color:var(--trite-muted)]">
+                          All event payloads will be sent to this URL as POST requests.
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
+                          Event Subscriptions
+                        </label>
+                        <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                          {["payment.success", "payment.failed", "payout.success", "payout.failed", "customer.created", "customer.verified"].map((event) => (
+                            <label key={event} className="flex items-center gap-2 rounded-lg border border-black/5 bg-gray-50 p-2 cursor-pointer hover:bg-gray-100">
+                              <input
+                                type="checkbox"
+                                checked={webhookEvents.includes(event)}
+                                onChange={(e) => {
+                                  if (e.target.checked) setWebhookEvents([...webhookEvents, event]);
+                                  else setWebhookEvents(webhookEvents.filter(ev => ev !== event));
+                                }}
+                                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                              />
+                              <span className="text-xs text-[color:var(--trite-ink)]">{event}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl bg-white p-6 ring-1 ring-black/5">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-2">
+                        <KeyIcon className="h-5 w-5 text-blue-600" />
+                        <h3 className="text-lg font-semibold text-[color:var(--trite-ink)]">API Management</h3>
+                      </div>
+                    </div>
+
+                    {generatedKey && (
+                      <div className="mb-6 rounded-xl bg-amber-50 p-4 border border-amber-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-bold text-amber-900">New API Key Generated!</span>
+                          <button onClick={() => setGeneratedKey(null)} className="text-amber-700 hover:text-amber-900">
+                            <XIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                        <p className="text-xs text-amber-800 mb-3">
+                          Copy this key now. For security purposes, it will NOT be shown again.
+                        </p>
+                        <div className="flex items-center gap-2 rounded-lg bg-white border border-amber-200 p-2">
+                          <code className="text-xs font-mono text-amber-700 break-all flex-1">{generatedKey.key}</code>
+                          <button 
+                            onClick={() => navigator.clipboard.writeText(generatedKey.key)}
+                            className="text-amber-700 hover:text-amber-900"
+                          >
+                            <CopyIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="space-y-6">
+                      <div className="rounded-xl border border-black/5 overflow-hidden">
+                        <table className="w-full text-left">
+                          <thead className="bg-gray-50 border-b border-black/5">
+                            <tr className="text-[10px] uppercase tracking-wider text-[color:var(--trite-muted)] font-bold">
+                              <th className="px-4 py-3">Label</th>
+                              <th className="px-4 py-3">Key Prefix</th>
+                              <th className="px-4 py-3">Status</th>
+                              <th className="px-4 py-3">Last Used</th>
+                              <th className="px-4 py-3 text-right">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody className="text-xs divide-y divide-black/5 text-[color:var(--trite-ink)]">
+                            {apiKeys.map((key) => (
+                              <tr key={key.key_id} className="hover:bg-gray-50/50">
+                                <td className="px-4 py-3 font-medium">{key.label}</td>
+                                <td className="px-4 py-3 font-mono text-gray-500">{key.prefix}...</td>
+                                <td className="px-4 py-3">
+                                  {key.is_active ? (
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-semibold text-green-700">
+                                      <div className="h-1 w-1 rounded-full bg-green-600" />
+                                      Active
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-700">
+                                      Revoked
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="px-4 py-3 text-gray-400">
+                                  {key.last_used ? new Date(key.last_used).toLocaleDateString() : "Never"}
+                                </td>
+                                <td className="px-4 py-3 text-right">
+                                  {key.is_active && (
+                                    <button 
+                                      onClick={() => handleRevokeKey(key.key_id)}
+                                      className="text-red-500 hover:text-red-700 p-1"
+                                    >
+                                      <TrashIcon className="h-4 w-4" />
+                                    </button>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div className="mt-4">
+                        <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
+                          Create New API Key
+                        </label>
+                        <div className="mt-1 flex gap-2">
+                          <input
+                            type="text"
+                            value={newKeyLabel}
+                            onChange={(e) => setNewKeyLabel(e.target.value)}
+                            placeholder="e.g. Production Mobile App"
+                            className="flex-1 rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none focus:border-blue-500"
+                          />
+                          <button
+                            onClick={handleGenerateKey}
+                            disabled={saving || !newKeyLabel}
+                            className="flex items-center gap-2 rounded-lg bg-[color:var(--trite-ink)] px-4 py-2 text-sm font-semibold text-white hover:bg-black disabled:opacity-60"
+                          >
+                            <PlusIcon className="h-4 w-4" />
+                            Generate
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="space-y-6">
-              <div className="rounded-xl bg-gradient-to-br from-[#1a1f2e] to-[#0f1419] p-5 text-white">
+              <div className="rounded-2xl bg-gradient-to-br from-[#1a1f2e] to-[#0f1419] p-6 text-white">
                 <h3 className="text-lg font-semibold">Security Health</h3>
                 <div className="mt-6 flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500/20">
@@ -364,12 +749,17 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <div className="mt-6">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-white/80">Account Strength</span>
-                    <span className="font-semibold">85%</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/80 text-sm">Active API Keys</span>
+                    <span className="font-semibold text-sm">{settings?.active_key_count ?? 0}</span>
                   </div>
-                  <div className="mt-2 h-2 w-full rounded-full bg-white/10">
-                    <div className="h-2 rounded-full bg-gradient-to-r from-green-400 to-blue-400" style={{ width: "85%" }} />
+                  <div className="mt-3 space-y-2">
+                    {apiKeys.filter((k) => k.is_active).slice(0, 3).map((k) => (
+                      <div key={k.key_id} className="flex items-center justify-between rounded-lg bg-white/10 px-3 py-2 text-xs">
+                        <span className="text-white/80">{k.label}</span>
+                        <span className="font-mono text-white/60">{k.prefix}…</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -381,13 +771,117 @@ export default function SettingsPage() {
               <Link href="#" className="hover:text-[color:var(--trite-ink)]">Documentation</Link>
               <Link href="#" className="hover:text-[color:var(--trite-ink)]">API Privacy</Link>
             </div>
-            <div className="text-center sm:text-right">
+            <div>
               Last updated: Oct 24, 2023 • IP: 102.176.65.1
             </div>
           </div>
+
+          {/* Password Modal */}
+          {passwordModal && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+              <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-black/5">
+                <h3 className="text-xl font-bold text-[color:var(--trite-ink)]">Change Password</h3>
+                <p className="mt-1 text-sm text-[color:var(--trite-muted)]">Update your institutional access credentials.</p>
+                
+                <div className="mt-6 space-y-4">
+                  <div>
+                    <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Current Password</label>
+                    <input 
+                      type="password" 
+                      value={passwords.current}
+                      onChange={e => setPasswords({ ...passwords, current: e.target.value })}
+                      className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 outline-none focus:border-blue-500" 
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">New Password</label>
+                    <input 
+                      type="password" 
+                      value={passwords.new}
+                      onChange={e => setPasswords({ ...passwords, new: e.target.value })}
+                      className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 outline-none focus:border-blue-500" 
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Confirm New Password</label>
+                    <input 
+                      type="password" 
+                      value={passwords.confirm}
+                      onChange={e => setPasswords({ ...passwords, confirm: e.target.value })}
+                      className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 outline-none focus:border-blue-500" 
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-8 flex gap-3">
+                  <button 
+                    onClick={() => {
+                      setPasswordModal(false);
+                      setPasswords({ current: "", new: "", confirm: "" });
+                    }}
+                    className="flex-1 rounded-lg border border-black/10 bg-white py-2.5 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={handleUpdatePassword}
+                    disabled={saving}
+                    className="flex-1 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+                  >
+                    {saving ? "Updating..." : "Update Password"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Passkey Modal */}
+          {passkeyModal && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+              <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-black/5">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 mb-4">
+                  <KeyIcon className="h-6 w-6" />
+                </div>
+                <h3 className="text-xl font-bold text-[color:var(--trite-ink)]">Add Passkey</h3>
+                <p className="mt-1 text-sm text-[color:var(--trite-muted)]">Passkeys enable biometrics or security keys for faster, unhackable logins.</p>
+                
+                <div className="mt-6">
+                  <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Device Label</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. Work MacBook, YubiKey"
+                    value={passkeyName}
+                    onChange={e => setPasskeyName(e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 outline-none focus:border-blue-500" 
+                  />
+                </div>
+
+                <div className="mt-8 flex gap-3">
+                  <button 
+                    onClick={() => {
+                      setPasskeyModal(false);
+                      setPasskeyName("");
+                    }}
+                    className="flex-1 rounded-lg border border-black/10 bg-white py-2.5 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setSaveMsg("Passkey flow coming soon");
+                      setPasskeyModal(false);
+                      setPasskeyName("");
+                      setTimeout(() => setSaveMsg(""), 3000);
+                    }}
+                    className="flex-1 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
+                  >
+                    Register
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      </main>
-    </div>
   );
 }
 
@@ -401,14 +895,6 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
         className={`absolute top-1 left-1 h-4 w-4 rounded-full bg-white transition-transform ${checked ? "translate-x-5" : ""}`}
       />
     </button>
-  );
-}
-
-function MenuIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-    </svg>
   );
 }
 
@@ -432,7 +918,6 @@ function LayoutGridIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-
 
 function BarChartIcon({ className }: { className?: string }) {
   return (
@@ -600,21 +1085,59 @@ function ShieldCheckIcon({ className }: { className?: string }) {
   );
 }
 
-function RefreshCcwIcon({ className }: { className?: string }) {
+function GlobeIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-      <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
-      <polyline points="21 3 21 8 16 8" />
+      <circle cx="12" cy="12" r="10" />
+      <line x1="2" y1="12" x2="22" y2="12" />
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
     </svg>
   );
 }
 
-function VerifiedBadge({ className }: { className?: string }) {
+function KeyIcon({ className }: { className?: string }) {
   return (
-    <div className={`flex shrink-0 items-center justify-center rounded-full bg-[color:var(--trite-lime-strong)] p-0.5 ${className}`}>
-      <svg className="h-full w-full text-[color:var(--trite-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
-        <polyline points="20 6 9 17 4 12" />
-      </svg>
-    </div>
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+       <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3m-3-3l-2.5-2.5" />
+    </svg>
+  );
+}
+
+function TrashIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      <line x1="10" y1="11" x2="10" y2="17" />
+      <line x1="14" y1="11" x2="14" y2="17" />
+    </svg>
+  );
+}
+
+function PlusIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  );
+}
+
+function XIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
+
+function MonitorIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+      <line x1="8" y1="21" x2="16" y2="21" />
+      <line x1="12" y1="17" x2="12" y2="21" />
+    </svg>
   );
 }

@@ -142,7 +142,7 @@ export default function CheckoutPage() {
                 Amount (GHS)
               </label>
               <div className="relative mt-2">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg text-[color:var(--trite-muted)]">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-bold text-[color:var(--trite-ink)] opacity-40">
                   GH₵
                 </span>
                 <input
@@ -150,7 +150,7 @@ export default function CheckoutPage() {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="0.00"
-                  className="w-full rounded-xl border border-black/10 bg-white py-4 pl-12 pr-4 text-2xl font-semibold text-gray-900 placeholder:text-black/20 outline-none focus:border-[color:var(--trite-lime-strong)]"
+                  className="w-full rounded-xl border border-black/10 bg-white py-5 pl-20 pr-4 text-3xl font-bold text-[color:var(--trite-ink)] placeholder:text-black/10 outline-none transition-all focus:border-[color:var(--trite-lime-strong)] focus:ring-1 focus:ring-[color:var(--trite-lime-strong)]"
                 />
               </div>
                 {amount && (

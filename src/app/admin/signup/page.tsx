@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ShieldCheck, Info, Shield, Lock, Check } from "lucide-react";
+import { ShieldCheck, Info, Shield, Lock, Check, Loader2, CheckCircle } from "lucide-react";
 
 export default function AdminSignupPage() {
   const router = useRouter();
@@ -16,10 +16,53 @@ export default function AdminSignupPage() {
     password: "",
     confirmPassword: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState<{ message: string; admin_id: string } | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    router.push("/admin/login");
+    setError("");
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passphrases do not match");
+      return;
+    }
+
+    if (formData.password.length < 16) {
+      setError("Passphrase must be at least 16 characters");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/auth/admin-register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          institution: formData.institution,
+          phone: formData.phone,
+          designated_role: formData.role,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Registration failed");
+        setLoading(false);
+        return;
+      }
+
+      setSuccess({ message: data.message, admin_id: data.admin_id });
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -65,6 +108,37 @@ export default function AdminSignupPage() {
             <p className="mt-3 text-xs leading-5 text-[color:var(--trite-muted)] sm:text-sm sm:leading-6">
               Apply for institutional oversight. Applications are reviewed by the Bank of Ghana.
             </p>
+
+            {/* Error Alert */}
+            {error && (
+              <div className="mt-4 flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <Shield className="h-4 w-4 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Success State */}
+            {success ? (
+              <div className="mt-8 space-y-6">
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-center">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100">
+                    <CheckCircle className="h-7 w-7 text-emerald-600" />
+                  </div>
+                  <h2 className="mt-4 text-lg font-semibold text-emerald-900">Application Submitted</h2>
+                  <p className="mt-2 text-sm text-emerald-700">{success.message}</p>
+                  <div className="mt-4 inline-flex items-center gap-2 rounded-lg bg-emerald-100 px-3 py-1.5">
+                    <span className="text-xs font-medium text-emerald-700">Admin ID:</span>
+                    <span className="text-xs font-bold text-emerald-900">{success.admin_id}</span>
+                  </div>
+                </div>
+                <Link
+                  href="/admin/login"
+                  className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[color:var(--trite-ink)] px-6 text-sm font-semibold text-white hover:bg-black"
+                >
+                  Return to Login
+                </Link>
+              </div>
+            ) : (
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -204,10 +278,18 @@ export default function AdminSignupPage() {
               </div>
 
               <button
-                className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-full bg-[color:var(--trite-ink)] px-6 text-sm font-semibold text-white hover:bg-black focus:outline-none focus:ring-2 focus:ring-[color:var(--trite-lime-strong)] focus:ring-offset-2"
+                className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[color:var(--trite-ink)] px-6 text-sm font-semibold text-white hover:bg-black focus:outline-none focus:ring-2 focus:ring-[color:var(--trite-lime-strong)] focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
                 type="submit"
+                disabled={loading}
               >
-                Submit Access Request
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Submit Access Request"
+                )}
               </button>
 
               <div className="text-center text-sm text-[color:var(--trite-muted)]">
@@ -220,6 +302,7 @@ export default function AdminSignupPage() {
                 </Link>
               </div>
             </form>
+            )}
 
             {/* Info Box */}
             <div className="mt-8 rounded-2xl border border-black/5 bg-white p-5">

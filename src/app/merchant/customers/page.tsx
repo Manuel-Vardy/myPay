@@ -4,15 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { useMerchantFetch } from "@/lib/hooks/useMerchantFetch";
 
-const sidebarItems = [
-  { id: "dashboard", label: "Dashboard", href: "/merchant", icon: LayoutGridIcon },
-  { id: "analytics", label: "Analytics", href: "/merchant/analytics", icon: BarChartIcon },
-  { id: "transactions", label: "Transactions", href: "/merchant/transactions", icon: ReceiptIcon },
-  { id: "subscriptions", label: "Subscriptions", href: "/merchant/subscriptions", icon: RefreshCcwIcon },
-  { id: "customers", label: "Customers", href: "/merchant/customers", icon: UsersIcon },
-  { id: "settings", label: "Settings", href: "/merchant/settings", icon: SettingsIcon },
-];
 
 type CustomerTier = "institutional" | "enterprise" | "standard";
 type VerificationStatus = "verified" | "pending" | "unverified";
@@ -22,79 +15,38 @@ type Customer = {
   name: string;
   email: string;
   tier: CustomerTier;
-  volume: number;
-  volumeChange: number;
-  verification: VerificationStatus;
-  avatar: string;
+  status: string;
+  kyc_status: VerificationStatus;
+  total_spent: number;
+  transaction_count: number;
+  last_transaction: string;
 };
 
-const demoCustomers: Customer[] = [
-  {
-    id: "CUST-001",
-    name: "Kwame Asante",
-    email: "kwame.asante@goldenstar.com.gh",
-    tier: "institutional",
-    volume: 2842910.0,
-    volumeChange: 12.4,
-    verification: "verified",
-    avatar: "KA",
-  },
-  {
-    id: "CUST-002",
-    name: "Abena Osei",
-    email: "abena.osei@agricorp.com.gh",
-    tier: "enterprise",
-    volume: 1214050.44,
-    volumeChange: -3.1,
-    verification: "verified",
-    avatar: "AO",
-  },
-  {
-    id: "CUST-003",
-    name: "Kofi Mensah",
-    email: "kofi.mensah@techghana.io",
-    tier: "standard",
-    volume: 212940.0,
-    volumeChange: -2.5,
-    verification: "pending",
-    avatar: "KM",
-  },
-  {
-    id: "CUST-004",
-    name: "Akua Boateng",
-    email: "akua@premiertrading.com.gh",
-    tier: "institutional",
-    volume: 4290442.1,
-    volumeChange: 24.8,
-    verification: "verified",
-    avatar: "AB",
-  },
-];
-
 const tierLabels: Record<CustomerTier, string> = {
-  institutional: "INSTITUTIONAL",
-  enterprise: "ENTERPRISE",
-  standard: "STANDARD",
+    institutional: "INSTITUTIONAL",
+    enterprise: "ENTERPRISE",
+    standard: "STANDARD",
 };
 
 const tierColors: Record<CustomerTier, string> = {
-  institutional: "bg-blue-100 text-blue-700",
-  enterprise: "bg-purple-100 text-purple-700",
-  standard: "bg-gray-100 text-gray-700",
+    institutional: "bg-blue-100 text-blue-700",
+    enterprise: "bg-purple-100 text-purple-700",
+    standard: "bg-gray-100 text-gray-700",
 };
 
 export default function CustomersPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("customers");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [search, setSearch] = useState("");
   const [tierFilter, setTierFilter] = useState<CustomerTier | "all">("all");
   const [chartPeriod, setChartPeriod] = useState<"day" | "week" | "month" | "year">("week");
   const [sortBy, setSortBy] = useState("recent");
+  const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [actionMenuOpen, setActionMenuOpen] = useState<string | null>(null);
-  
+
   // Add Customer modal state
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [newCustomerName, setNewCustomerName] = useState("");
@@ -105,197 +57,68 @@ export default function CustomersPage() {
   // Edit form state
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
-  const [editTier, setEditTier] = useState<CustomerTier>("standard");
   const [editVolume, setEditVolume] = useState("");
+  const [editTier, setEditTier] = useState<CustomerTier>("standard");
   const [editVerification, setEditVerification] = useState<VerificationStatus>("pending");
 
-  const formatGHS = (amount: number) => {
-    return new Intl.NumberFormat("en-GH", {
-      style: "currency",
-      currency: "GHS",
-      minimumFractionDigits: 2,
-    }).format(amount);
-  };
+  const { data: customersData } = useMerchantFetch<{ data: Customer[]; pagination: { total: number; total_pages: number } }>(
+    "/api/merchant/customers",
+    { search, page: String(page) }
+  );
 
-  const filteredCustomers = useMemo(() => {
-    let result = tierFilter === "all" ? demoCustomers : demoCustomers.filter((c) => c.tier === tierFilter);
-    
-    // Apply search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(
-        (c) =>
-          c.name.toLowerCase().includes(query) ||
-          c.email.toLowerCase().includes(query) ||
-          c.id.toLowerCase().includes(query)
-      );
-    }
-    
-    if (sortBy === "volume") {
-      result = [...result].sort((a, b) => b.volume - a.volume);
-    } else if (sortBy === "name") {
-      result = [...result].sort((a, b) => a.name.localeCompare(b.name));
-    }
-    
-    return result;
-  }, [tierFilter, sortBy, searchQuery]);
+  const customers = customersData?.data ?? [];
+  const pagination = customersData?.pagination;
+
+    const filteredCustomers = useMemo(() => {
+        let result = tierFilter === "all" ? customers : customers.filter((c) => c.tier === tierFilter);
+        // Apply search filter
+        if (searchQuery.trim()) {
+            const query = searchQuery.toLowerCase();
+            result = result.filter(
+                (c) =>
+                    c.name.toLowerCase().includes(query) ||
+                    c.email.toLowerCase().includes(query) ||
+                    c.id.toLowerCase().includes(query)
+            );
+        }
+        if (sortBy === "volume") return result.sort((a, b) => b.total_spent - a.total_spent);
+        if (sortBy === "name") return result.sort((a, b) => a.email.localeCompare(b.email));
+        return result;
+    }, [tierFilter, sortBy, searchQuery]);
+
+  const formatGHS = (amount: number) =>
+    new Intl.NumberFormat("en-GH", { style: "currency", currency: "GHS", minimumFractionDigits: 2 }).format(amount);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-[#f6f7fb]">
-      {/* Mobile Sidebar Backdrop */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden" 
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      <aside className={`fixed left-0 top-0 z-50 h-screen w-56 border-r border-black/5 bg-white transition-transform duration-300 lg:translate-x-0 ${
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      }`}>
-        <div className="flex h-full flex-col">
-          <div className="flex h-16 items-center border-b border-black/5 px-4">
-            <Link href="/" className="flex items-center gap-3">
-              <Image
-                src="/tritee-logo.png"
-                alt="Trite logo"
-                width={120}
-                height={28}
-                priority
-              />
-            </Link>
-          </div>
-
-          <nav className="flex-1 overflow-y-auto px-3 py-4">
-            <ul className="space-y-1">
-              {sidebarItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <li key={item.id}>
-                    <button
-                      onClick={() => {
-                        setActiveTab(item.id);
-                        router.push(item.href);
-                      }}
-                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                        isActive
-                          ? "bg-[color:var(--trite-lime)] text-[color:var(--trite-ink)]"
-                          : "text-[color:var(--trite-muted)] hover:bg-black/[0.03] hover:text-[color:var(--trite-ink)]"
-                      }`}
-                    >
-                      <Icon className="h-5 w-5" />
-                      {item.label}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
-
-          <div className="border-t border-black/5 p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--trite-ink)]">
-                <span className="text-sm font-semibold text-white">AV</span>
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-[color:var(--trite-ink)]">
-                  Adrian Vance
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="text-xs text-[color:var(--trite-muted)]">Verified Merchant</div>
-                  <VerifiedBadge className="h-3 w-3" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      <main className="transition-all duration-300 lg:ml-56">
-        <header className="sticky top-0 z-30 border-b border-black/5 bg-white/80 backdrop-blur">
-          <div className="flex h-16 items-center justify-between px-4 sm:px-6">
-            <div className="flex items-center gap-4">
-              <button 
-                onClick={() => setSidebarOpen(true)}
-                className="flex h-10 w-10 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03] lg:hidden"
-              >
-                <MenuIcon className="h-6 w-6" />
-              </button>
-              <Link href="/" className="lg:hidden">
-                <Image
-                  src="/tritee-logo.png"
-                  alt="Trite logo"
-                  width={90}
-                  height={22}
-                  priority
-                />
-              </Link>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="hidden sm:flex h-9 max-w-xs items-center gap-2 rounded-lg border border-black/10 bg-white px-3 text-xs text-[color:var(--trite-muted)] md:flex">
-                <SearchIcon className="h-3.5 w-3.5" />
-                <input 
-                  placeholder="Search records..." 
-                  className="w-full bg-transparent outline-none"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <button className="flex h-9 w-9 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]">
-                <BellIcon className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        </header>
-
-        <div className="p-5">
+    <>
+        <div className="px-4 py-5 sm:p-6">
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <h1 className="text-xl font-semibold tracking-tight text-[color:var(--trite-ink)] sm:text-2xl">
                 Customer Directory
               </h1>
-              <p className="mt-1 text-xs text-[color:var(--trite-muted)] sm:text-sm">
-                Manage institutional client relationships and monitor verification lifecycles.
+              <p className="mt-1 text-sm text-[color:var(--trite-muted)]">
+                Manage institutional client relationships, track high-velocity spending patterns, and monitor verification lifecycles.
               </p>
             </div>
             <div className="flex gap-2">
-              <button className="flex h-9 items-center gap-2 rounded-lg border border-black/10 bg-white px-3 text-xs font-semibold text-[color:var(--trite-ink)] hover:bg-black/[0.02]">
-                <DownloadIcon className="h-3.5 w-3.5" />
-                CSV
+              <button className="flex h-10 items-center gap-2 rounded-lg border border-black/10 bg-white px-4 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-black/[0.02]">
+                <DownloadIcon className="h-4 w-4" />
+                Export CSV
               </button>
-              <button 
+              <button
                 onClick={() => setAddModalOpen(true)}
-                className="flex h-9 items-center gap-2 rounded-lg bg-blue-600 px-3 text-xs font-semibold text-white hover:bg-blue-700"
+                className="flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700"
               >
-                <PlusIcon className="h-3.5 w-3.5" />
-                Add
+                <PlusIcon className="h-4 w-4" />
+                Add Customer
               </button>
             </div>
           </div>
 
           <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-wrap gap-2">
-              <TierChip
-                label="All Customers"
-                active={tierFilter === "all"}
-                onClick={() => setTierFilter("all")}
-              />
-              <TierChip
-                label="Institutional (Tier 1)"
-                active={tierFilter === "institutional"}
-                onClick={() => setTierFilter("institutional")}
-              />
-              <TierChip
-                label="Enterprise (Tier 2)"
-                active={tierFilter === "enterprise"}
-                onClick={() => setTierFilter("enterprise")}
-              />
-              <TierChip
-                label="Standard"
-                active={tierFilter === "standard"}
-                onClick={() => setTierFilter("standard")}
-              />
+              <span className="text-sm text-[color:var(--trite-muted)]">{pagination?.total ?? 0} customers</span>
             </div>
             <div className="flex items-center gap-2 text-sm">
               <span className="text-[color:var(--trite-muted)]">SORT BY:</span>
@@ -311,9 +134,9 @@ export default function CustomersPage() {
             </div>
           </div>
 
-          <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
+          <div className="rounded-2xl bg-white p-4 ring-1 ring-black/5 sm:p-6">
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[800px]">
+            <table className="w-full min-w-[700px]">
               <thead>
                 <tr className="border-b border-black/5 text-left">
                   <th className="pb-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
@@ -339,13 +162,18 @@ export default function CustomersPage() {
                     <td className="py-4">
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-xs font-semibold text-white">
-                          {customer.avatar}
+                          {customer.email.slice(0, 2).toUpperCase()}
                         </div>
                         <div>
-                          <div className="font-medium text-[color:var(--trite-ink)]">{customer.name}</div>
+                          <div className="font-medium text-[color:var(--trite-ink)]">{customer.name || customer.email.split("@")[0]}</div>
                           <div className="text-xs text-[color:var(--trite-muted)]">{customer.email}</div>
                         </div>
                       </div>
+                    </td>
+                    <td className="py-4">
+                      <span className="inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold bg-gray-100 text-gray-700">
+                        {customer.status}
+                      </span>
                     </td>
                     <td className="py-4">
                       <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold ${tierColors[customer.tier]}`}>
@@ -353,24 +181,22 @@ export default function CustomersPage() {
                       </span>
                     </td>
                     <td className="py-4">
-                      <div className="font-semibold text-[color:var(--trite-ink)]">{formatGHS(customer.volume)}</div>
-                      <div className={`text-xs ${customer.volumeChange >= 0 ? "text-[color:var(--trite-lime-strong)]" : "text-red-500"}`}>
-                        {customer.volumeChange >= 0 ? "+" : ""}{customer.volumeChange}%
-                      </div>
+                      <div className="font-semibold text-[color:var(--trite-ink)]">{formatGHS(customer.total_spent)}</div>
+                      <div className="text-xs text-[color:var(--trite-muted)]">{customer.transaction_count} txns</div>
                     </td>
                     <td className="py-4">
-                      <VerificationBadge status={customer.verification} />
+                      <VerificationBadge status={customer.kyc_status} />
                     </td>
                     <td className="py-4 text-right">
                       <div className="flex items-center justify-end gap-2 relative">
-                        <button 
+                        <button
                           onClick={() => {
                             setEditingCustomer(customer);
                             setEditName(customer.name);
                             setEditEmail(customer.email);
                             setEditTier(customer.tier);
-                            setEditVolume(customer.volume.toString());
-                            setEditVerification(customer.verification);
+                            setEditVolume(customer.total_spent.toString());
+                            setEditVerification(customer.kyc_status);
                             setEditModalOpen(true);
                           }}
                           className="flex h-8 w-8 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]"
@@ -378,7 +204,7 @@ export default function CustomersPage() {
                           <EditIcon className="h-4 w-4" />
                         </button>
                         <div className="relative">
-                          <button 
+                          <button
                             onClick={() => setActionMenuOpen(actionMenuOpen === customer.id ? null : customer.id)}
                             className="flex h-8 w-8 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]"
                           >
@@ -387,14 +213,14 @@ export default function CustomersPage() {
                           {actionMenuOpen === customer.id && (
                             <div className="absolute right-0 top-full mt-1 w-48 rounded-lg bg-white shadow-lg ring-1 ring-black/5 z-50">
                               <div className="py-1">
-                                <button 
+                                <button
                                   onClick={() => {
                                     setEditingCustomer(customer);
                                     setEditName(customer.name);
                                     setEditEmail(customer.email);
                                     setEditTier(customer.tier);
-                                    setEditVolume(customer.volume.toString());
-                                    setEditVerification(customer.verification);
+                                    setEditVolume(customer.total_spent.toString());
+                                    setEditVerification(customer.kyc_status);
                                     setEditModalOpen(true);
                                     setActionMenuOpen(null);
                                   }}
@@ -403,7 +229,7 @@ export default function CustomersPage() {
                                   <EditIcon className="h-4 w-4" />
                                   Edit Customer
                                 </button>
-                                <button 
+                                <button
                                   onClick={() => {
                                     if (confirm(`Delete ${customer.name}?`)) {
                                       // Handle delete
@@ -435,34 +261,36 @@ export default function CustomersPage() {
                 )}
               </tbody>
             </table>
+            </div>
 
             <div className="mt-4 flex items-center justify-between">
               <div className="text-xs text-[color:var(--trite-muted)]">
-                Showing 1 - {filteredCustomers.length} of 2,840 customers
+                Showing {filteredCustomers.length} of {pagination?.total ?? 0} customers
               </div>
               <div className="flex items-center gap-2">
-                <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-[color:var(--trite-muted)] hover:bg-black/[0.02]">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-40"
+                >
                   <ChevronLeftIcon className="h-4 w-4" />
                 </button>
-                <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-[color:var(--trite-ink)] text-xs font-medium text-white">
-                  1
-                </button>
-                <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-xs font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.02]">
-                  2
-                </button>
-                <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-xs font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.02]">
-                  3
-                </button>
-                <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-[color:var(--trite-muted)] hover:bg-black/[0.02]">
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[color:var(--trite-ink)] text-xs font-medium text-white">
+                  {page}
+                </span>
+                <button
+                  onClick={() => setPage((p) => Math.min(pagination?.total_pages ?? 1, p + 1))}
+                  disabled={page >= (pagination?.total_pages ?? 1)}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-40"
+                >
                   <ChevronRightIcon className="h-4 w-4" />
                 </button>
               </div>
             </div>
           </div>
-        </div>
 
           <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
+            <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center justify-between">
                 <div className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
                   Acquisition Rate
@@ -478,7 +306,7 @@ export default function CustomersPage() {
               </div>
             </div>
 
-            <div className="rounded-xl bg-white p-5 ring-1 ring-black/5">
+            <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center justify-between">
                 <div className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
                   KYC Compliance
@@ -496,7 +324,7 @@ export default function CustomersPage() {
               </div>
             </div>
 
-            <div className="rounded-xl bg-gradient-to-br from-blue-600 to-blue-800 p-5 text-white">
+            <div className="rounded-2xl bg-gradient-to-br from-blue-600 to-blue-800 p-5 text-white">
               <div className="flex items-center justify-between">
                 <div className="text-xs font-semibold uppercase tracking-wide text-white/70">
                   Portfolio Value
@@ -505,7 +333,7 @@ export default function CustomersPage() {
                   <TrendingUpIcon className="h-4 w-4 text-white" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-bold">₵48.2M</div>
+              <div className="mt-2 text-3xl font-bold">₵48.2M</div>
               <div className="mt-1 text-xs text-white/60">Total Managed Assets (GHS)</div>
               <div className="mt-4 flex items-center gap-2">
                 <div className="h-8 flex-1 rounded bg-white/10" />
@@ -515,12 +343,12 @@ export default function CustomersPage() {
                 <div className="h-8 flex-1 rounded bg-white/50" />
               </div>
             </div>
+          </div>
         </div>
-
-        {/* Edit Customer Modal */}
-        {editModalOpen && editingCustomer && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-xl bg-white p-5 shadow-2xl">
+      {/* Edit Customer Modal */}
+      {editModalOpen && editingCustomer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-semibold text-[color:var(--trite-ink)]">Edit Customer</h2>
@@ -711,9 +539,7 @@ export default function CustomersPage() {
           </div>
         </div>
       )}
-    </div>
-  </main>
-</div>
+    </>
   );
 }
 
@@ -806,14 +632,6 @@ function SettingsIcon({ className }: { className?: string }) {
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
       <circle cx="12" cy="12" r="3" />
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-    </svg>
-  );
-}
-
-function MenuIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
     </svg>
   );
 }
@@ -957,24 +775,5 @@ function TrashIcon({ className }: { className?: string }) {
       <polyline points="3 6 5 6 21 6" />
       <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
     </svg>
-  );
-}
-function RefreshCcwIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-      <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
-      <polyline points="21 3 21 8 16 8" />
-    </svg>
-  );
-}
-
-
-function VerifiedBadge({ className }: { className?: string }) {
-  return (
-    <div className={`flex shrink-0 items-center justify-center rounded-full bg-[color:var(--trite-lime-strong)] p-0.5 ${className}`}>
-      <svg className="h-full w-full text-[color:var(--trite-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
-        <polyline points="20 6 9 17 4 12" />
-      </svg>
-    </div>
   );
 }

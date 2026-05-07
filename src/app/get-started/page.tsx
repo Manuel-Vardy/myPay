@@ -1,287 +1,346 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { motion } from "framer-motion";
 
 export default function GetStartedPage() {
+  const router = useRouter();
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    businessName: "",
+    legalEntity: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          business_name: formData.businessName,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          legal_entity: formData.legalEntity,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Registration failed");
+      }
+
+      // In a real app, save the token (e.g., localStorage.setItem('token', data.token))
+      // and redirect to the dashboard
+      router.push("/merchant");
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-[100svh] bg-[#f6f7fb]">
-      <header className="sticky top-0 z-50 border-b border-black/5 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <Link className="flex items-center gap-3" href="/">
+    <main className="relative md:h-screen md:overflow-hidden lg:grid lg:grid-cols-2 bg-white">
+      {/* Left Column: Testimonial & Branding */}
+      <div className="bg-gradient-to-b from-[#1a1a1a] via-[#0d0d0d] to-black relative hidden h-full flex-col border-r border-white/5 p-10 lg:flex overflow-hidden">
+        <div className="z-20 flex items-center gap-2">
+          <Image
+            src="/tritee-logo.png"
+            alt="Trite logo"
+            width={120}
+            height={28}
+            className="brightness-0 invert"
+            priority
+          />
+        </div>
+        
+        <div className="z-20 mt-auto max-w-lg">
+          <div className="text-sm font-semibold uppercase tracking-wider text-[color:var(--trite-lime-strong)] mb-4">
+            Institutional Infrastructure
+          </div>
+          <blockquote className="space-y-4">
+            <p className="text-2xl font-semibold leading-tight text-white">
+              &ldquo;Architecting the future of global commerce. Trite provides the 
+              secure, scalable rails we need to settle across borders in real-time.&rdquo;
+            </p>
+            <footer className="font-mono text-sm font-medium text-white/40">
+              ~ Global Fintech Partner
+            </footer>
+          </blockquote>
+
+          <div className="mt-12 space-y-6">
+            <div className="text-sm font-semibold text-white/80">
+              What you get with Trite
+            </div>
+            <div className="grid gap-4 text-sm text-white/60">
+              <div className="flex gap-3">
+                <span className="mt-1 inline-block h-2 w-2 rounded-full bg-[color:var(--trite-lime-strong)]" />
+                <span>GHS settlement-ready payment flows</span>
+              </div>
+              <div className="flex gap-3">
+                <span className="mt-1 inline-block h-2 w-2 rounded-full bg-[color:var(--trite-lime-strong)]" />
+                <span>Unified API for fiat + digital asset rails</span>
+              </div>
+              <div className="flex gap-3">
+                <span className="mt-1 inline-block h-2 w-2 rounded-full bg-[color:var(--trite-lime-strong)]" />
+                <span>Bank-grade security and compliance controls</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="absolute inset-0 z-0">
+          <FloatingPaths position={1} />
+          <FloatingPaths position={-1} />
+        </div>
+      </div>
+
+      {/* Right Column: Registration Form */}
+      <div className="relative flex min-h-screen flex-col justify-center p-4 overflow-y-auto">
+        <div
+          aria-hidden
+          className="absolute inset-0 isolate contain-strict -z-10 opacity-60"
+        >
+          <div className="bg-[radial-gradient(68.54%_68.72%_at_55.02%_31.46%,rgba(0,0,0,0.04)_0,hsla(0,0%,55%,.02)_50%,transparent_80%)] absolute top-0 right-0 h-[320px] w-[140px] -translate-y-[87.5px] rounded-full" />
+        </div>
+
+        <div className="absolute top-7 left-5">
+          <Link 
+            href="/"
+            className="inline-flex items-center text-sm font-medium text-[color:var(--trite-muted)] hover:text-[color:var(--trite-ink)]"
+          >
+            <svg className="size-4 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Home
+          </Link>
+        </div>
+
+        <div className="mx-auto w-full max-w-md space-y-6 py-12">
+          <div className="flex items-center gap-2 lg:hidden mb-8">
             <Image
               src="/tritee-logo.png"
               alt="Trite logo"
-              width={120}
-              height={28}
-              priority
+              width={100}
+              height={24}
             />
-          </Link>
-
-          <nav className="hidden items-center gap-6 text-sm font-medium text-[color:var(--trite-muted)] md:flex">
-          </nav>
-
-          <div className="flex items-center gap-2">
-            <Link
-              className="hidden rounded-full px-4 py-2 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-black/5 sm:inline-flex"
-              href="/login"
-            >
-              Sign in
-            </Link>
-            <Link
-              className="inline-flex h-10 items-center justify-center rounded-full bg-[color:var(--trite-ink)] px-4 text-sm font-semibold text-white hover:bg-black"
-              href="/get-started"
-            >
-              Get Started
-            </Link>
           </div>
-        </div>
-      </header>
 
-      <main className="px-4 py-12 sm:px-6">
-        <div className="mx-auto grid w-full max-w-6xl grid-cols-1 items-start gap-10 lg:grid-cols-2">
-          <div className="pt-2">
-            <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-3 py-1 text-xs font-semibold text-[color:var(--trite-muted)]">
-              <span
-                className="inline-block h-2 w-2 rounded-full bg-[color:var(--trite-lime-strong)]"
-                aria-hidden="true"
-              />
+          <div className="flex flex-col space-y-2">
+            <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white w-fit px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[color:var(--trite-muted)]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--trite-lime-strong)]" />
               Merchant onboarding
             </div>
-
-            <h1 className="mt-6 text-3xl font-semibold leading-[1.1] tracking-tight text-[color:var(--trite-ink)] sm:text-4xl">
-              Architecting the future of global commerce.
+            <h1 className="text-3xl font-bold tracking-tight text-[color:var(--trite-ink)]">
+              Create Account
             </h1>
-            <p className="mt-4 max-w-xl text-sm leading-6 text-[color:var(--trite-muted)] sm:text-base">
-              Create your merchant account in minutes and start accepting
-              payments in Ghana Cedis (GHS) with secure, scalable infrastructure.
+            <p className="text-sm text-[color:var(--trite-muted)]">
+              Start accepting payments in Ghana Cedis (GHS) today.
             </p>
-
-            <div className="mt-8 rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <div className="text-base font-semibold text-[color:var(--trite-ink)]">
-                    Create Your Merchant Account
-                  </div>
-                  <div className="mt-1 text-xs text-[color:var(--trite-muted)]">
-                    All fields are required unless marked optional.
-                  </div>
-                </div>
-                <div
-                  className="hidden h-10 w-10 items-center justify-center rounded-2xl bg-[color:var(--trite-lime)]/40 sm:flex"
-                  aria-hidden="true"
-                >
-                  <div className="h-3 w-3 rounded-full bg-[color:var(--trite-ink)]" />
-                </div>
-              </div>
-
-              <form className="mt-6 grid grid-cols-1 gap-4" action="#" method="post">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div>
-                    <label
-                      className="text-xs font-semibold text-[color:var(--trite-ink)]"
-                      htmlFor="firstName"
-                    >
-                      First name
-                    </label>
-                    <input
-                      className="mt-2 h-11 w-full rounded-xl border border-black/10 bg-[#f6f7fb] px-3 text-sm text-gray-900 outline-none ring-0 placeholder:text-black/35 focus:border-[color:var(--trite-lime-strong)] focus:bg-white"
-                      id="firstName"
-                      name="firstName"
-                      placeholder="Kwame"
-                      autoComplete="given-name"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label
-                      className="text-xs font-semibold text-[color:var(--trite-ink)]"
-                      htmlFor="lastName"
-                    >
-                      Last name
-                    </label>
-                    <input
-                      className="mt-2 h-11 w-full rounded-xl border border-black/10 bg-[#f6f7fb] px-3 text-sm text-gray-900 outline-none ring-0 placeholder:text-black/35 focus:border-[color:var(--trite-lime-strong)] focus:bg-white"
-                      id="lastName"
-                      name="lastName"
-                      placeholder="Mensah"
-                      autoComplete="family-name"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label
-                    className="text-xs font-semibold text-[color:var(--trite-ink)]"
-                    htmlFor="businessName"
-                  >
-                    Business name
-                  </label>
-                  <input
-                    className="mt-2 h-11 w-full rounded-xl border border-black/10 bg-[#f6f7fb] px-3 text-sm text-[color:var(--trite-ink)] outline-none ring-0 placeholder:text-black/35 focus:border-[color:var(--trite-lime-strong)] focus:bg-white"
-                    id="businessName"
-                    name="businessName"
-                    placeholder="Trite Stores"
-                    autoComplete="organization"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label
-                    className="text-xs font-semibold text-[color:var(--trite-ink)]"
-                    htmlFor="legalEntity"
-                  >
-                    Legal entity name
-                  </label>
-                  <input
-                    className="mt-2 h-11 w-full rounded-xl border border-black/10 bg-[#f6f7fb] px-3 text-sm text-[color:var(--trite-ink)] outline-none ring-0 placeholder:text-black/35 focus:border-[color:var(--trite-lime-strong)] focus:bg-white"
-                    id="legalEntity"
-                    name="legalEntity"
-                    placeholder="Trite Limited"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label
-                    className="text-xs font-semibold text-[color:var(--trite-ink)]"
-                    htmlFor="email"
-                  >
-                    Business email
-                  </label>
-                  <input
-                    className="mt-2 h-11 w-full rounded-xl border border-black/10 bg-[#f6f7fb] px-3 text-sm text-[color:var(--trite-ink)] outline-none ring-0 placeholder:text-black/35 focus:border-[color:var(--trite-lime-strong)] focus:bg-white"
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="you@business.com"
-                    autoComplete="email"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label
-                    className="text-xs font-semibold text-[color:var(--trite-ink)]"
-                    htmlFor="password"
-                  >
-                    Password
-                  </label>
-                  <input
-                    className="mt-2 h-11 w-full rounded-xl border border-black/10 bg-[#f6f7fb] px-3 text-sm text-[color:var(--trite-ink)] outline-none ring-0 placeholder:text-black/35 focus:border-[color:var(--trite-lime-strong)] focus:bg-white"
-                    id="password"
-                    name="password"
-                    type="password"
-                    placeholder="Create a strong password"
-                    autoComplete="new-password"
-                    required
-                  />
-
-                  <label
-                    className="mt-4 block text-xs font-semibold text-[color:var(--trite-ink)]"
-                    htmlFor="confirmPassword"
-                  >
-                    Confirm password
-                  </label>
-                  <input
-                    className="mt-2 h-11 w-full rounded-xl border border-black/10 bg-[#f6f7fb] px-3 text-sm text-[color:var(--trite-ink)] outline-none ring-0 placeholder:text-black/35 focus:border-[color:var(--trite-lime-strong)] focus:bg-white"
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type="password"
-                    placeholder="Re-enter your password"
-                    autoComplete="new-password"
-                    required
-                  />
-                  <div className="mt-2 text-[11px] leading-5 text-[color:var(--trite-muted)]">
-                    By creating an account, you agree to our{" "}
-                    <a className="font-semibold text-[color:var(--trite-ink)] hover:underline" href="#">
-                      Terms
-                    </a>{" "}
-                    and{" "}
-                    <a className="font-semibold text-[color:var(--trite-ink)] hover:underline" href="#">
-                      Privacy Policy
-                    </a>
-                    .
-                  </div>
-                </div>
-
-                <button
-                  className="mt-2 inline-flex h-12 items-center justify-center rounded-full bg-[color:var(--trite-ink)] px-6 text-sm font-semibold text-white hover:bg-black focus:outline-none focus:ring-2 focus:ring-[color:var(--trite-lime-strong)] focus:ring-offset-2"
-                  type="submit"
-                >
-                  Create Account
-                </button>
-
-                <div className="text-center text-xs text-[color:var(--trite-muted)]">
-                  Already have an account?{" "}
-                  <a className="font-semibold text-[color:var(--trite-ink)] hover:underline" href="#">
-                    Sign in
-                  </a>
-                </div>
-              </form>
-            </div>
           </div>
 
-          <aside className="hidden lg:block">
-            <div className="sticky top-24 rounded-3xl border border-black/10 bg-white p-8 shadow-sm">
-              <div className="text-sm font-semibold text-[color:var(--trite-ink)]">
-                What you get with Trite
-              </div>
-              <div className="mt-5 grid gap-3 text-sm text-[color:var(--trite-muted)]">
-                <div className="flex gap-3">
-                  <span className="mt-1 inline-block h-2 w-2 rounded-full bg-[color:var(--trite-lime-strong)]" />
-                  <span>GHS settlement-ready payment flows</span>
-                </div>
-                <div className="flex gap-3">
-                  <span className="mt-1 inline-block h-2 w-2 rounded-full bg-[color:var(--trite-lime-strong)]" />
-                  <span>Unified API for fiat + digital asset rails</span>
-                </div>
-                <div className="flex gap-3">
-                  <span className="mt-1 inline-block h-2 w-2 rounded-full bg-[color:var(--trite-lime-strong)]" />
-                  <span>Bank-grade security and compliance controls</span>
-                </div>
-                <div className="flex gap-3">
-                  <span className="mt-1 inline-block h-2 w-2 rounded-full bg-[color:var(--trite-lime-strong)]" />
-                  <span>Developer-first tooling and documentation</span>
-                </div>
-              </div>
+          {error && (
+            <div className="rounded-xl bg-red-50 p-4 text-sm text-red-600 border border-red-200">
+              {error}
+            </div>
+          )}
 
-              <div className="mt-8 rounded-2xl bg-[color:var(--trite-lime)]/25 p-5">
-                <div className="text-xs font-semibold uppercase tracking-wider text-[color:var(--trite-ink)]">
-                  Need help?
-                </div>
-                <div className="mt-2 text-sm leading-6 text-[color:var(--trite-muted)]">
-                  Contact sales and we’ll help you set up the best flow for your
-                  business.
-                </div>
-                <Link
-                  className="mt-4 inline-flex h-10 items-center justify-center rounded-full bg-[color:var(--trite-ink)] px-4 text-sm font-semibold text-white hover:bg-black"
-                  href="/contact-sales"
-                >
-                  Contact Sales
-                </Link>
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-[color:var(--trite-ink)] uppercase tracking-tight" htmlFor="firstName">First name</label>
+                <input
+                  className="flex h-11 w-full rounded-xl border border-black/10 bg-[#f9fafb] px-3 py-2 text-sm transition-all focus:border-[color:var(--trite-lime-strong)] focus:bg-white outline-none"
+                  id="firstName"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  placeholder="Kwame"
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-[color:var(--trite-ink)] uppercase tracking-tight" htmlFor="lastName">Last name</label>
+                <input
+                  className="flex h-11 w-full rounded-xl border border-black/10 bg-[#f9fafb] px-3 py-2 text-sm transition-all focus:border-[color:var(--trite-lime-strong)] focus:bg-white outline-none"
+                  id="lastName"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  placeholder="Mensah"
+                  required
+                />
               </div>
             </div>
-          </aside>
-        </div>
-      </main>
 
-      <footer className="border-t border-black/5 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-6 text-xs text-[color:var(--trite-muted)] sm:px-6 md:flex-row md:items-center md:justify-between">
-          <div>© {new Date().getFullYear()} Trite. All rights reserved.</div>
-          <div className="flex flex-wrap gap-x-4 gap-y-2">
-            <a className="hover:text-[color:var(--trite-ink)]" href="#">
-              Privacy Policy
-            </a>
-            <a className="hover:text-[color:var(--trite-ink)]" href="#">
-              Terms of Service
-            </a>
-            <a className="hover:text-[color:var(--trite-ink)]" href="#">
-              Security
-            </a>
-          </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-[color:var(--trite-ink)] uppercase tracking-tight" htmlFor="businessName">Business name</label>
+              <input
+                className="flex h-11 w-full rounded-xl border border-black/10 bg-[#f9fafb] px-3 py-2 text-sm transition-all focus:border-[color:var(--trite-lime-strong)] focus:bg-white outline-none"
+                id="businessName"
+                name="businessName"
+                value={formData.businessName}
+                onChange={handleChange}
+                placeholder="Trite Stores"
+                required
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-[color:var(--trite-ink)] uppercase tracking-tight" htmlFor="legalEntity">Legal entity name</label>
+              <input
+                className="flex h-11 w-full rounded-xl border border-black/10 bg-[#f9fafb] px-3 py-2 text-sm transition-all focus:border-[color:var(--trite-lime-strong)] focus:bg-white outline-none"
+                id="legalEntity"
+                name="legalEntity"
+                value={formData.legalEntity}
+                onChange={handleChange}
+                placeholder="Trite Limited"
+                required
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-[color:var(--trite-ink)] uppercase tracking-tight" htmlFor="email">Business email</label>
+              <input
+                className="flex h-11 w-full rounded-xl border border-black/10 bg-[#f9fafb] px-3 py-2 text-sm transition-all focus:border-[color:var(--trite-lime-strong)] focus:bg-white outline-none"
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="you@business.com"
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-[color:var(--trite-ink)] uppercase tracking-tight" htmlFor="password">Password</label>
+                <input
+                  className="flex h-11 w-full rounded-xl border border-black/10 bg-[#f9fafb] px-3 py-2 text-sm transition-all focus:border-[color:var(--trite-lime-strong)] focus:bg-white outline-none"
+                  id="password"
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-[color:var(--trite-ink)] uppercase tracking-tight" htmlFor="confirmPassword">Confirm</label>
+                <input
+                  className="flex h-11 w-full rounded-xl border border-black/10 bg-[#f9fafb] px-3 py-2 text-sm transition-all focus:border-[color:var(--trite-lime-strong)] focus:bg-white outline-none"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+            </div>
+
+            <button
+              className="w-full flex h-12 items-center justify-center rounded-xl bg-[color:var(--trite-ink)] text-sm font-bold text-white hover:bg-black transition-colors disabled:opacity-50 mt-4"
+              type="submit"
+              disabled={isLoading}
+            >
+              {isLoading ? "Creating Account..." : "Create Merchant Account"}
+            </button>
+
+            <div className="text-center text-xs text-[color:var(--trite-muted)] mt-6">
+              Already have an account?{" "}
+              <Link className="font-bold text-[color:var(--trite-ink)] hover:underline" href="/login">
+                Sign in
+              </Link>
+            </div>
+          </form>
+
+          <p className="text-muted-foreground mt-8 text-xs text-center">
+            By clicking continue, you agree to our{' '}
+            <a href="#" className="hover:text-primary underline underline-offset-4">Terms of Service</a>{' '}
+            and{' '}
+            <a href="#" className="hover:text-primary underline underline-offset-4">Privacy Policy</a>.
+          </p>
         </div>
-      </footer>
-    </div>
+      </div>
+    </main>
   );
+}
+
+function FloatingPaths({ position }: { position: number }) {
+	const paths = Array.from({ length: 36 }, (_, i) => ({
+		id: i,
+		d: `M-${380 - i * 5 * position} -${189 + i * 6}C-${
+			380 - i * 5 * position
+		} -${189 + i * 6} -${312 - i * 5 * position} ${216 - i * 6} ${
+			152 - i * 5 * position
+		} ${343 - i * 6}C${616 - i * 5 * position} ${470 - i * 6} ${
+			684 - i * 5 * position
+		} ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
+		color: `rgba(15,23,42,${0.1 + i * 0.03})`,
+		width: 0.5 + i * 0.03,
+	}));
+
+	return (
+		<div className="pointer-events-none absolute inset-0">
+			<svg
+				className="h-full w-full text-[color:var(--trite-lime-strong)] opacity-20"
+				viewBox="0 0 696 316"
+				fill="none"
+			>
+				<title>Background Paths</title>
+				{paths.map((path) => (
+					<motion.path
+						key={path.id}
+						d={path.d}
+						stroke="currentColor"
+						strokeWidth={path.width}
+						strokeOpacity={0.1 + path.id * 0.03}
+						initial={{ pathLength: 0.3, opacity: 0.6 }}
+						animate={{
+							pathLength: 1,
+							opacity: [0.3, 0.6, 0.3],
+							pathOffset: [0, 1, 0],
+						}}
+						transition={{
+							duration: 20 + Math.random() * 10,
+							repeat: Number.POSITIVE_INFINITY,
+							ease: 'linear',
+						}}
+					/>
+				))}
+			</svg>
+		</div>
+	);
 }

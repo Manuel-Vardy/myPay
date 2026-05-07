@@ -3,17 +3,112 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { ShieldCheck, Lock, Shield, Check } from "lucide-react";
+import { useState, useRef } from "react";
+import { ShieldCheck, Lock, Shield, Check, Loader2, KeyRound } from "lucide-react";
+
+type LoginStep = "credentials" | "mfa";
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const [step, setStep] = useState<LoginStep>("credentials");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [mfaToken, setMfaToken] = useState(["", "", "", "", "", ""]);
+  const [mfaUserId, setMfaUserId] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const mfaInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    router.push("/admin");
+    setError("");
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Authentication failed");
+        setLoading(false);
+        return;
+      }
+
+      if (data.mfa_required) {
+        setMfaUserId(data.user_id);
+        setStep("mfa");
+        setLoading(false);
+        // Auto-focus first MFA input after render
+        setTimeout(() => mfaInputRefs.current[0]?.focus(), 100);
+        return;
+      }
+
+      // Success — redirect to admin dashboard
+      router.push("/admin");
+    } catch {
+      setError("Network error. Please try again.");
+      setLoading(false);
+    }
+  };
+
+  const handleMfaSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    const token = mfaToken.join("");
+    if (token.length !== 6) {
+      setError("Please enter the full 6-digit code");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/auth/mfa", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: mfaUserId, token }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Invalid verification code");
+        setMfaToken(["", "", "", "", "", ""]);
+        mfaInputRefs.current[0]?.focus();
+        setLoading(false);
+        return;
+      }
+
+      // MFA passed — redirect to admin dashboard
+      router.push("/admin");
+    } catch {
+      setError("Network error. Please try again.");
+      setLoading(false);
+    }
+  };
+
+  const handleMfaInput = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return; // digits only
+    const newToken = [...mfaToken];
+    newToken[index] = value.slice(-1); // take only last char
+    setMfaToken(newToken);
+
+    // Auto-advance to next input
+    if (value && index < 5) {
+      mfaInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleMfaKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === "Backspace" && !mfaToken[index] && index > 0) {
+      mfaInputRefs.current[index - 1]?.focus();
+    }
   };
 
   return (
@@ -53,77 +148,155 @@ export default function AdminLoginPage() {
               <span className="text-[color:var(--trite-lime-strong)]"> Admin</span>
             </h1>
             <p className="mt-4 text-xs leading-5 text-[color:var(--trite-muted)] sm:text-sm sm:leading-6">
-              Secure oversight platform. Monitor performance, manage KYC, and oversee operations.
+              {step === "credentials"
+                ? "Secure oversight platform. Monitor performance, manage KYC, and oversee operations."
+                : "Enter the 6-digit verification code from your authenticator app."}
             </p>
 
-            <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-[color:var(--trite-ink)]"
+            {/* Error Alert */}
+            {error && (
+              <div className="mt-4 flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <Shield className="h-4 w-4 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Step 1: Credentials */}
+            {step === "credentials" && (
+              <form onSubmit={handleLogin} className="mt-8 space-y-5">
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-[color:var(--trite-ink)]"
+                  >
+                    Institutional Email
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="director@bankofghana.gov.gh"
+                    autoComplete="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm text-gray-900 outline-none transition-all placeholder:text-black/30 focus:border-[color:var(--trite-lime-strong)]"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-[color:var(--trite-ink)]"
+                  >
+                    Secure Passphrase
+                  </label>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    placeholder="Enter your secure passphrase"
+                    autoComplete="current-password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm text-gray-900 outline-none transition-all placeholder:text-black/30 focus:border-[color:var(--trite-lime-strong)]"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between text-sm">
+                  <label className="flex items-center gap-2 text-[color:var(--trite-muted)]">
+                    <input type="checkbox" className="h-4 w-4 rounded border-black/20" />
+                    Remember this device
+                  </label>
+                  <Link href="#" className="font-medium text-[color:var(--trite-ink)] hover:underline">
+                    Reset credentials
+                  </Link>
+                </div>
+
+                <button
+                  className="mt-2 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[color:var(--trite-ink)] px-6 text-sm font-semibold text-white hover:bg-black focus:outline-none focus:ring-2 focus:ring-[color:var(--trite-lime-strong)] focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                  type="submit"
+                  disabled={loading}
                 >
-                  Institutional Email
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="director@bankofghana.gov.gh"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm text-gray-900 outline-none transition-all placeholder:text-black/30 focus:border-[color:var(--trite-lime-strong)]"
-                />
-              </div>
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Authenticating...
+                    </>
+                  ) : (
+                    "Enter Admin Dashboard"
+                  )}
+                </button>
 
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-[color:var(--trite-ink)]"
+                <div className="text-center text-xs text-[color:var(--trite-muted)]">
+                  Need institutional access?{" "}
+                  <Link
+                    className="font-semibold text-[color:var(--trite-ink)] hover:underline"
+                    href="/admin/signup"
+                  >
+                    Request admin account
+                  </Link>
+                </div>
+              </form>
+            )}
+
+            {/* Step 2: MFA Verification */}
+            {step === "mfa" && (
+              <form onSubmit={handleMfaSubmit} className="mt-8 space-y-6">
+                <div className="flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3">
+                  <KeyRound className="h-5 w-5 shrink-0 text-blue-600" />
+                  <div>
+                    <p className="text-sm font-medium text-blue-900">Multi-Factor Authentication</p>
+                    <p className="text-xs text-blue-700">A verification code was requested for your account.</p>
+                  </div>
+                </div>
+
+                {/* 6-digit code inputs */}
+                <div className="flex justify-center gap-2 sm:gap-3">
+                  {mfaToken.map((digit, idx) => (
+                    <input
+                      key={idx}
+                      ref={(el) => { mfaInputRefs.current[idx] = el; }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleMfaInput(idx, e.target.value)}
+                      onKeyDown={(e) => handleMfaKeyDown(idx, e)}
+                      className="h-14 w-11 rounded-xl border border-black/10 bg-white text-center text-xl font-semibold text-[color:var(--trite-ink)] outline-none transition-all focus:border-[color:var(--trite-lime-strong)] focus:ring-2 focus:ring-[color:var(--trite-lime-strong)]/30 sm:h-16 sm:w-14"
+                    />
+                  ))}
+                </div>
+
+                <button
+                  className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[color:var(--trite-ink)] px-6 text-sm font-semibold text-white hover:bg-black focus:outline-none focus:ring-2 focus:ring-[color:var(--trite-lime-strong)] focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                  type="submit"
+                  disabled={loading}
                 >
-                  Secure Passphrase
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="Enter your secure passphrase"
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm text-gray-900 outline-none transition-all placeholder:text-black/30 focus:border-[color:var(--trite-lime-strong)]"
-                />
-              </div>
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Verifying...
+                    </>
+                  ) : (
+                    "Verify & Continue"
+                  )}
+                </button>
 
-              <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center gap-2 text-[color:var(--trite-muted)]">
-                  <input type="checkbox" className="h-4 w-4 rounded border-black/20" />
-                  Remember this device
-                </label>
-                <Link href="#" className="font-medium text-[color:var(--trite-ink)] hover:underline">
-                  Reset credentials
-                </Link>
-              </div>
-
-              <button
-                className="mt-2 inline-flex h-12 w-full items-center justify-center rounded-full bg-[color:var(--trite-ink)] px-6 text-sm font-semibold text-white hover:bg-black focus:outline-none focus:ring-2 focus:ring-[color:var(--trite-lime-strong)] focus:ring-offset-2"
-                type="submit"
-              >
-                Enter Admin Dashboard
-              </button>
-
-              <div className="text-center text-xs text-[color:var(--trite-muted)]">
-                Need institutional access?{" "}
-                <Link
-                  className="font-semibold text-[color:var(--trite-ink)] hover:underline"
-                  href="/admin/signup"
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep("credentials");
+                    setMfaToken(["", "", "", "", "", ""]);
+                    setError("");
+                  }}
+                  className="w-full text-center text-xs font-medium text-[color:var(--trite-muted)] hover:text-[color:var(--trite-ink)]"
                 >
-                  Request admin account
-                </Link>
-              </div>
-            </form>
+                  ← Back to login
+                </button>
+              </form>
+            )}
 
             {/* Security Notice */}
             <div className="mt-8 rounded-2xl border border-black/5 bg-white p-5">
@@ -162,4 +335,3 @@ export default function AdminLoginPage() {
   );
 }
 
-// Icons imported from Lucide React

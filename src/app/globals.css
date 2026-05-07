@@ -36,3 +36,22 @@ body {
 ::selection {
   background: color-mix(in oklab, var(--trite-lime) 45%, white);
 }
+
+/* Hide Google Translate UI */
+.skiptranslate > iframe.skiptranslate {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+body {
+  top: 0px !important; 
+}
+
+#goog-gt-tt {
+  display: none !important;
+}
+
+.goog-text-highlight {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
