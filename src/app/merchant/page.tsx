@@ -5,6 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useMerchantFetch } from "@/lib/hooks/useMerchantFetch";
+import WorldMap from "../WorldMap";
+import { HUBS } from "@/constants/hubs";
+import { useEffect } from "react";
 
 
 
@@ -66,6 +69,17 @@ export default function DashboardPage() {
   const [convertModalOpen, setConvertModalOpen] = useState(false);
   const [convertAmount, setConvertAmount] = useState("");
   const [convertFrom, setConvertFrom] = useState<"USDC" | "USDT">("USDC");
+  const [activeHubIndex, setActiveHubIndex] = useState(0);
+  const [isMapPaused, setIsMapPaused] = useState(false);
+
+  // Auto-cycle map hubs
+  useEffect(() => {
+    if (isMapPaused) return;
+    const interval = setInterval(() => {
+      setActiveHubIndex((prev) => (prev + 1) % HUBS.length);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [isMapPaused]);
 
   const { data: dashData } = useMerchantFetch<DashboardData>("/api/merchant/dashboard");
   const { data: txData } = useMerchantFetch<{ data: TxRow[] }>("/api/merchant/transactions", { per_page: "10" });
@@ -448,6 +462,78 @@ export default function DashboardPage() {
                   </div>
                   <div className="text-xs text-[color:var(--trite-muted)]">
                     Last rotated 12 days ago
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Global Market Insight Section */}
+          <div className="mt-8">
+            <div className="mb-6 flex items-center justify-between px-1">
+              <div>
+                <h2 className="text-xl font-semibold text-[color:var(--trite-ink)]">Global Market Intelligence</h2>
+                <p className="text-xs text-[color:var(--trite-muted)]">Real-time settlement telemetry across international nodes</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="flex h-2 w-2 rounded-full bg-[color:var(--trite-lime-strong)] animate-pulse" />
+                <span className="text-[10px] font-bold text-[color:var(--trite-muted)] uppercase tracking-wider">Live System Feed</span>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5 overflow-hidden" onMouseEnter={() => setIsMapPaused(true)} onMouseLeave={() => setIsMapPaused(false)}>
+                <WorldMap 
+                  activeHubIndex={activeHubIndex} 
+                  onHubChange={setActiveHubIndex}
+                  isPaused={isMapPaused}
+                />
+              </div>
+              
+              <div className="space-y-3">
+                <div className="rounded-2xl bg-[color:var(--trite-ink)] p-6 text-white shadow-sm ring-1 ring-white/10 h-full flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-xs font-semibold mb-6 text-white/40 uppercase tracking-[0.2em]">Active Node Telemetry</h3>
+                    
+                    <div className="space-y-5">
+                      <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                        <div className="text-[10px] uppercase text-white/40 font-bold mb-1 tracking-wider">Geographic Region</div>
+                        <div className="text-lg font-bold tracking-tight">{HUBS[activeHubIndex].name}</div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                          <div className="text-[10px] uppercase text-white/40 font-bold mb-1 tracking-wider">Mechanism</div>
+                          <div className="text-sm font-semibold">{HUBS[activeHubIndex].method}</div>
+                        </div>
+                        <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                          <div className="text-[10px] uppercase text-white/40 font-bold mb-1 tracking-wider">Status</div>
+                          <div className={`text-sm font-bold ${HUBS[activeHubIndex].status === 'Success' || HUBS[activeHubIndex].status === 'Settled' ? 'text-[color:var(--trite-lime-strong)]' : 'text-blue-400'}`}>
+                            {HUBS[activeHubIndex].status}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-4 rounded-xl bg-gradient-to-br from-[color:var(--trite-lime-strong)]/10 to-transparent border border-[color:var(--trite-lime-strong)]/20">
+                        <div className="text-[10px] uppercase text-white/40 font-bold mb-1 tracking-wider">Recent Settlement Volume</div>
+                        <div className="text-2xl font-bold text-[color:var(--trite-lime-strong)]">{HUBS[activeHubIndex].amount}</div>
+                        <p className="mt-2 text-[11px] text-white/50 leading-relaxed italic">
+                          "{HUBS[activeHubIndex].description}"
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 mt-8">
+                    {HUBS.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setActiveHubIndex(idx)}
+                        className={`h-1 flex-1 rounded-full transition-all duration-300 ${
+                          idx === activeHubIndex ? "bg-[color:var(--trite-lime-strong)]" : "bg-white/10"
+                        }`}
+                      />
+                    ))}
                   </div>
                 </div>
               </div>

@@ -4,7 +4,6 @@ import React from 'react';
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from 'framer-motion';
-import { FloatingPaths } from '@/components/ui/floating-paths';
 import { Button } from '@/components/ui/button';
 import { ChevronLeftIcon, Grid2x2PlusIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -13,62 +12,57 @@ export default function ContactSalesPage() {
   return (
     <main className="relative md:h-screen md:overflow-hidden lg:grid lg:grid-cols-2">
       {/* Left Column: Branding & Info */}
-      <div className="bg-muted/60 relative hidden h-full flex-col border-r p-10 lg:flex">
-        <div className="from-background absolute inset-0 z-10 bg-gradient-to-t to-transparent" />
-        
-        <div className="z-10 flex items-center gap-2">
-          <Link href="/" className="flex items-center gap-2">
+      <div className="bg-gradient-to-b from-[#1a1a1a] via-[#0d0d0d] to-black relative hidden h-full flex-col border-r border-white/5 p-10 lg:flex overflow-hidden">
+        <div className="z-20 flex items-center gap-2">
+          <Link href="/">
             <Image
-              src="/tritee-logo.png"
+              src="/Trite-WB.png"
               alt="Trite logo"
-              width={100}
-              height={24}
-              className="w-[100px]"
+              width={120}
+              height={28}
+              priority
             />
           </Link>
         </div>
-
-        <div className="z-10 mt-auto space-y-8">
-          <div className="max-w-md">
-            <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/50 px-3 py-1 text-xs font-semibold text-[color:var(--trite-muted)] backdrop-blur">
-              <span
-                className="inline-block h-2 w-2 rounded-full bg-[color:var(--trite-lime-strong)]"
-                aria-hidden="true"
-              />
-              Institutional Infrastructure
-            </div>
-            <h2 className="mt-6 text-3xl font-bold tracking-tight text-foreground">
-              Enterprise-grade <br/>solutions for global scale.
-            </h2>
-            <p className="mt-4 text-muted-foreground">
-              Tell us about your business and we&apos;ll recommend the best Trite setup for your payments, settlements, and merchant workflows.
-            </p>
+        
+        <div className="z-20 mt-auto max-w-lg">
+          <div className="text-sm font-semibold uppercase tracking-wider text-[color:var(--trite-lime-strong)] mb-4">
+            Enterprise Solutions
           </div>
+          <blockquote className="space-y-4">
+            <p className="text-2xl font-semibold leading-tight text-white">
+              &ldquo;Scale your global operations with institutional-grade infrastructure. 
+              Trite delivers the velocity and reliability required for enterprise-level settlements.&rdquo;
+            </p>
+            <footer className="font-mono text-sm font-medium text-white/40">
+              ~ Enterprise Strategy Lead
+            </footer>
+          </blockquote>
 
-          <div className="space-y-6">
-            <div className="text-sm font-bold uppercase tracking-widest text-foreground/40">
-              What happens next
+          <div className="mt-12 space-y-6">
+            <div className="text-sm font-semibold text-white/80">
+              The Sales Process
             </div>
-            <div className="grid gap-4">
-              {[
-                "We review your requirements and volume.",
-                "We share pricing and the best integration approach.",
-                "We support onboarding, testing, and go-live."
-              ].map((step, i) => (
-                <div key={i} className="flex gap-4 group/item">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[color:var(--trite-lime-strong)]/10 text-[color:var(--trite-lime-strong)] border border-[color:var(--trite-lime-strong)]/20">
-                    <span className="text-xs font-bold">{i + 1}</span>
-                  </div>
-                  <div className="text-sm font-medium text-muted-foreground">{step}</div>
-                </div>
-              ))}
+            <div className="grid gap-4 text-sm text-white/60">
+              <div className="flex gap-3">
+                <span className="mt-1 inline-block h-2 w-2 rounded-full bg-[color:var(--trite-lime-strong)]" />
+                <span>Dedicated solution architecture for your volume</span>
+              </div>
+              <div className="flex gap-3">
+                <span className="mt-1 inline-block h-2 w-2 rounded-full bg-[color:var(--trite-lime-strong)]" />
+                <span>Customized fee structures and settlement schedules</span>
+              </div>
+              <div className="flex gap-3">
+                <span className="mt-1 inline-block h-2 w-2 rounded-full bg-[color:var(--trite-lime-strong)]" />
+                <span>Priority onboarding and institutional support</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="absolute inset-0">
-          <FloatingPaths position={1} className="text-slate-950/5 dark:text-white/10" />
-          <FloatingPaths position={-1} className="text-slate-950/5 dark:text-white/10" />
+        <div className="absolute inset-0 z-0">
+          <FloatingPaths position={1} />
+          <FloatingPaths position={-1} />
         </div>
       </div>
 
@@ -201,4 +195,51 @@ export default function ContactSalesPage() {
       </div>
     </main>
   );
+}
+
+function FloatingPaths({ position }: { position: number }) {
+	const paths = Array.from({ length: 36 }, (_, i) => ({
+		id: i,
+		d: `M-${380 - i * 5 * position} -${189 + i * 6}C-${
+			380 - i * 5 * position
+		} -${189 + i * 6} -${312 - i * 5 * position} ${216 - i * 6} ${
+			152 - i * 5 * position
+		} ${343 - i * 6}C${616 - i * 5 * position} ${470 - i * 6} ${
+			684 - i * 5 * position
+		} ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
+		color: `rgba(15,23,42,${0.1 + i * 0.03})`,
+		width: 0.5 + i * 0.03,
+	}));
+
+	return (
+		<div className="pointer-events-none absolute inset-0">
+			<svg
+				className="h-full w-full text-[color:var(--trite-lime-strong)] opacity-20"
+				viewBox="0 0 696 316"
+				fill="none"
+			>
+				<title>Background Paths</title>
+				{paths.map((path) => (
+					<motion.path
+						key={path.id}
+						d={path.d}
+						stroke="currentColor"
+						strokeWidth={path.width}
+						strokeOpacity={0.1 + path.id * 0.03}
+						initial={{ pathLength: 0.3, opacity: 0.6 }}
+						animate={{
+							pathLength: 1,
+							opacity: [0.3, 0.6, 0.3],
+							pathOffset: [0, 1, 0],
+						}}
+						transition={{
+							duration: 20 + Math.random() * 10,
+							repeat: Number.POSITIVE_INFINITY,
+							ease: 'linear',
+						}}
+					/>
+				))}
+			</svg>
+		</div>
+	);
 }

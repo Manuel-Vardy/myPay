@@ -4,7 +4,7 @@ import { getSession } from "@/lib/session";
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     const session = await getSession();
@@ -17,7 +17,7 @@ export async function DELETE(
       return Response.json({ error: "Merchant profile not found" }, { status: 404 });
     }
 
-    const { id: accountId } = await params;
+    const accountId = params.id;
 
     // Check if account belongs to merchant
     const account = await db("settlement_accounts")

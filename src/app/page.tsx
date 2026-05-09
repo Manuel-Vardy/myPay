@@ -1,24 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import CanvasAnimation from "./CanvasAnimation";
-import WorldMap from "./WorldMap";
+import ParticlesBackground from "@/components/ParticlesBackground";
 import AnimatedHeroHeading from "@/components/AnimatedHeroHeading";
 import { Component as AnimatedButton } from "@/components/ui/animated-button";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { Download, Menu, ArrowRight, X } from "lucide-react";
-import mockup3 from "../../images/mockup3.png";
-import mockup4 from "../../images/mockup4.png";
-import mockup6 from "../../images/mockup6.png";
-import stablecoin3d from "../../images/stablecoin_3d.png";
-import kyc3d from "../../images/kyc_3d.png";
-import omnichannel3d from "../../images/omnichannel_3d.png";
-import mockup7 from "../../images/mockup7.png";
+import mockup3 from "../../public/images/mockup3.png";
+import mockup4 from "../../public/images/mockup4.png";
+import mockup6 from "../../public/images/mockup6.png";
+import stablecoin3d from "../../public/images/stablecoin_3d.png";
+import kyc3d from "../../public/images/kyc_3d.png";
+import omnichannel3d from "../../public/images/omnichannel_3d.png";
+import mockup7 from "../../public/images/mockup7.png";
+import mockup8 from "../../public/images/mockup8.png";
+import mockup9 from "../../public/images/mockup9.png";
+import mockup10 from "../../public/images/mockup10.png";
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [globalReachSlide, setGlobalReachSlide] = useState(0);
+  const globalReachImages = [mockup8, mockup9, mockup10];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setGlobalReachSlide((prev) => (prev + 1) % 3);
+    }, 2000);
+    return () => clearInterval(timer);
+  }, []);
+
   const ghs = new Intl.NumberFormat("en-GH", {
     style: "currency",
     currency: "GHS",
@@ -28,11 +41,12 @@ export default function Home() {
 
   return (
     <div className="min-h-[100svh] bg-[#f6f7fb]">
-      <header className="relative z-50 border-b border-black/5 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+      <header className="absolute inset-x-0 top-0 z-50 transition-all">
+        <div className="mx-auto flex h-16 max-w-[1600px] items-center justify-between px-4 sm:px-6 relative">
+          <div className="absolute bottom-0 left-[5%] right-[5%] h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
           <div className="flex items-center gap-3">
             <Image
-              src="/tritee-logo.png"
+              src="/Trite-WB.png"
               alt="Trite logo"
               width={100}
               height={24}
@@ -44,10 +58,10 @@ export default function Home() {
           <nav className="hidden items-center gap-6 text-sm font-medium text-[color:var(--trite-muted)] md:flex">
           </nav>
 
-          <div className="flex items-center gap-1 sm:gap-2">
-            <div className="flex items-center gap-1 border-r border-black/10 pr-2 mr-1 sm:pr-3 sm:mr-2">
+          <div className="flex items-center gap-1 sm:gap-2 ml-auto">
+            <div className="flex items-center gap-1 border-r border-white/10 pr-2 mr-1 sm:pr-3 sm:mr-2">
               <button
-                className="hidden h-9 w-9 items-center justify-center rounded-full text-[color:var(--trite-muted)] transition-colors hover:bg-black/5 hover:text-[color:var(--trite-ink)] sm:flex"
+                className="hidden h-9 w-9 items-center justify-center rounded-full text-white/60 transition-colors hover:bg-white/10 hover:text-white sm:flex"
                 aria-label="Download App"
               >
                 <Download className="h-5 w-5" />
@@ -55,16 +69,16 @@ export default function Home() {
               <LanguageSwitcher />
             </div>
             
-            <AnimatedButton href="/login" variant="ghost" className="hidden md:inline-flex px-2 sm:px-4">
+            <AnimatedButton href="/login" variant="ghost" className="hidden md:inline-flex px-2 sm:px-4 text-[color:var(--trite-lime-strong)] hover:bg-white/10">
               Sign in
             </AnimatedButton>
-            <AnimatedButton href="/get-started" variant="primary" className="hidden md:inline-flex px-3 sm:px-4">
+            <AnimatedButton href="/get-started" variant="outline" className="hidden md:inline-flex px-3 sm:px-4 border-white/30 text-white hover:bg-white hover:text-black">
               Get Started
             </AnimatedButton>
 
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="ml-1 flex h-9 w-9 items-center justify-center rounded-full text-[color:var(--trite-muted)] transition-colors hover:bg-black/5 hover:text-[color:var(--trite-ink)] md:hidden"
+              className="ml-1 flex h-9 w-9 items-center justify-center rounded-full text-white/70 transition-colors hover:bg-white/10 hover:text-white md:hidden"
               aria-label="Open menu"
               type="button"
             >
@@ -75,24 +89,24 @@ export default function Home() {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="absolute inset-x-0 top-16 z-50 border-b border-black/5 bg-white p-6 shadow-xl md:hidden">
+          <div className="absolute inset-x-0 top-16 z-50 border-b border-white/5 bg-gradient-to-b from-[#0a0e1a] to-black p-6 shadow-xl md:hidden">
             <div className="flex flex-col gap-4">
               <Link
                 href="/login"
-                className="flex items-center justify-center rounded-xl bg-black/5 py-4 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-black/10 transition-colors"
+                className="flex items-center justify-center rounded-xl bg-white/5 py-4 text-sm font-semibold text-[color:var(--trite-lime-strong)] hover:bg-white/10 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Sign in
               </Link>
               <Link
                 href="/get-started"
-                className="flex items-center justify-center rounded-xl bg-[color:var(--trite-ink)] py-4 text-sm font-semibold text-white hover:bg-black transition-colors"
+                className="flex items-center justify-center rounded-xl border border-white/20 py-4 text-sm font-semibold text-white hover:bg-white/10 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Get Started
               </Link>
-              <div className="h-px bg-black/5 my-2" />
-              <div className="flex items-center justify-between text-[color:var(--trite-muted)]">
+              <div className="h-px bg-white/5 my-2" />
+              <div className="flex items-center justify-between text-white/50">
                 <span className="text-xs font-medium uppercase tracking-widest">Download App</span>
                 <Download className="h-4 w-4" />
               </div>
@@ -104,7 +118,12 @@ export default function Home() {
       <main>
         <section className="relative overflow-hidden bg-black">
           <CanvasAnimation />
-          <div className="relative z-10 mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-32">
+          {/* Edge fade masks */}
+          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-32 bg-gradient-to-l from-black to-transparent" />
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-32 bg-gradient-to-r from-black to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-black to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-40 bg-gradient-to-t from-black to-transparent" />
+          <div className="relative z-10 mx-auto max-w-6xl px-4 pt-28 pb-16 sm:px-6 sm:py-32">
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold text-white/70 backdrop-blur">
                 <span
@@ -154,14 +173,10 @@ export default function Home() {
 
         <section id="solutions" className="bg-black">
           <div className="relative overflow-hidden pt-24 pb-20">
-            {/* Background SVG Pattern */}
-            <div 
-              className="absolute inset-0 opacity-[0.04] pointer-events-none"
-              style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25'%3E%3Cdefs%3E%3ClinearGradient id='a' gradientUnits='userSpaceOnUse' x1='0' x2='0' y1='0' y2='100%25' gradientTransform='rotate(59,960,472)'%3E%3Cstop offset='0' stop-color='%23ffffff'/%3E%3Cstop offset='1' stop-color='%237dff00'/%3E%3C/linearGradient%3E%3Cpattern patternUnits='userSpaceOnUse' id='b' width='1104' height='920' x='0' y='0' viewBox='0 0 1080 900'%3E%3Cg fill-opacity='0.4'%3E%3Cpolygon fill='%230b0f14' points='90 150 0 300 180 300'/%3E%3Cpolygon points='90 150 180 0 0 0'/%3E%3Cpolygon fill='%235b6472' points='270 150 360 0 180 0'/%3E%3Cpolygon fill='%23b6ff3b' points='450 150 360 300 540 300'/%3E%3Cpolygon fill='%237dff00' points='450 150 540 0 360 0'/%3E%3Cpolygon points='630 150 540 300 720 300'/%3E%3Cpolygon fill='%23b6ff3b' points='630 150 720 0 540 0'/%3E%3Cpolygon fill='%230b0f14' points='810 150 720 300 900 300'/%3E%3Cpolygon fill='%23ffffff' points='810 150 900 0 720 0'/%3E%3Cpolygon fill='%235b6472' points='990 150 900 300 1080 300'/%3E%3Cpolygon fill='%230b0f14' points='990 150 1080 0 900 0'/%3E%3Cpolygon fill='%235b6472' points='90 450 0 600 180 600'/%3E%3Cpolygon points='90 450 180 300 0 300'/%3E%3Cpolygon fill='%237dff00' points='270 450 180 600 360 600'/%3E%3Cpolygon fill='%235b6472' points='270 450 360 300 180 300'/%3E%3Cpolygon fill='%23b6ff3b' points='450 450 360 600 540 600'/%3E%3Cpolygon fill='%237dff00' points='450 450 540 300 360 300'/%3E%3Cpolygon fill='%237dff00' points='630 450 540 600 720 600'/%3E%3Cpolygon fill='%23ffffff' points='630 450 720 300 540 300'/%3E%3Cpolygon points='810 450 720 600 900 600'/%3E%3Cpolygon fill='%235b6472' points='810 450 900 300 720 300'/%3E%3Cpolygon fill='%235b6472' points='990 450 900 600 1080 600'/%3E%3Cpolygon fill='%230b0f14' points='990 450 1080 300 900 300'/%3E%3Cpolygon fill='%230b0f14' points='90 750 0 900 180 900'/%3E%3Cpolygon points='270 750 180 900 360 900'/%3E%3Cpolygon fill='%235b6472' points='270 750 360 600 180 600'/%3E%3Cpolygon points='450 750 540 600 360 600'/%3E%3Cpolygon points='630 750 540 900 720 900'/%3E%3Cpolygon fill='%230b0f14' points='630 750 720 600 540 600'/%3E%3Cpolygon fill='%235b6472' points='810 750 720 900 900 900'/%3E%3Cpolygon fill='%237dff00' points='810 750 900 600 720 600'/%3E%3Cpolygon fill='%237dff00' points='990 750 900 900 1080 900'/%3E%3Cpolygon fill='%237dff00' points='180 0 90 150 270 150'/%3E%3Cpolygon fill='%230b0f14' points='360 0 270 150 450 150'/%3E%3Cpolygon fill='%23ffffff' points='540 0 450 150 630 150'/%3E%3Cpolygon points='900 0 810 150 990 150'/%3E%3Cpolygon fill='%230b0f14' points='0 300 -90 450 90 450'/%3E%3Cpolygon fill='%23ffffff' points='0 300 90 150 -90 150'/%3E%3Cpolygon fill='%23ffffff' points='180 300 90 450 270 450'/%3E%3Cpolygon fill='%237dff00' points='180 300 270 150 90 150'/%3E%3Cpolygon fill='%230b0f14' points='360 300 270 450 450 450'/%3E%3Cpolygon fill='%23ffffff' points='360 300 450 150 270 150'/%3E%3Cpolygon fill='%230b0f14' points='540 300 450 450 630 450'/%3E%3Cpolygon fill='%230b0f14' points='540 300 630 150 450 150'/%3E%3Cpolygon fill='%235b6472' points='720 300 630 450 810 450'/%3E%3Cpolygon fill='%237dff00' points='720 300 810 150 630 150'/%3E%3Cpolygon fill='%23ffffff' points='900 300 810 450 990 450'/%3E%3Cpolygon fill='%237dff00' points='900 300 990 150 810 150'/%3E%3Cpolygon points='0 600 -90 750 90 750'/%3E%3Cpolygon fill='%237dff00' points='0 600 90 450 -90 450'/%3E%3Cpolygon fill='%235b6472' points='180 600 90 750 270 750'/%3E%3Cpolygon fill='%230b0f14' points='180 600 270 450 90 450'/%3E%3Cpolygon fill='%230b0f14' points='360 600 270 750 450 750'/%3E%3Cpolygon fill='%237dff00' points='360 600 450 450 270 450'/%3E%3Cpolygon fill='%237dff00' points='540 600 630 450 450 450'/%3E%3Cpolygon fill='%230b0f14' points='720 600 630 750 810 750'/%3E%3Cpolygon fill='%23ffffff' points='900 600 810 750 990 750'/%3E%3Cpolygon fill='%230b0f14' points='900 600 990 450 810 450'/%3E%3Cpolygon fill='%235b6472' points='0 900 90 750 -90 750'/%3E%3Cpolygon fill='%230b0f14' points='180 900 270 750 90 750'/%3E%3Cpolygon fill='%23ffffff' points='360 900 450 750 270 750'/%3E%3Cpolygon fill='%235b6472' points='540 900 630 750 450 750'/%3E%3Cpolygon fill='%23ffffff' points='720 900 810 750 630 750'/%3E%3Cpolygon fill='%230b0f14' points='900 900 990 750 810 750'/%3E%3Cpolygon fill='%230b0f14' points='1080 300 990 450 1170 450'/%3E%3Cpolygon fill='%23ffffff' points='1080 300 1170 150 990 150'/%3E%3Cpolygon points='1080 600 990 750 1170 750'/%3E%3Cpolygon fill='%237dff00' points='1080 600 1170 450 990 450'/%3E%3Cpolygon fill='%235b6472' points='1080 900 1170 750 990 750'/%3E%3C/g%3E%3C/pattern%3E%3C/defs%3E%3Crect x='0' y='0' fill='url(%23a)' width='100%25' height='100%25'/%3E%3Crect x='0' y='0' fill='url(%23b)' width='100%25' height='100%25'/%3E%3C/svg%3E")`,
-                backgroundSize: 'cover'
-              }}
-            />
+            {/* Top-left Blue Gradient Glow */}
+            <div className="absolute top-0 left-0 -ml-32 -mt-32 h-[600px] w-[600px] rounded-full bg-blue-500/[0.12] blur-[160px] pointer-events-none" />
+            
+
             <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-[#1f2937] to-transparent pointer-events-none" />
             <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 text-center">
               <div className="mx-auto max-w-3xl">
@@ -268,30 +283,53 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="bg-[#f0f2f5] border-y border-black/5">
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-24">
-            {/* Global Payments Section */}
-            <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
-              <div className="max-w-lg">
-                <div className="text-sm font-semibold uppercase tracking-wider text-[color:var(--trite-lime-strong)]">
+        <div className="relative overflow-hidden bg-black border-y border-white/5 py-20 sm:py-32">
+          {/* Background Particles */}
+          <div className="absolute inset-0 z-0">
+            <ParticlesBackground />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6">
+            <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
+              {/* Image — left on desktop, below text on mobile */}
+              <div className="order-2 lg:order-1 flex items-center justify-center lg:justify-start">
+                <div className="relative w-[400px] h-[500px] shrink-0">
+                  {globalReachImages.map((img, idx) => (
+                    <div
+                      key={idx}
+                      className="absolute inset-0 flex items-center justify-center transition-opacity duration-700"
+                      style={{ opacity: globalReachSlide === idx ? 1 : 0 }}
+                    >
+                      <Image
+                        src={img}
+                        alt={`Global reach preview ${idx + 1}`}
+                        fill
+                        className="object-contain drop-shadow-[0_20px_50px_rgba(146,189,48,0.15)]"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Text — right on desktop, above image on mobile */}
+              <div className="order-1 lg:order-2">
+                <div className="text-xs font-semibold uppercase tracking-wider text-[color:var(--trite-lime-strong)]">
                   Global Reach
                 </div>
-                <h2 className="mt-3 text-3xl font-semibold text-[color:var(--trite-ink)] sm:text-4xl">
-                  Hundreds of markets. <span className="text-[color:var(--trite-lime-strong)]">One platform.</span>
+                <h2 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-5xl">
+                  Hundreds of markets. <br />
+                  <span className="text-[color:var(--trite-lime-strong)]">One platform.</span>
                 </h2>
-                <p className="mt-4 text-sm leading-6 text-[color:var(--trite-muted)] sm:text-base">
+                <p className="mt-5 text-sm leading-relaxed text-white/60 sm:text-base">
                   Accept payments from customers across Africa and beyond. Trite
                   automatically routes transactions through the optimal local
                   infrastructure for maximum success rates.
                 </p>
-                <p className="mt-3 text-sm leading-6 text-[color:var(--trite-muted)] sm:text-base">
+                <p className="mt-3 text-sm leading-relaxed text-white/60 sm:text-base">
                   From Lagos to London, Accra to Amsterdam—process payments in
                   multiple currencies with real-time conversion and settlement.
                 </p>
               </div>
-
-              {/* World Map Visualization */}
-              <WorldMap />
             </div>
           </div>
         </div>

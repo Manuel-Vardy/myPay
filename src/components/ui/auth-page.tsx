@@ -5,10 +5,11 @@ import { motion } from 'framer-motion';
 import { Button } from './button';
 
 import {
-	Apple,
-	AtSign,
-	ChevronLeft,
-	Grid2x2Plus,
+	AppleIcon,
+	AtSignIcon,
+	ChevronLeftIcon,
+	GithubIcon,
+	Grid2x2PlusIcon,
 } from 'lucide-react';
 import { Input } from './input';
 import { cn } from '@/lib/utils';
@@ -21,7 +22,7 @@ export function AuthPage() {
 			<div className="bg-muted/60 relative hidden h-full flex-col border-r p-10 lg:flex">
 				<div className="from-background absolute inset-0 z-10 bg-gradient-to-t to-transparent" />
 				<div className="z-10 flex items-center gap-2">
-					<Grid2x2Plus className="size-6" />
+					<Grid2x2PlusIcon className="size-6" />
 					<p className="text-xl font-semibold text-foreground">Trite</p>
 				</div>
 				<div className="z-10 mt-auto">
@@ -51,13 +52,13 @@ export function AuthPage() {
 				</div>
 				<Button variant="ghost" className="absolute top-7 left-5" asChild>
 					<a href="/">
-						<ChevronLeft className='size-4 me-2' />
+						<ChevronLeftIcon className='size-4 me-2' />
 						Home
 					</a>
 				</Button>
 				<div className="mx-auto space-y-4 sm:w-sm max-w-md w-full">
 					<div className="flex items-center gap-2 lg:hidden">
-						<Grid2x2Plus className="size-6" />
+						<Grid2x2PlusIcon className="size-6" />
 						<p className="text-xl font-semibold">Trite</p>
 					</div>
 					<div className="flex flex-col space-y-1">
@@ -74,7 +75,7 @@ export function AuthPage() {
 							Continue with Google
 						</Button>
 						<Button type="button" size="lg" className="w-full">
-							<Apple className='size-4 me-2' />
+							<AppleIcon className='size-4 me-2' />
 							Continue with Apple
 						</Button>
 					</div>
@@ -92,7 +93,7 @@ export function AuthPage() {
 								type="email"
 							/>
 							<div className="text-muted-foreground pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50">
-								<AtSign className="size-4" aria-hidden="true" />
+								<AtSignIcon className="size-4" aria-hidden="true" />
 							</div>
 						</div>
 

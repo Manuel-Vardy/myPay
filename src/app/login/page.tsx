@@ -55,11 +55,10 @@ export default function LoginPage() {
       <div className="bg-gradient-to-b from-[#1a1a1a] via-[#0d0d0d] to-black relative hidden h-full flex-col border-r border-white/5 p-10 lg:flex overflow-hidden">
         <div className="z-20 flex items-center gap-2">
           <Image
-            src="/tritee-logo.png"
+            src="/images/Trite-WB.png"
             alt="Trite logo"
             width={120}
             height={28}
-            className="brightness-0 invert"
             priority
           />
         </div>
@@ -129,7 +128,7 @@ export default function LoginPage() {
         <div className="mx-auto w-full max-w-md space-y-6 py-12">
           <div className="flex items-center gap-2 lg:hidden mb-8">
             <Image
-              src="/tritee-logo.png"
+              src="/Trite-WB.png"
               alt="Trite logo"
               width={100}
               height={24}

@@ -8,6 +8,7 @@ const languages = [
   { code: "en", label: "English" },
   { code: "fr", label: "French" },
   { code: "es", label: "Spanish" },
+  { code: "zh-CN", label: "Chinese" },
 ];
 
 export default function LanguageSwitcher() {
@@ -50,7 +51,7 @@ export default function LanguageSwitcher() {
             function googleTranslateElementInit() {
               new google.translate.TranslateElement({
                 pageLanguage: 'en',
-                includedLanguages: 'en,fr,es',
+                includedLanguages: 'en,fr,es,zh-CN',
                 autoDisplay: false
               }, 'google_translate_element');
             }
@@ -69,7 +70,7 @@ export default function LanguageSwitcher() {
       <div className="relative flex items-center">
         <button 
           onClick={() => setIsOpen(!isOpen)}
-          className={`flex h-9 w-9 items-center justify-center rounded-full text-[color:var(--trite-muted)] hover:bg-black/5 hover:text-[color:var(--trite-ink)] transition-colors ${isOpen ? 'bg-black/5 text-[color:var(--trite-ink)]' : ''}`}
+          className={`flex h-9 w-9 items-center justify-center rounded-full text-white/60 hover:bg-white/10 hover:text-white transition-colors ${isOpen ? 'bg-white/10 text-white' : ''}`}
           aria-label="Change Language"
         >
           <Globe className="h-5 w-5" />
@@ -82,7 +83,7 @@ export default function LanguageSwitcher() {
               className="fixed inset-0 z-40" 
               onClick={() => setIsOpen(false)} 
             />
-            <div className="absolute right-0 top-full mt-1 w-40 origin-top-right rounded-xl bg-white shadow-xl ring-1 ring-black/5 focus:outline-none z-50 overflow-hidden py-1">
+            <div className="absolute right-0 top-full mt-1 w-40 origin-top-right rounded-xl bg-white shadow-xl ring-1 ring-black/5 focus:outline-none z-50 overflow-hidden py-1 notranslate">
               <div className="px-3 py-2 border-b border-black/5 mb-1">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-[color:var(--trite-muted)]">Select Language</span>
               </div>
