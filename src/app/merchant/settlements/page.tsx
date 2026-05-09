@@ -318,7 +318,7 @@ export default function SettlementsPage() {
               <button disabled={page <= 1} onClick={() => setPage(page-1)} className="rounded-lg border border-black/10 px-3 py-1.5 text-xs font-medium text-[color:var(--trite-muted)] disabled:opacity-50 hover:bg-black/[0.02]">
                 Previous
               </button>
-              <button disabled={page >= fetchRes.pagination.total_pages} onClick={() => setPage(page+1)} className="rounded-lg border border-black/10 px-3 py-1.5 text-xs font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50">
+              <button disabled={page >= (fetchRes?.pagination?.total_pages ?? 0)} onClick={() => setPage(page+1)} className="rounded-lg border border-black/10 px-3 py-1.5 text-xs font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50">
                 Next
               </button>
             </div>

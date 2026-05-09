@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import * as am5 from "@amcharts/amcharts5";
 import * as am5map from "@amcharts/amcharts5/map";
 import am5geodata_worldLow from "@amcharts/amcharts5-geodata/worldLow";
@@ -9,11 +9,30 @@ import { HUBS } from "@/constants/hubs";
 
 interface WorldMapProps {
   className?: string;
+  activeHubIndex?: number;
+  onHubChange?: (index: number) => void;
+  isPaused?: boolean;
 }
 
-export default function WorldMap({ className = "" }: WorldMapProps) {
+export default function WorldMap({ 
+  className = "", 
+  activeHubIndex = 0, 
+  onHubChange, 
+  isPaused = false 
+}: WorldMapProps) {
   const chartDivRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<am5.Root | null>(null);
+  const currentIndexRef = useRef(activeHubIndex);
+  const isPausedRef = useRef(isPaused);
+
+  // Sync refs with props
+  useEffect(() => {
+    isPausedRef.current = isPaused;
+  }, [isPaused]);
+
+  useEffect(() => {
+    currentIndexRef.current = activeHubIndex;
+  }, [activeHubIndex]);
 
   useLayoutEffect(() => {
     if (!chartDivRef.current) return;
@@ -153,7 +172,6 @@ export default function WorldMap({ className = "" }: WorldMapProps) {
       fillOpacity: 0.9,
       stroke: am5.color(0x92bd30),
       strokeWidth: 2,
-      cornerRadius: 12,
     });
 
     tooltip.label.setAll({
@@ -161,7 +179,6 @@ export default function WorldMap({ className = "" }: WorldMapProps) {
       fontSize: 12,
       fontWeight: "500",
       maxWidth: 240,
-      wrap: true,
       paddingTop: 12,
       paddingBottom: 12,
       paddingLeft: 16,
@@ -171,12 +188,22 @@ export default function WorldMap({ className = "" }: WorldMapProps) {
     storytellingSeries.set("tooltip", tooltip);
 
     // Sequential Animation Logic
-    let currentIndex = 0;
-
     function moveNext() {
-      const startHub = HUBS[currentIndex];
-      currentIndex = (currentIndex + 1) % HUBS.length;
-      const endHub = HUBS[currentIndex];
+      if (isPausedRef.current) {
+        setTimeout(moveNext, 1000);
+        return;
+      }
+
+      const startHub = HUBS[currentIndexRef.current];
+      const nextIndex = (currentIndexRef.current + 1) % HUBS.length;
+      const endHub = HUBS[nextIndex];
+
+      // Update parent state
+      if (onHubChange) {
+        onHubChange(nextIndex);
+      } else {
+        currentIndexRef.current = nextIndex;
+      }
 
       // Create a line between hubs
       const lineDataItem = lineSeries.pushDataItem({
@@ -192,13 +219,13 @@ export default function WorldMap({ className = "" }: WorldMapProps) {
       // Create a point that follows the line
       const pointDataItem = storytellingSeries.pushDataItem({
         fact: endHub.fact
-      });
+      } as any);
 
-      pointDataItem.set("lineDataItem", lineDataItem as any);
-      pointDataItem.set("locationX", 0);
+      (pointDataItem as any).set("lineDataItem", lineDataItem as any);
+      (pointDataItem as any).set("locationX", 0);
 
       // Animate the point along the line
-      const animation = pointDataItem.animate({
+      const animation = (pointDataItem as any).animate({
         key: "locationX",
         from: 0,
         to: 1,
@@ -208,7 +235,7 @@ export default function WorldMap({ className = "" }: WorldMapProps) {
 
       animation?.events.on("stopped", () => {
         // Show tooltip on arrival
-        storytellingSeries.showTooltip(pointDataItem);
+        storytellingSeries.showTooltip(pointDataItem as any);
 
         // Zoom to the hub
         chart.zoomToGeoPoint({ longitude: endHub.longitude, latitude: endHub.latitude }, 3, true, 1000);
@@ -233,7 +260,7 @@ export default function WorldMap({ className = "" }: WorldMapProps) {
     return () => {
       root.dispose();
     };
-  }, []);
+  }, [onHubChange]);
 
   return (
     <div
