@@ -2,19 +2,19 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
-  --trite-lime: #b6ff3b;
-  --trite-lime-strong: #7dff00;
-  --trite-ink: #0b0f14;
-  --trite-muted: #5b6472;
-  --trite-card: #f6f7fb;
+  --foreground: #000000;
+  --trite-lime: #92bd30;
+  --trite-lime-strong: #81a72a;
+  --trite-ink: #000000;
+  --trite-muted: #4b5563;
+  --trite-card: #f9fafb;
 }
 
 .high-contrast {
   --trite-ink: #000000;
   --trite-muted: #000000;
-  --trite-lime: #ffff00;
-  --trite-lime-strong: #ffff00;
+  --trite-lime: #92bd30;
+  --trite-lime-strong: #81a72a;
   --background: #ffffff;
   --foreground: #000000;
 }
@@ -29,7 +29,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
+  font-family: var(--font-montserrat), ui-sans-serif, system-ui, -apple-system,
     Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
@@ -70,4 +70,15 @@ body {
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.2);
+}
+
+/* Dog-eared top-left corner (About / Benefits style panels) */
+.about-panel-clip {
+  clip-path: polygon(3rem 0, 100% 0, 100% 100%, 0 100%, 0 3rem);
+}
+
+@media (min-width: 640px) {
+  .about-panel-clip {
+    clip-path: polygon(4rem 0, 100% 0, 100% 100%, 0 100%, 0 4rem);
+  }
 }
