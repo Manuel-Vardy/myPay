@@ -15,7 +15,7 @@ TRITE PSP is a high-fidelity, stablecoin-enabled Payment Service Provider design
 ## Theme
 Colors:
 - #fff - backgrounds mostly
-- #92bd30 - CTAs, etc
+- #22c55e - CTAs, etc
 - #000 - minor
 ---
 

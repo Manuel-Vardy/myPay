@@ -18,190 +18,235 @@ import {
 
 export default function PaymentsPage() {
   return (
-    <div className="min-h-screen bg-white text-black font-sans selection:bg-[#92bd30]/30 selection:text-black">
-      <Header transparent={false} />
+    <div className="min-h-screen bg-white text-black font-sans selection:bg-[#22c55e]/30 selection:text-black">
+      <Header transparent={true} />
 
-      <main className="py-16 sm:py-24">
+      <main>
         {/* HERO HEADER */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="space-y-6 max-w-3xl">
-            <span className="inline-flex items-center rounded-full bg-[#92bd30]/10 px-3 py-1 text-xs font-bold text-[#81a72a] border border-[#92bd30]/20">
-              PAYMENTS & SETTLEMENT
-            </span>
-            <h1 className="text-4xl font-extrabold tracking-tight text-black sm:text-5xl lg:text-6xl leading-tight">
-              Get paid Faster, Anywhere, from Anyone.
-            </h1>
-            <p className="text-xl text-gray-600 leading-relaxed font-medium">
-              Trite gives your business everything you need to collect payments - online, in-store, and across borders - without stress or technical complexity.
-            </p>
-            <div className="inline-block rounded-xl bg-gray-50 border border-black/[0.06] px-4 py-2.5 text-sm font-bold text-black">
-              One integration, multiple payment options, zero headaches.
+        <section className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-black">
+          {/* Background Image */}
+          <div className="absolute inset-0 z-0">
+            <Image
+              src="/images/payment-4.jpg"
+              alt="Payments Hero background"
+              fill
+              className="object-cover opacity-60"
+              priority
+            />
+            {/* Overlay for better text readability */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-20">
+            <div className="max-w-4xl mx-auto text-center">
+              <div className="space-y-8">
+                <div>
+                  <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl leading-[1.1] max-w-3xl mx-auto">
+                    Get paid Faster, <br /> Anywhere, from Anyone.
+                  </h1>
+                  <div className="mt-6 h-px w-full max-w-3xl bg-white/20 mx-auto"></div>
+                </div>
+                <p className="text-lg sm:text-xl text-white/90 leading-relaxed font-normal max-w-2xl mx-auto">
+                  Trite gives your business everything you need to collect payments - online, in-store, and across borders - without stress or technical complexity.
+                </p>
+                <div className="inline-block rounded-full bg-white/10 backdrop-blur-xl px-8 py-3 text-base font-bold text-white">
+                  One integration, multiple payment options, zero headaches.
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* CORE KNOWLEDGE EXPANSION - HOW SETTLEMENT WORKS */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-16">
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 bg-gray-50 border border-black/[0.06] p-8 sm:p-12 rounded-3xl">
-            <div className="space-y-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#92bd30]/10 text-[#81a72a]">
-                <Zap className="h-5 w-5" />
-              </div>
-              <h3 className="text-lg font-extrabold text-black">Instant GHS Payouts</h3>
-              <p className="text-sm text-gray-500 font-medium leading-relaxed">
-                Connect your checkout flow directly to mobile money systems in West Africa. Converts customer stablecoins or card payments into liquid Ghanaian Cedi (GHS) instantly.
-              </p>
-            </div>
-            <div className="space-y-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#92bd30]/10 text-[#81a72a]">
-                <Globe2 className="h-5 w-5" />
-              </div>
-              <h3 className="text-lg font-extrabold text-black">Gas-Free Stablecoin Conversions</h3>
-              <p className="text-sm text-gray-500 font-medium leading-relaxed">
-                Accept USDT or USDC without requiring gas fees from your end-users. We manage blockchain gas limits internally to deliver frictionless checkout experiences.
-              </p>
-            </div>
-            <div className="space-y-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#92bd30]/10 text-[#81a72a]">
-                <ShieldCheck className="h-5 w-5" />
-              </div>
-              <h3 className="text-lg font-extrabold text-black">KYT / Compliance Safeguards</h3>
-              <p className="text-sm text-gray-500 font-medium leading-relaxed">
-                Every digital asset settlement is scrutinized by our KYT (Know Your Transaction) systems, verifying wallet origins and blocking bad actors before funds reach your treasury.
-              </p>
+        {/* PRICING SECTION */}
+        <div className="relative z-20 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 -mt-12 sm:-mt-16">
+          <div className="bg-white p-8 sm:p-12 rounded-none text-center">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-black mb-4">
+              Simple & Transparent Pricing
+            </h3>
+            <p className="text-lg sm:text-xl text-gray-600 font-medium max-w-2xl mx-auto leading-relaxed">
+              Pay only <span className="text-[#16a34a] font-bold">1.50%</span> per transaction and enjoy fast, secure, and reliable payments.
+            </p>
+            <div className="flex justify-center gap-1.5 mt-8">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-1.5 w-1.5 rounded-full bg-[#22c55e]" />
+              ))}
             </div>
           </div>
         </div>
 
         {/* GRID OF THE 7 MAIN PAYMENT RAILS */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-20">
-          <div className="border-b border-black/[0.06] pb-6 mb-12">
-            <h2 className="text-2xl font-extrabold text-black tracking-tight sm:text-3xl">Accept Multiple Payment Methods</h2>
-            <p className="text-sm text-gray-500 font-medium mt-1">Our comprehensive payment rails are optimized for localized checkout flows</p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {/* Mobile Money */}
-            <div className="group rounded-2xl border border-black/[0.06] bg-white p-8 transition-all hover:bg-gray-50 hover:border-black/10 hover:shadow-md">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#92bd30]/15 text-black border border-[#92bd30]/20 mb-6">
-                <Smartphone className="h-5 w-5" />
-              </div>
-              <h3 className="text-lg font-bold text-black">Mobile Money</h3>
-              <p className="mt-3 text-sm leading-relaxed text-gray-500 font-medium">
-                In emerging markets and mobile-first economies, mobile money plays a critical role. Trite enables you to pay and get paid with Mobile Money.
-              </p>
-            </div>
-
-            {/* USSD */}
-            <div className="group rounded-2xl border border-black/[0.06] bg-white p-8 transition-all hover:bg-gray-50 hover:border-black/10 hover:shadow-md">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#92bd30]/15 text-black border border-[#92bd30]/20 mb-6">
-                <span className="text-xs font-black font-mono">#123</span>
-              </div>
-              <h3 className="text-lg font-bold text-black">USSD</h3>
-              <p className="mt-3 text-sm leading-relaxed text-gray-500 font-medium">
-                A single short code to collect all payments. Set up a custom menu to receive payments from all networks. All you need is one code for all payments.
-              </p>
-            </div>
-
-            {/* Credit Card & Debit Card */}
-            <div className="group rounded-2xl border border-black/[0.06] bg-white p-8 transition-all hover:bg-gray-50 hover:border-black/10 hover:shadow-md">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#92bd30]/15 text-black border border-[#92bd30]/20 mb-6">
-                <CreditCard className="h-5 w-5" />
-              </div>
-              <h3 className="text-lg font-bold text-black">Credit Card & Debit Card</h3>
-              <p className="mt-3 text-sm leading-relaxed text-gray-500 font-medium">
-                We allow businesses to accept card payments from major card providers globally.
-              </p>
-            </div>
-
-            {/* Invoice */}
-            <div className="group rounded-2xl border border-black/[0.06] bg-white p-8 transition-all hover:bg-gray-50 hover:border-black/10 hover:shadow-md">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#92bd30]/15 text-black border border-[#92bd30]/20 mb-6">
-                <span className="font-mono text-sm font-extrabold uppercase">INV</span>
-              </div>
-              <h3 className="text-lg font-bold text-black">Invoice</h3>
-              <p className="mt-3 text-sm leading-relaxed text-gray-500 font-medium">
-                Generate secure payment links and digital invoices for your customers using Trite.
-              </p>
-            </div>
-
-            {/* Bank Transfer */}
-            <div className="group rounded-2xl border border-black/[0.06] bg-white p-8 transition-all hover:bg-gray-50 hover:border-black/10 hover:shadow-md">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#92bd30]/15 text-black border border-[#92bd30]/20 mb-6">
-                <Building2 className="h-5 w-5" />
-              </div>
-              <h3 className="text-lg font-bold text-black">Bank Transfer</h3>
-              <p className="mt-3 text-sm leading-relaxed text-gray-500 font-medium">
-                Businesses can accept direct bank payments through local and international banking networks.
-              </p>
-            </div>
-
-            {/* Stablecoin Checkout Gateway */}
-            <div className="group rounded-2xl border border-black/[0.06] bg-white p-8 transition-all hover:bg-gray-50 hover:border-black/10 hover:shadow-md">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#92bd30]/15 text-black border border-[#92bd30]/20 mb-6">
-                <Coins className="h-5 w-5" />
-              </div>
-              <h3 className="text-lg font-bold text-black">Stablecoin Checkout Gateway</h3>
-              <p className="mt-3 text-sm leading-relaxed text-gray-500 font-medium">
-                Integrate a dedicated stablecoin checkout option into their websites and apps.
-              </p>
-            </div>
-
-            {/* QR Code Stablecoin Payments */}
-            <div className="group rounded-2xl border border-black/[0.06] bg-white p-8 transition-all hover:bg-gray-50 hover:border-black/10 hover:shadow-md lg:col-span-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#92bd30]/15 text-black border border-[#92bd30]/20 mb-6">
-                <span className="font-mono text-sm font-extrabold uppercase">QR</span>
-              </div>
-              <h3 className="text-lg font-bold text-black">QR Code Stablecoin Payments</h3>
-              <p className="mt-3 text-sm leading-relaxed text-gray-500 font-medium">
-                Trite PSP supports blockchain-enabled QR payment systems for fast and easy customer transactions.
-              </p>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-32">
+          <div className="mb-16 lg:flex lg:justify-end">
+            <div className="lg:w-7/12">
+              <h2 className="text-3xl font-extrabold text-[#474747] tracking-tight sm:text-4xl mb-4">Accept Multiple Payment Methods</h2>
+              <p className="text-lg text-gray-500 font-medium max-w-xl">Our comprehensive payment rails are optimized for localized checkout flows and global digital settlements.</p>
             </div>
           </div>
-        </div>
 
-        {/* INTEGRATION SUBSECTIONS */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-16">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <div className="rounded-2xl border border-black/[0.06] bg-gray-50 p-8 space-y-4">
-              <h4 className="text-xl font-bold text-black">Integrate Online Check out</h4>
-              <div className="space-y-2">
-                <div className="text-sm font-bold text-black">Move your money to any bank account or mobile money wallet</div>
-                <p className="text-sm text-gray-500 leading-relaxed font-medium">
-                  Easily transfer funds from your Trite account to any bank account or mobile money wallet. Enjoy quick, secure, and reliable transfers whenever you need them.
-                </p>
-              </div>
-            </div>
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-12 lg:gap-12 pb-24">
+            {[
+              {
+                title: "Mobile Money",
+                desc: "In emerging markets and mobile-first economies, mobile money plays a critical role. Trite enables you to pay and get paid with Mobile Money.",
+                image: "/images/man-momo.png",
+                gradient: "linear-gradient(135deg, #d4ecff 0%, #d4ecff 45%, #c0e2ff 45.5%, #c0e2ff 100%)",
+                baseColor: "#d4ecff",
+                titleColor: "#000957ff",
+                badge: "Popular",
+                layout: "lg:col-span-5 lg:translate-y-0"
+              },
+              {
+                title: "USSD",
+                desc: "A single short code to collect all payments. Set up a custom menu to receive payments from all networks. All you need is one code for all payments.",
+                image: "/images/ussd1.png",
+                gradient: "linear-gradient(225deg, #ffd6d6 0%, #ffd6d6 55%, #ffc2c2 55.5%, #ffc2c2 100%)",
+                baseColor: "#ffd6d6",
+                titleColor: "#991b1b",
+                badge: "Offline",
+                layout: "lg:col-span-7 lg:mt-24",
+                imgPadding: "p-2 pb-0"
+              },
+              {
+                title: "Credit Card & Debit Card",
+                desc: "We allow businesses to accept card payments from major card providers globally. Fast, secure, and globally recognized.",
+                image: "/images/woman-with-card-Photoroom.png",
+                gradient: "linear-gradient(135deg, #ffd5bc 0%, #ffd5bc 40%, #ffc39e 40.5%, #ffc39e 100%)",
+                baseColor: "#ffd5bc",
+                titleColor: "#9a3412",
+                badge: "Global",
+                layout: "lg:col-span-7 lg:mt-12"
+              },
+              {
+                title: "Invoice",
+                desc: "Generate secure payment links and digital invoices for your customers using Trite. Perfect for professional service providers.",
+                image: "/images/gateway.png",
+                gradient: "linear-gradient(225deg, #fffec7 0%, #fffec7 50%, #fffca1 50.5%, #fffca1 100%)",
+                baseColor: "#fffec7",
+                titleColor: "#854d0e",
+                badge: "Business",
+                layout: "lg:col-span-5 lg:mt-12"
+              },
+              {
+                title: "Bank Transfer",
+                desc: "Businesses can accept direct bank payments through local and international banking networks. Secure and high-volume ready.",
+                image: "/images/business-1.jpg",
+                gradient: "linear-gradient(135deg, #ecfeff 0%, #ecfeff 48%, #c2faff 48.5%, #c2faff 100%)",
+                baseColor: "#ecfeff",
+                titleColor: "#155e75",
+                badge: "Institutional",
+                layout: "lg:col-span-4 lg:mt-0"
+              },
+              {
+                title: "Stablecoin Gateway",
+                desc: "Integrate a dedicated stablecoin checkout option into your websites and apps. Settle instantly in USDT or USDC.",
+                image: "/images/stablecoin-logo2.png",
+                gradient: "linear-gradient(225deg, #b0ffd9 0%, #b0ffd9 52%, #82ffc2 52.5%, #82ffc2 100%)",
+                baseColor: "#b0ffd9",
+                titleColor: "#065f46",
+                badge: "Web3",
+                layout: "lg:col-span-4 lg:translate-y-20"
+              },
+              {
+                title: "QR Code Payments",
+                desc: "Trite PSP supports blockchain-enabled QR payment systems for fast and easy customer transactions. Scan, pay, and go.",
+                image: "/images/qr-mockup.png",
+                gradient: "linear-gradient(135deg, #fdf2f8 0%, #fdf2f8 42%, #fce7f3 42.5%, #fce7f3 100%)",
+                baseColor: "#fdf2f8",
+                titleColor: "#86198f",
+                badge: "Contactless",
+                layout: "lg:col-span-4 lg:-translate-y-8"
+              }
+            ].map((item, idx) => (
+              <div 
+                key={idx} 
+                className={`group flex flex-col overflow-hidden rounded-[1.5rem] ${item.layout || ""}`}
+                style={{ backgroundColor: item.baseColor }}
+              >
+                {/* Card Image Header with Gradient */}
+                <div 
+                  className={`relative h-75 w-full overflow-hidden flex items-center justify-center ${item.imgPadding || "p-8 pb-0"}`}
+                  style={{ background: item.gradient }}
+                >
+                  <div className="relative h-full w-full">
+                    <Image 
+                      src={item.image} 
+                      alt={item.title} 
+                      fill 
+                      className="object-contain transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="absolute top-6 left-6 z-20">
+                    <span className="bg-white/90 backdrop-blur-md text-black text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg shadow-sm">
+                      {item.badge}
+                    </span>
+                  </div>
+                  {/* Smooth multi-stop fade to match card background perfectly */}
+                  <div 
+                    className="absolute inset-0 pointer-events-none z-10" 
+                    style={{ 
+                      background: `linear-gradient(to bottom, 
+                        transparent 0%, 
+                        transparent 40%, 
+                        ${item.baseColor}88 70%, 
+                        ${item.baseColor} 100%)` 
+                    }} 
+                  />
+                </div>
 
-            <div className="rounded-2xl border border-black/[0.06] bg-gray-50 p-8 flex flex-col justify-between">
-              <div className="space-y-4">
-                <h4 className="text-xl font-bold text-black">Accept payments online</h4>
-                <div className="inline-flex rounded-full bg-white px-3 py-1 text-xs font-bold border border-black/[0.06] text-black">
-                  Add Trite to your website and accept payments
+                {/* Card Content */}
+                <div className="flex flex-col flex-grow p-8 sm:p-10 pt-6 pb-12">
+                  <h3 
+                    className="text-base font-semibold tracking-tight mb-4"
+                    style={{ color: item.titleColor }}
+                  >
+                    {item.title}
+                  </h3>
+                  <p className="text-lg sm:text-xl leading-relaxed text-gray-700 font-medium">
+                    {item.desc}
+                  </p>
                 </div>
               </div>
-              <div className="mt-6 pt-6 border-t border-black/[0.06] flex items-center justify-between">
-                <span className="text-sm font-extrabold text-black">Programmable APIs for Businesses.</span>
-                <Code className="h-5 w-5 text-gray-400" />
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* BOTTOM CTA */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-24">
-          <div className="bg-black rounded-3xl p-8 sm:p-12 text-center space-y-6">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white">Ready to deploy high-velocity payments?</h2>
-            <p className="text-sm sm:text-base text-white/70 max-w-xl mx-auto font-medium">
-              Start collecting payments globally with stablecoin rails and local payment methods in under an hour.
-            </p>
-            <div className="flex justify-center gap-4">
-              <Link 
-                href="/get-started" 
-                className="px-6 py-3 font-semibold bg-[#92bd30] text-black rounded-full hover:bg-[#81a72a] transition-all flex items-center gap-2"
-              >
-                Get Started Now <ArrowRight className="h-4 w-4" />
-              </Link>
+        {/* INTEGRATION SUBSECTIONS - ABOUT STYLE */}
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-24 mb-24">
+          <div className="bg-[#fcfaf7] rounded-[2.5rem] p-10 sm:p-16 lg:p-24">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 items-start">
+              {/* Left Column */}
+              <div className="lg:col-span-5 space-y-8">
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-6 block">
+                    INTEGRATION
+                  </span>
+                  <h2 className="text-4xl sm:text-5xl font-extrabold text-black leading-[1.1] tracking-tight">
+                    Integrate Online <br /> Check out
+                  </h2>
+                </div>
+                <p className="text-lg sm:text-xl text-gray-600 font-medium leading-relaxed">
+                  Move your money to any bank account or mobile money wallet.
+                </p>
+              </div>
+
+              {/* Right Column */}
+              <div className="lg:col-span-7 space-y-10">
+                <p className="text-lg sm:text-xl text-gray-700 font-medium leading-relaxed">
+                  Easily transfer funds from your Trite account to any bank account or mobile money wallet. Enjoy quick, secure, and reliable transfers whenever you need them.
+                </p>
+                
+                <div className="space-y-4">
+                  <h4 className="text-xl font-bold text-black">Accept payments online</h4>
+                  <p className="text-lg text-gray-600 font-medium leading-relaxed">
+                    Add Trite to your website and accept payments.
+                  </p>
+                </div>
+
+                <div className="pt-10 border-t border-black/[0.08] flex items-center justify-between">
+                  <span className="text-lg font-extrabold text-black">Programmable APIs for Businesses.</span>
+                  <Code className="h-6 w-6 text-[#22c55e]" />
+                </div>
+              </div>
             </div>
           </div>
         </div>

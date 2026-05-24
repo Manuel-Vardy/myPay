@@ -115,7 +115,7 @@ export default function Home() {
                 {/* Hero CTA Buttons */}
                 <div className="flex flex-wrap gap-3 pt-2">
                   <Link
-                    className="inline-flex h-12 items-center justify-center rounded-full bg-[#92bd30] px-8 text-sm font-semibold text-black hover:bg-[#81a72a] shadow transition-all duration-200"
+                    className="inline-flex h-12 items-center justify-center rounded-full bg-[#22c55e] px-8 text-sm font-semibold text-black hover:bg-[#16a34a] shadow transition-all duration-200"
                     href="/get-started"
                   >
                     Get Started
@@ -182,18 +182,28 @@ export default function Home() {
                   <img
                     src="/images/Telecel-logo.png"
                     alt="Telecel"
-                    className="h-14 w-auto object-contain"
+                    className="h-16 w-auto object-contain"
                   />
                   <img
                     src="/images/mtn-logo.png"
                     alt="MTN"
-                    className="h-14 w-auto object-contain"
+                    className="h-18 w-auto object-contain"
                   />
                   <img
                     src="/images/AirtelTigo-logo.png"
                     alt="AirtelTigo"
-                    className="h-14 w-auto object-contain"
+                    className="h-16 w-auto object-contain"
                   />
+                </div>
+
+                {/* Stablecoins */}
+                <div className="flex flex-col items-center gap-3">
+                  <img
+                    src="/images/stablecoin-logo1.png"
+                    alt="Stablecoins"
+                    className="h-16 w-auto object-contain"
+                  />
+                  <span className="text-sm font-bold text-gray-400">Stablecoins</span>
                 </div>
 
                 {/* Bank Transfers */}
@@ -202,16 +212,6 @@ export default function Home() {
                     <Building2 className="h-8 w-8 text-orange-500" />
                   </div>
                   <span className="text-sm font-bold text-blue-600">Bank Transfers</span>
-                </div>
-
-                {/* Stablecoins */}
-                <div className="flex flex-col items-center gap-3">
-                  <img
-                    src="/images/stablecoin-logo.png"
-                    alt="Stablecoins"
-                    className="h-16 w-auto object-contain"
-                  />
-                  <span className="text-sm font-bold text-gray-400">Stablecoins (Coming Soon)</span>
                 </div>
               </div>
 
@@ -239,19 +239,31 @@ export default function Home() {
                     <img
                       src="/images/Telecel-logo.png"
                       alt="Telecel"
-                      className="h-10 w-auto object-contain"
+                      className="h-12 w-auto object-contain"
                     />
                     <img
                       src="/images/mtn-logo.png"
                       alt="MTN"
-                      className="h-10 w-auto object-contain"
+                      className="h-14 w-auto object-contain"
                     />
                     <img
                       src="/images/AirtelTigo-logo.png"
                       alt="AirtelTigo"
-                      className="h-10 w-auto object-contain"
+                      className="h-12 w-auto object-contain"
                     />
                   </div>
+                </div>
+
+                {/* Stablecoins */}
+                <div className="text-center">
+                  <div className="flex items-center justify-center mb-6">
+                    <img
+                      src="/images/stablecoin-logo1.png"
+                      alt="Stablecoins"
+                      className="h-16 w-auto object-contain"
+                    />
+                  </div>
+                  <h4 className="text-lg font-bold text-gray-400">Stablecoins</h4>
                 </div>
 
                 {/* Bank Transfers */}
@@ -262,18 +274,6 @@ export default function Home() {
                     </div>
                   </div>
                   <h4 className="text-lg font-bold text-blue-600">Bank Transfers</h4>
-                </div>
-
-                {/* Stablecoins */}
-                <div className="text-center">
-                  <div className="flex items-center justify-center mb-6">
-                    <img
-                      src="/images/stablecoin-logo.png"
-                      alt="Stablecoins"
-                      className="h-16 w-auto object-contain"
-                    />
-                  </div>
-                  <h4 className="text-lg font-bold text-gray-400">Stablecoins (Coming Soon)</h4>
                 </div>
               </div>
             </div>
@@ -325,7 +325,7 @@ export default function Home() {
                       className="flex items-start gap-4 group py-0.5 cursor-pointer"
                       onMouseEnter={() => setBuiltForIndex(idx)}
                     >
-                      <span className={`text-lg sm:text-xl font-medium transition-colors duration-300 min-w-[40px] sm:min-w-[48px] ${idx === builtForIndex ? "text-[#92bd30]" : "text-gray-300 group-hover:text-[#92bd30]"
+                      <span className={`text-lg sm:text-xl font-medium transition-colors duration-300 min-w-[40px] sm:min-w-[48px] ${idx === builtForIndex ? "text-[#22c55e]" : "text-gray-300 group-hover:text-[#22c55e]"
                         }`}>
                         {String(idx + 1).padStart(2, '0')}/
                       </span>
@@ -353,10 +353,10 @@ export default function Home() {
         {/* SECTION 2: PAYMENTS & SETTLEMENT */}
         <section
           id="payments"
-          className="relative bg-gradient-to-t from-[#92bd30]/12 via-[#92bd30]/2 to-[#f8fafc] py-20 sm:py-28 md:py-36"
+          className="relative bg-gradient-to-t from-[#22c55e]/12 via-[#22c55e]/2 to-[#f8fafc] py-20 sm:py-28 md:py-36"
         >
           {/* Subtle gradient accent */}
-          <div className="absolute top-10 right-0 -z-10 h-[400px] w-[300px] bg-[#92bd30]/5 blur-[100px] pointer-events-none" />
+          <div className="absolute top-10 right-0 -z-10 h-[400px] w-[300px] bg-[#22c55e]/5 blur-[100px] pointer-events-none" />
 
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="space-y-6 max-w-3xl">
@@ -389,7 +389,7 @@ export default function Home() {
                       </p>
                     </div>
                     <div className="mt-8">
-                      <Link href="/payments" className="inline-flex items-center gap-1 text-sm font-semibold text-black hover:text-[#92bd30] transition-colors">
+                      <Link href="/payments" className="inline-flex items-center gap-1 text-sm font-semibold text-black hover:text-[#22c55e] transition-colors">
                         Learn more
                         <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                       </Link>
@@ -420,7 +420,7 @@ export default function Home() {
                       </p>
                     </div>
                     <div className="mt-8">
-                      <Link href="/payments" className="inline-flex items-center gap-1 text-sm font-semibold text-black hover:text-[#92bd30] transition-colors">
+                      <Link href="/payments" className="inline-flex items-center gap-1 text-sm font-semibold text-black hover:text-[#22c55e] transition-colors">
                         Learn more
                         <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                       </Link>
@@ -454,7 +454,7 @@ export default function Home() {
                       </p>
                     </div>
                     <div className="mt-8">
-                      <Link href="/payments" className="inline-flex items-center gap-1 text-sm font-semibold text-black hover:text-[#92bd30] transition-colors">
+                      <Link href="/payments" className="inline-flex items-center gap-1 text-sm font-semibold text-black hover:text-[#22c55e] transition-colors">
                         Learn more
                         <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                       </Link>
@@ -483,7 +483,7 @@ export default function Home() {
                       </p>
                     </div>
                     <div className="mt-8">
-                      <Link href="/payments" className="inline-flex items-center gap-1 text-sm font-semibold text-black hover:text-[#92bd30] transition-colors">
+                      <Link href="/payments" className="inline-flex items-center gap-1 text-sm font-semibold text-black hover:text-[#22c55e] transition-colors">
                         Learn more
                         <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                       </Link>
@@ -508,7 +508,7 @@ export default function Home() {
             <div className="mt-16 flex justify-center">
               <Link
                 href="/payments"
-                className="px-8 py-4 font-semibold bg-[#92bd30] text-black hover:bg-[#81a72a] rounded-full transition-all flex items-center gap-2 shadow-[0_10px_25px_-5px_rgba(146,189,48,0.3)] hover:scale-[1.02]"
+                className="px-8 py-4 font-semibold bg-[#22c55e] text-black hover:bg-[#16a34a] rounded-full transition-all flex items-center gap-2 shadow-[0_10px_25px_-5px_rgba(34,197,94,0.3)] hover:scale-[1.02]"
               >
                 Learn More About Payments <ArrowRight className="h-4 w-4" />
               </Link>
@@ -678,14 +678,14 @@ export default function Home() {
 
                 <div className="mt-10 flex flex-wrap gap-3">
                   <Link
-                    className="inline-flex h-12 items-center justify-center rounded-full bg-[#0c1e43] px-6 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-[#0a1838]"
+                    className="inline-flex h-12 items-center justify-center rounded-full bg-[#22c55e] px-6 text-sm font-semibold text-black shadow-sm transition-all duration-200 hover:bg-[#16a34a]"
                     href="/demo"
                   >
                     Request a Demo
                   </Link>
                   <Link
                     href="/businesses"
-                    className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-black/15 bg-white px-6 text-sm font-semibold text-[#0c1e43] transition-all duration-200 hover:bg-gray-50"
+                    className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-black/15 bg-white px-6 text-sm font-semibold text-black transition-all duration-200 hover:bg-gray-50"
                   >
                     Learn More About Business Solutions <ArrowRight className="h-4 w-4" />
                   </Link>
@@ -779,7 +779,7 @@ export default function Home() {
                       title: "Trite Merchant Dashboard",
                       desc: "Advanced reporting, reconciliation, settlement tracking, and business insights.",
                       rail: "03",
-                      blockColor: "bg-[#f59e0b]",
+                      blockColor: "bg-[#affc41]",
                       image: "/images/mockup7.png",
                       layout: "right",
                       imgPos: "bottom-4",
@@ -836,7 +836,7 @@ export default function Home() {
                       title: "Trite API",
                       desc: "Developer-first RESTful APIs with comprehensive documentation.",
                       rail: "04",
-                      blockColor: "bg-[#6366f1]",
+                      blockColor: "bg-[#334155]",
                       image: "/images/trite-api.png",
                       layout: "left",
                       imgPos: "-bottom-6"
@@ -882,7 +882,7 @@ export default function Home() {
             <div className="mt-20 flex justify-center">
               <Link
                 href="/products"
-                className="inline-flex items-center justify-center px-10 py-5 font-bold bg-[#92bd30] text-black hover:bg-[#81a72a] rounded-full transition-all gap-2 shadow-xl hover:shadow-2xl"
+                className="inline-flex items-center justify-center px-10 py-5 font-bold bg-[#22c55e] text-black hover:bg-[#16a34a] rounded-full transition-all gap-2 shadow-xl hover:shadow-2xl"
               >
                 Explore Product Suite <ArrowRight className="h-5 w-5" />
               </Link>
@@ -909,43 +909,57 @@ export default function Home() {
                 </div>
 
                 <div className="space-y-8">
-                  <Carousel index={whyTriteIndex} onIndexChange={setWhyTriteIndex} className="w-full">
-                    <CarouselContent>
-                      {whyTriteItems.map((item, idx) => (
-                        <CarouselItem key={idx} className="pr-4">
-                            <div className="bg-white rounded-2xl p-8 border border-black/[0.03] min-h-[280px] flex flex-col justify-center space-y-4 relative overflow-hidden">
-                              <div className="text-2xl font-extrabold text-black flex items-center gap-3">
-                                <span className="h-3 w-3 rounded-full bg-[#92bd30]" />
-                                {item.title}
-                              </div>
-                              <p className="text-lg text-gray-500 leading-relaxed font-medium">
-                                {item.content}
-                              </p>
-                              {item.subPoints && (
-                                <ul className="text-sm text-black font-bold space-y-2 pl-6 list-disc opacity-70">
-                                  {item.subPoints.map((sub, sIdx) => (
-                                    <li key={sIdx}>{sub}</li>
-                                  ))}
-                                </ul>
-                              )}
-
-                              {/* Progress Bar (Moving Line) */}
-                              {whyTriteIndex === idx && (
-                                <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-100">
-                                  <motion.div
-                                    initial={{ width: "0%" }}
-                                    animate={{ width: "100%" }}
-                                    transition={{ duration: 5, ease: "linear" }}
-                                    key={whyTriteIndex}
-                                    className="h-full bg-[#92bd30]"
-                                  />
-                                </div>
-                              )}
+                  <div className="w-full">
+                    <div className="bg-white rounded-2xl p-8 border border-black/[0.03] min-h-[320px] flex flex-col justify-center relative overflow-hidden shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_4px_6px_-2px_rgba(0,0,0,0.05)]">
+                      <div className="relative h-full flex flex-col justify-center">
+                        {whyTriteItems.map((item, idx) => (
+                          <motion.div
+                            key={idx}
+                            initial={{ opacity: 0, x: 40 }}
+                            animate={{
+                              opacity: whyTriteIndex === idx ? 1 : 0,
+                              x: whyTriteIndex === idx ? 0 : -40,
+                              pointerEvents: whyTriteIndex === idx ? "auto" : "none"
+                            }}
+                            transition={{ 
+                              duration: 0.6, 
+                              ease: [0.22, 1, 0.36, 1] // Custom cubic-bezier for a smoother swipe
+                            }}
+                            className={cn(
+                              "space-y-4",
+                              whyTriteIndex === idx ? "relative" : "absolute inset-0 flex flex-col justify-center"
+                            )}
+                          >
+                            <div className="text-2xl font-extrabold text-black flex items-center gap-3">
+                              <span className="h-3 w-3 rounded-full bg-[#22c55e]" />
+                              {item.title}
                             </div>
-                          </CarouselItem>
-                      ))}
-                    </CarouselContent>
-                  </Carousel>
+                            <p className="text-lg text-gray-500 leading-relaxed font-medium">
+                              {item.content}
+                            </p>
+                            {item.subPoints && (
+                              <ul className="text-sm text-black font-bold space-y-2 pl-6 list-disc opacity-70">
+                                {item.subPoints.map((sub, sIdx) => (
+                                  <li key={sIdx}>{sub}</li>
+                                ))}
+                              </ul>
+                            )}
+                          </motion.div>
+                        ))}
+                      </div>
+
+                      {/* Progress Bar (Moving Line) */}
+                      <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-100">
+                        <motion.div
+                            initial={{ width: "0%" }}
+                            animate={{ width: "100%" }}
+                            transition={{ duration: 5, ease: "linear" }}
+                            key={whyTriteIndex}
+                            className="h-full bg-[#22c55e]"
+                          />
+                      </div>
+                    </div>
+                  </div>
 
                   {/* Custom Indicators */}
                   <div className="flex flex-wrap gap-3">
@@ -980,7 +994,7 @@ export default function Home() {
                   />
                 </div>
                 {/* Decorative background element */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-[#92bd30]/5 rounded-full blur-3xl -z-10" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-[#22c55e]/5 rounded-full blur-3xl -z-10" />
               </div>
             </div>
           </div>
@@ -990,14 +1004,6 @@ export default function Home() {
         <section
           className="relative z-10 bg-white pt-10 sm:pt-14 md:pt-20 pb-20 sm:pb-28 md:py-36 overflow-hidden"
         >
-          {/* Subtle Background Pattern */}
-          <div className="absolute inset-0 z-0 opacity-40 pointer-events-none">
-            <svg width="100%" height="100%" viewBox="0 0 1440 800" xmlns="http://www.w3.org/2000/svg">
-              <path d="M0,640 C320,540 480,740 800,640 C1120,540 1280,740 1440,640 L1440,800 L0,800 Z" fill="#f8fafc" />
-              <path d="M0,480 C320,380 480,580 800,480 C1120,380 1280,580 1440,480 L1440,800 L0,800 Z" fill="#f1f5f9" opacity="0.5" />
-            </svg>
-          </div>
-
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {/* How Trite Works */}
             <div className="space-y-20">
@@ -1011,9 +1017,6 @@ export default function Home() {
               </div>
 
               <div className="relative">
-                {/* Connecting Line - Desktop Only */}
-                <div className="absolute top-10 left-[12%] right-[12%] h-0.5 bg-gray-200 hidden lg:block" />
-                
                 <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-4 relative z-10">
                   {[
                     {
@@ -1039,21 +1042,37 @@ export default function Home() {
                   ].map((item, idx) => (
                     <div
                       key={idx}
-                      className="flex flex-col items-center text-center space-y-8 group"
+                      className="flex flex-col items-center text-center space-y-8 group relative"
                     >
                       {/* Number Circle */}
                       <div className="relative">
                         <div className="h-20 w-20 rounded-full bg-[#f97316] flex items-center justify-center text-white text-3xl font-bold shadow-xl shadow-orange-200/50 transition-all duration-300 group-hover:scale-110 group-hover:bg-[#ea580c]">
                           {item.step}
                         </div>
-                        {/* Mobile Connecting Line */}
+
+                        {/* Connecting Line - Desktop (Horizontal) */}
                         {idx < 3 && (
-                          <div className="absolute left-1/2 top-20 w-0.5 h-12 bg-gray-200 -translate-x-1/2 lg:hidden sm:hidden" />
+                          <div className="hidden lg:block absolute top-10 left-20 w-[calc(100vw/4-80px)] xl:w-[220px] h-0.5 pointer-events-none">
+                            <svg className="w-full h-full" preserveAspectRatio="none">
+                              <line x1="0" y1="1" x2="50%" y2="1" stroke="#e5e7eb" strokeWidth="2" />
+                              <line x1="50%" y1="1" x2="100%" y2="1" stroke="#e5e7eb" strokeWidth="2" strokeDasharray="8, 6" />
+                            </svg>
+                          </div>
+                        )}
+
+                        {/* Connecting Line - Mobile (Vertical) */}
+                        {idx < 3 && (
+                          <div className="absolute left-1/2 top-20 w-0.5 h-12 -translate-x-1/2 lg:hidden pointer-events-none">
+                            <svg className="w-full h-full" preserveAspectRatio="none">
+                              <line x1="1" y1="0" x2="1" y2="50%" stroke="#e5e7eb" strokeWidth="2" />
+                              <line x1="1" y1="50%" x2="1" y2="100%" stroke="#e5e7eb" strokeWidth="2" strokeDasharray="8, 6" />
+                            </svg>
+                          </div>
                         )}
                       </div>
 
                       <div className="space-y-3">
-                        <h4 className="text-2xl font-bold text-[#92bd30]">
+                        <h4 className="text-2xl font-bold text-[#22c55e]">
                           {item.title}
                         </h4>
                         <p className="text-base text-gray-500 font-medium leading-relaxed max-w-[240px]">
@@ -1077,9 +1096,14 @@ export default function Home() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
               {/* Left Column */}
               <div className="lg:col-span-5 space-y-8">
-                <h3 className="text-4xl sm:text-5xl font-extrabold text-[#0c1e43] tracking-tight leading-[1.1]">
-                  Building Africa’s Payment Infrastructure Layer
-                </h3>
+                <div className="space-y-4">
+                  <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+                    About Us
+                  </h2>
+                  <h3 className="text-4xl sm:text-5xl font-extrabold text-[#0c1e43] tracking-tight leading-[1.1]">
+                    Building Africa’s Payment Infrastructure Layer
+                  </h3>
+                </div>
                 <p className="text-lg sm:text-xl text-slate-600 leading-relaxed font-medium">
                   Trite was founded to solve a fundamental problem: Africa’s payment systems are fragmented, expensive and not built for digital scale.
                 </p>
@@ -1104,42 +1128,48 @@ export default function Home() {
         </section>
 
         {/* READY TO SCALE YOUR PAYMENTS? */}
-        <section className="relative bg-white py-20 sm:py-28 md:py-36 border-t border-black/[0.06]">
-          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-            <div className="relative overflow-hidden rounded-3xl bg-black text-white px-6 py-20 sm:py-28 text-center sm:px-12 shadow-xl">
+        <section className="relative bg-white py-20 sm:py-28 md:py-36">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="relative overflow-hidden rounded-[2.5rem] bg-black text-white px-6 py-16 sm:py-20 text-center sm:px-12 shadow-2xl">
 
-              {/* background graphic */}
-              <div
-                className="absolute inset-0 z-0 opacity-10 mix-blend-luminosity bg-cover bg-center pointer-events-none"
-                style={{ backgroundImage: 'url("/public/images/download (5).jpg")' }}
-              />
-              <div className="absolute -top-24 -left-24 h-48 w-48 rounded-full bg-[#92bd30]/20 blur-[60px] pointer-events-none" />
-              <div className="absolute -bottom-24 -right-24 h-48 w-48 rounded-full bg-[#92bd30]/20 blur-[60px] pointer-events-none" />
+              {/* background image and overlay */}
+              <div className="absolute inset-0 z-0 pointer-events-none">
+                <Image
+                  src="/images/african-man-touching.png"
+                  alt="Ready to scale"
+                  fill
+                  className="object-cover opacity-40 mix-blend-luminosity"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/40" />
+              </div>
 
-              <div className="relative z-10 mx-auto max-w-3xl space-y-6">
-                <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-5xl leading-tight">
+              <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-[#22c55e]/20 blur-[80px] pointer-events-none" />
+              <div className="absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-[#22c55e]/20 blur-[80px] pointer-events-none" />
+
+              <div className="relative z-10 mx-auto max-w-4xl space-y-8">
+                <h2 className="text-4xl font-extrabold tracking-tight text-white sm:text-6xl leading-tight">
                   Ready to Scale Your Payments?
                 </h2>
 
-                <p className="text-lg text-gray-300 font-medium">
+                <p className="text-xl text-gray-200 font-medium max-w-2xl mx-auto leading-relaxed">
                   Join businesses building the future of commerce with Trite.
                 </p>
 
-                <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+                <div className="mt-8 flex flex-wrap items-center justify-center gap-5">
                   <Link
-                    className="inline-flex h-12 items-center justify-center rounded-full bg-[#92bd30] px-8 text-sm font-bold text-black hover:bg-[#81a72a] shadow transition-colors"
+                    className="inline-flex h-14 items-center justify-center rounded-full bg-[#22c55e] px-10 text-base font-bold text-black hover:bg-[#16a34a] shadow-lg hover:shadow-[#22c55e]/20 transition-all duration-300 hover:scale-105"
                     href="/get-started"
                   >
                     Start Accepting Payments
                   </Link>
                   <Link
-                    className="inline-flex h-12 items-center justify-center rounded-full border border-white/20 bg-white/5 px-8 text-sm font-semibold text-white hover:bg-white/10 transition-colors"
+                    className="inline-flex h-14 items-center justify-center rounded-full border border-white/30 bg-white/10 backdrop-blur-md px-10 text-base font-semibold text-white hover:bg-white/20 transition-all duration-300"
                     href="/demo"
                   >
                     Request Demo
                   </Link>
                   <Link
-                    className="inline-flex h-12 items-center justify-center rounded-full border border-white/20 bg-white/5 px-8 text-sm font-semibold text-white hover:bg-white/10 transition-colors"
+                    className="inline-flex h-14 items-center justify-center rounded-full border border-white/30 bg-white/10 backdrop-blur-md px-10 text-base font-semibold text-white hover:bg-white/20 transition-all duration-300"
                     href="/contact-sales"
                   >
                     Contact Sales

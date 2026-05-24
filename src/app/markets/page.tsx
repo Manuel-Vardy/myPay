@@ -15,7 +15,7 @@ import {
 
 export default function MarketsPage() {
   return (
-    <div className="min-h-screen bg-white text-black font-sans selection:bg-[#92bd30]/30 selection:text-black">
+    <div className="min-h-screen bg-white text-black font-sans selection:bg-[#22c55e]/30 selection:text-black">
       <Header transparent={false} />
 
       <main className="py-16 sm:py-24">
@@ -47,9 +47,9 @@ export default function MarketsPage() {
               <div className="space-y-2">
                 <div className="text-xs font-bold text-gray-400 uppercase">Verification Tiers</div>
                 <ul className="text-xs text-black font-bold space-y-1.5">
-                  <li className="flex items-center gap-1.5 text-gray-500"><CheckCircle2 className="h-3.5 w-3.5 text-[#92bd30]" /> Tier 1: Standard (up to $5,000/mo)</li>
-                  <li className="flex items-center gap-1.5 text-gray-500"><CheckCircle2 className="h-3.5 w-3.5 text-[#92bd30]" /> Tier 2: Premium (up to $50,000/mo)</li>
-                  <li className="flex items-center gap-1.5 text-gray-500"><CheckCircle2 className="h-3.5 w-3.5 text-[#92bd30]" /> Tier 3: Merchant Unlimited (Sumsub Verified)</li>
+                  <li className="flex items-center gap-1.5 text-gray-500"><CheckCircle2 className="h-3.5 w-3.5 text-[#22c55e]" /> Tier 1: Standard (up to $5,000/mo)</li>
+                  <li className="flex items-center gap-1.5 text-gray-500"><CheckCircle2 className="h-3.5 w-3.5 text-[#22c55e]" /> Tier 2: Premium (up to $50,000/mo)</li>
+                  <li className="flex items-center gap-1.5 text-gray-500"><CheckCircle2 className="h-3.5 w-3.5 text-[#22c55e]" /> Tier 3: Merchant Unlimited (Sumsub Verified)</li>
                 </ul>
               </div>
               <div className="space-y-2">
@@ -223,7 +223,7 @@ export default function MarketsPage() {
             <div className="flex justify-center gap-4">
               <Link 
                 href="/get-started" 
-                className="px-6 py-3 font-semibold bg-[#92bd30] text-black rounded-full hover:bg-[#81a72a] transition-all flex items-center gap-2"
+                className="px-6 py-3 font-semibold bg-[#22c55e] text-black rounded-full hover:bg-[#16a34a] transition-all flex items-center gap-2"
               >
                 Contact Sales <ArrowRight className="h-4 w-4" />
               </Link>

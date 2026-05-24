@@ -20,7 +20,7 @@ import {
 
 export default function BusinessesPage() {
   return (
-    <div className="min-h-screen bg-white text-black font-sans selection:bg-[#92bd30]/30 selection:text-black">
+    <div className="min-h-screen bg-white text-black font-sans selection:bg-[#22c55e]/30 selection:text-black">
       <Header transparent={false} />
 
       <main className="py-16 sm:py-24">
@@ -29,7 +29,7 @@ export default function BusinessesPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-12 border-b border-black/[0.06]">
             <div className="space-y-4 max-w-3xl">
-              <span className="inline-flex items-center rounded-full bg-[#92bd30]/10 px-3 py-1 text-xs font-bold text-[#81a72a] border border-[#92bd30]/20">
+              <span className="inline-flex items-center rounded-full bg-[#22c55e]/10 px-3 py-1 text-xs font-bold text-[#16a34a] border border-[#22c55e]/20">
                 BUSINESS SOLUTIONS
               </span>
               <h1 className="text-4xl font-extrabold tracking-tight text-black sm:text-5xl lg:text-6xl leading-tight">
@@ -43,7 +43,7 @@ export default function BusinessesPage() {
             {/* CTA Buttons */}
             <div className="flex gap-3 shrink-0">
               <Link
-                className="inline-flex h-12 items-center justify-center rounded-full bg-[#92bd30] px-6 text-sm font-semibold text-black hover:bg-[#81a72a] shadow transition-all duration-200"
+                className="inline-flex h-12 items-center justify-center rounded-full bg-[#22c55e] px-6 text-sm font-semibold text-black hover:bg-[#16a34a] shadow transition-all duration-200"
                 href="/demo"
               >
                 Request a Demo
@@ -63,7 +63,7 @@ export default function BusinessesPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 bg-black text-white p-8 sm:p-12 rounded-3xl">
             <div className="space-y-6 flex flex-col justify-between">
               <div className="space-y-4">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-[#92bd30]">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-[#22c55e]">
                   <Terminal className="h-3.5 w-3.5" /> Developer Quick Start
                 </span>
                 <h3 className="text-2xl font-extrabold text-white">Integrate in under 10 lines of code</h3>
@@ -73,7 +73,7 @@ export default function BusinessesPage() {
               </div>
               <div className="space-y-2 border-t border-white/10 pt-6">
                 <div className="flex items-center gap-2 text-xs text-gray-400 font-medium">
-                  <Key className="h-4 w-4 text-[#92bd30]" /> API Sandbox Mode available
+                  <Key className="h-4 w-4 text-[#22c55e]" /> API Sandbox Mode available
                 </div>
                 <div className="text-xs text-gray-500 font-medium">Webhooks support 256-bit signature validation.</div>
               </div>
@@ -83,7 +83,7 @@ export default function BusinessesPage() {
             <div className="bg-[#1e1e1e] rounded-2xl p-6 border border-white/5 font-mono text-xs text-gray-300 overflow-x-auto">
               <div className="flex items-center justify-between pb-4 border-b border-white/5 mb-4">
                 <span className="text-[10px] text-gray-500 uppercase tracking-widest">POST /v1/settlements</span>
-                <span className="w-2.5 h-2.5 rounded-full bg-[#92bd30]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#22c55e]" />
               </div>
               <pre className="space-y-1">
                 <code>{`curl -X POST https://api.trite.co/v1/settlements \\
@@ -112,7 +112,7 @@ export default function BusinessesPage() {
             
             {/* Merchant Payment Gateway */}
             <div className="rounded-2xl border border-black/[0.06] bg-gray-50/50 p-8 space-y-4">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#92bd30]/15 text-black border border-[#92bd30]/20">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#22c55e]/15 text-black border border-[#22c55e]/20">
                 <Smartphone className="h-4 w-4" />
               </div>
               <h3 className="text-lg font-bold text-black">Merchant Payment Gateway</h3>
@@ -133,7 +133,7 @@ export default function BusinessesPage() {
 
             {/* Business Wallet Infrastructure */}
             <div className="rounded-2xl border border-black/[0.06] bg-gray-50/50 p-8 space-y-4">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#92bd30]/15 text-black border border-[#92bd30]/20">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#22c55e]/15 text-black border border-[#22c55e]/20">
                 <Coins className="h-4 w-4" />
               </div>
               <h3 className="text-lg font-bold text-black">Business Wallet Infrastructure</h3>
@@ -158,7 +158,7 @@ export default function BusinessesPage() {
 
             {/* API & Developer Solutions */}
             <div className="rounded-2xl border border-black/[0.06] bg-gray-50/50 p-8 space-y-4">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#92bd30]/15 text-black border border-[#92bd30]/20">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#22c55e]/15 text-black border border-[#22c55e]/20">
                 <Code className="h-4 w-4" />
               </div>
               <h3 className="text-lg font-bold text-black">API & Developer Solutions</h3>
@@ -180,7 +180,7 @@ export default function BusinessesPage() {
 
             {/* Business Analytics & Reporting */}
             <div className="rounded-2xl border border-black/[0.06] bg-gray-50/50 p-8 space-y-4">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#92bd30]/15 text-black border border-[#92bd30]/20">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#22c55e]/15 text-black border border-[#22c55e]/20">
                 <TrendingUp className="h-4 w-4" />
               </div>
               <h3 className="text-lg font-bold text-black">Business Analytics & Reporting</h3>
@@ -205,7 +205,7 @@ export default function BusinessesPage() {
 
             {/* Subscription & Recurring Billing */}
             <div className="rounded-2xl border border-black/[0.06] bg-gray-50/50 p-8 space-y-4">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#92bd30]/15 text-black border border-[#92bd30]/20">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#22c55e]/15 text-black border border-[#22c55e]/20">
                 <Repeat className="h-4 w-4" />
               </div>
               <h3 className="text-lg font-bold text-black">Subscription & Recurring Billing</h3>
@@ -226,7 +226,7 @@ export default function BusinessesPage() {
 
             {/* E-Commerce Integration */}
             <div className="rounded-2xl border border-black/[0.06] bg-gray-50/50 p-8 space-y-4">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#92bd30]/15 text-black border border-[#92bd30]/20">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#22c55e]/15 text-black border border-[#22c55e]/20">
                 <ShoppingBag className="h-4 w-4" />
               </div>
               <h3 className="text-lg font-bold text-black">E-Commerce Integration</h3>
@@ -255,7 +255,7 @@ export default function BusinessesPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-16">
           <div className="rounded-2xl border border-black/[0.06] bg-black text-white p-8 lg:p-12 space-y-6">
             <div className="max-w-2xl space-y-4">
-              <span className="inline-flex items-center rounded-full bg-[#92bd30]/20 px-3 py-1 text-xs font-bold text-[#92bd30]">
+              <span className="inline-flex items-center rounded-full bg-[#22c55e]/20 px-3 py-1 text-xs font-bold text-[#22c55e]">
                 Enterprise Security & Compliance
               </span>
               <h3 className="text-2xl font-extrabold text-white">Security is at the core of Trite PSP’s infrastructure.</h3>
@@ -272,7 +272,7 @@ export default function BusinessesPage() {
               ].map((item, idx) => (
                 <div key={idx} className="space-y-1">
                   <div className="text-sm font-bold text-white flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-[#92bd30]" />
+                    <Shield className="h-4 w-4 text-[#22c55e]" />
                     {item.title}
                   </div>
                   <p className="text-xs text-gray-400 font-medium pl-6">{item.desc}</p>
@@ -366,7 +366,7 @@ export default function BusinessesPage() {
                   className="rounded-xl border border-black/[0.06] bg-white p-6 space-y-2 shadow-sm"
                 >
                   <div className="flex items-center gap-2">
-                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#92bd30]/20 text-[#81a72a]">
+                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#22c55e]/20 text-[#16a34a]">
                       <Check className="h-3 w-3 stroke-[3]" />
                     </div>
                     <h4 className="font-bold text-black text-sm">{item.title}</h4>
@@ -399,7 +399,7 @@ export default function BusinessesPage() {
 
         {/* BOTTOM CTA */}
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-24">
-          <div className="bg-[#92bd30] rounded-3xl p-8 sm:p-12 text-center space-y-6">
+          <div className="bg-[#22c55e] rounded-3xl p-8 sm:p-12 text-center space-y-6">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-black">Connect your operations to the future of trade</h2>
             <p className="text-sm sm:text-base text-black/70 max-w-xl mx-auto font-medium">
               Start building your custom financial pipeline with our sandbox keys and robust documentation today.

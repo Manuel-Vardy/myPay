@@ -14,7 +14,7 @@ import {
 
 export default function ProductsPage() {
   return (
-    <div className="min-h-screen bg-white text-black font-sans selection:bg-[#92bd30]/30 selection:text-black">
+    <div className="min-h-screen bg-white text-black font-sans selection:bg-[#22c55e]/30 selection:text-black">
       <Header transparent={false} />
 
       <main className="py-16 sm:py-24">
@@ -52,22 +52,22 @@ export default function ProductsPage() {
                   <tr className="border-b border-black/[0.04]">
                     <td className="py-4 font-bold text-black">Settlement Speed</td>
                     <td className="py-4">T+1 (Local Bank & Wallet)</td>
-                    <td className="py-4 text-[#81a72a]">Instant 24/7 (Stablecoins)</td>
+                    <td className="py-4 text-[#16a34a]">Instant 24/7 (Stablecoins)</td>
                   </tr>
                   <tr className="border-b border-black/[0.04]">
                     <td className="py-4 font-bold text-black">Supported Networks</td>
                     <td className="py-4">MTN, Telecel, Visa, Mastercard, Banks</td>
-                    <td className="py-4 text-[#81a72a]">TRON, Polygon, Ethereum</td>
+                    <td className="py-4 text-[#16a34a]">TRON, Polygon, Ethereum</td>
                   </tr>
                   <tr className="border-b border-black/[0.04]">
                     <td className="py-4 font-bold text-black">Compliance Checking</td>
                     <td className="py-4">Appruve Verification Suite</td>
-                    <td className="py-4 text-[#81a72a]">Sumsub automated KYC/KYT</td>
+                    <td className="py-4 text-[#16a34a]">Sumsub automated KYC/KYT</td>
                   </tr>
                   <tr>
                     <td className="py-4 font-bold text-black">Setup Complexity</td>
                     <td className="py-4">Low (Hosted Widget)</td>
-                    <td className="py-4 text-[#81a72a]">Medium (Developer API Keys)</td>
+                    <td className="py-4 text-[#16a34a]">Medium (Developer API Keys)</td>
                   </tr>
                 </tbody>
               </table>
@@ -98,10 +98,10 @@ export default function ProductsPage() {
             ].map((prod, idx) => (
               <div 
                 key={idx}
-                className="rounded-2xl border border-[#92bd30]/20 bg-white p-6 space-y-4 shadow-sm hover:border-[#92bd30]/50 transition-colors"
+                className="rounded-2xl border border-[#22c55e]/20 bg-white p-6 space-y-4 shadow-sm hover:border-[#22c55e]/50 transition-colors"
               >
                 <div className="text-xl font-bold text-black flex items-center gap-2">
-                  <span className="text-[#92bd30]">🔹</span>
+                  <span className="text-[#22c55e]">🔹</span>
                   {prod.title}
                 </div>
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Product Rail 0{idx + 1}</p>
@@ -127,7 +127,7 @@ export default function ProductsPage() {
               {/* Built for Africa */}
               <div className="space-y-3">
                 <div className="text-sm font-extrabold text-black flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-[#92bd30]" />
+                  <span className="h-2 w-2 rounded-full bg-[#22c55e]" />
                   Built for Africa
                 </div>
                 <p className="text-xs text-gray-500 leading-relaxed font-medium">
@@ -138,7 +138,7 @@ export default function ProductsPage() {
               {/* Security First */}
               <div className="space-y-3">
                 <div className="text-sm font-extrabold text-black flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-[#92bd30]" />
+                  <span className="h-2 w-2 rounded-full bg-[#22c55e]" />
                   Security First
                 </div>
                 <p className="text-xs text-gray-500 leading-relaxed font-medium">
@@ -155,7 +155,7 @@ export default function ProductsPage() {
               {/* Compliance-Driven */}
               <div className="space-y-3">
                 <div className="text-sm font-extrabold text-black flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-[#92bd30]" />
+                  <span className="h-2 w-2 rounded-full bg-[#22c55e]" />
                   Compliance-Driven
                 </div>
                 <p className="text-xs text-gray-500 leading-relaxed font-medium">
@@ -166,7 +166,7 @@ export default function ProductsPage() {
               {/* Scalable by Design */}
               <div className="space-y-3">
                 <div className="text-sm font-extrabold text-black flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-[#92bd30]" />
+                  <span className="h-2 w-2 rounded-full bg-[#22c55e]" />
                   Scalable by Design
                 </div>
                 <p className="text-xs text-gray-500 leading-relaxed font-medium">
@@ -210,7 +210,7 @@ export default function ProductsPage() {
                   key={idx} 
                   className="relative rounded-2xl border border-black/[0.06] bg-white p-6 space-y-2 shadow-sm"
                 >
-                  <div className="text-xs font-extrabold text-[#81a72a] bg-[#92bd30]/10 px-2 py-0.5 rounded-full inline-block">
+                  <div className="text-xs font-extrabold text-[#16a34a] bg-[#22c55e]/10 px-2 py-0.5 rounded-full inline-block">
                     {item.step}
                   </div>
                   <p className="text-sm text-black font-semibold pt-1">
@@ -278,7 +278,7 @@ export default function ProductsPage() {
             <div className="flex justify-center gap-4">
               <Link 
                 href="/get-started" 
-                className="px-6 py-3 font-semibold bg-[#92bd30] text-black rounded-full hover:bg-[#81a72a] transition-all flex items-center gap-2"
+                className="px-6 py-3 font-semibold bg-[#22c55e] text-black rounded-full hover:bg-[#16a34a] transition-all flex items-center gap-2"
               >
                 Sign Up Now <ArrowRight className="h-4 w-4" />
               </Link>
