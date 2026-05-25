@@ -637,7 +637,7 @@ export default function Home() {
             aria-hidden
           >
             <div
-              className="absolute bottom-0 left-[70%] aspect-square h-[105%] w-[105%] min-h-[440px] min-w-[440px] -translate-x-1/2 translate-y-[54%] bg-[url('/images/curve.png')] bg-contain bg-center bg-no-repeat opacity-90 lg:left-[78%] lg:min-h-[520px] lg:min-w-[520px] lg:translate-y-[52%]"
+              className="absolute bottom-0 left-[100%] aspect-square h-[125%] w-[125%] min-h-[540px] min-w-[540px] -translate-x-1/2 translate-y-[44%] bg-[url('/images/curve.png')] bg-contain bg-center bg-no-repeat opacity-90 lg:left-[100%] lg:min-h-[620px] lg:min-w-[620px] lg:translate-y-[42%]"
             />
           </div>
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

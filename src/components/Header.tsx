@@ -1,15 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { Menu, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function Header({ transparent = false }: { transparent?: boolean }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
+  const [isSticky, setIsSticky] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > 150) {
+        setIsSticky(true);
+        if (currentScrollY > lastScrollY) {
+          setIsVisible(false); // scrolling down
+        } else {
+          setIsVisible(true); // scrolling up
+        }
+      } else {
+        setIsSticky(false);
+        setIsVisible(true);
+      }
+
+      lastScrollY = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const navLinks = [
     { name: "Payments & Settlement", href: "/payments" },
@@ -73,14 +101,30 @@ export default function Header({ transparent = false }: { transparent?: boolean 
         </div>
       </div>
 
-      {/* MAIN HEADER */}
-      <header className={`w-full py-6 z-40 ${transparent ? "absolute left-0 right-0" : "bg-white border-b border-black/[0.06]"}`}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+      <header 
+        className={cn(
+          "w-full z-40 transition-transform duration-300 ease-in-out",
+          isSticky 
+            ? "fixed top-0 left-0 right-0 bg-transparent py-4" 
+            : transparent 
+              ? "absolute left-0 right-0 py-6" 
+              : "bg-white border-b border-black/[0.06] py-6 relative",
+          isSticky && !isVisible ? "-translate-y-full" : "translate-y-0"
+        )}
+      >
+        <div 
+          className={cn(
+            "mx-auto flex items-center justify-between",
+            isSticky 
+              ? "bg-white shadow-md border border-black/[0.06] rounded-full px-8 py-2.5 gap-16 w-[94%] md:w-auto md:max-w-fit"
+              : "max-w-7xl px-4 sm:px-6 lg:px-8 w-full"
+          )}
+        >
           
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <Image
-              src={transparent ? "/Trite-WB.png" : "/tritee-logo.png"}
+              src={(transparent && !isSticky) ? "/Trite-WB.png" : "/tritee-logo.png"}
               alt="Trite logo"
               width={120}
               height={28}
@@ -90,7 +134,16 @@ export default function Header({ transparent = false }: { transparent?: boolean 
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className={`hidden md:flex items-center gap-1 px-3 py-1.5 shadow-sm border rounded-none ${transparent ? "bg-white border-transparent" : "bg-gray-50/60 border-black/[0.04]"}`}>
+          <nav 
+            className={cn(
+              "hidden md:flex items-center gap-1 px-3 py-1.5 transition-all",
+              isSticky
+                ? "bg-transparent border-transparent shadow-none"
+                : transparent
+                  ? "bg-white border border-transparent shadow-sm rounded-none"
+                  : "bg-gray-50/60 border border-black/[0.04] shadow-sm rounded-none"
+            )}
+          >
             {navLinks.map((link) => {
               const isActive = getActiveState(link.href);
               return (
@@ -130,7 +183,7 @@ export default function Header({ transparent = false }: { transparent?: boolean 
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className={`md:hidden flex h-10 w-10 items-center justify-center rounded-full border transition-colors ${
-              transparent 
+              (transparent && !isSticky) 
                 ? "bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20" 
                 : "bg-gray-50 border-black/[0.06] text-black hover:bg-gray-100"
             }`}
@@ -140,49 +193,49 @@ export default function Header({ transparent = false }: { transparent?: boolean 
             {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
-      </header>
 
-      {/* Mobile Dropdown Menu */}
-      {isMenuOpen && (
-        <div className="fixed inset-x-0 top-[112px] z-50 border-b border-black/[0.06] bg-black/95 backdrop-blur-lg p-6 shadow-xl md:hidden">
-          <div className="flex flex-col gap-2">
-            {navLinks.map((link) => {
-              const isActive = getActiveState(link.href);
-              return (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  onClick={() => setIsMenuOpen(false)}
-                  className={`flex w-full items-center px-4 py-3 text-sm font-medium rounded-xl text-left ${
-                    isActive ? "text-[#22c55e] font-semibold" : "text-white/80 hover:bg-white/5"
-                  }`}
-                >
-                  {link.name}
-                </Link>
-              );
-            })}
-            
-            <div className="h-px bg-white/10 my-4" />
-            
+        {/* Mobile Dropdown Menu */}
+        {isMenuOpen && (
+          <div className="absolute inset-x-0 top-full z-50 border-b border-black/[0.06] bg-black/95 backdrop-blur-lg p-6 shadow-xl md:hidden">
             <div className="flex flex-col gap-2">
-              <Link
-                href="/login"
-                onClick={() => setIsMenuOpen(false)}
-                className="flex w-full justify-center items-center px-4 py-3 text-sm font-semibold text-white border border-white/20 rounded-xl hover:bg-white/5"
-              >
-                Sign in
-              </Link>
-              <Link
-                href="/get-started"
-                onClick={() => setIsMenuOpen(false)}
-                className="flex w-full justify-center items-center px-4 py-3 text-sm font-semibold bg-[#22c55e] text-black rounded-xl hover:bg-[#16a34a]"
-              >
-                Get Started
-              </Link>
+              {navLinks.map((link) => {
+                const isActive = getActiveState(link.href);
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={`flex w-full items-center px-4 py-3 text-sm font-medium rounded-xl text-left ${
+                      isActive ? "text-[#22c55e] font-semibold" : "text-white/80 hover:bg-white/5"
+                    }`}
+                  >
+                    {link.name}
+                  </Link>
+                );
+              })}
+              
+              <div className="h-px bg-white/10 my-4" />
+              
+              <div className="flex flex-col gap-2">
+                <Link
+                  href="/login"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex w-full justify-center items-center px-4 py-3 text-sm font-semibold text-white border border-white/20 rounded-xl hover:bg-white/5"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/get-started"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex w-full justify-center items-center px-4 py-3 text-sm font-semibold bg-[#22c55e] text-black rounded-xl hover:bg-[#16a34a]"
+                >
+                  Get Started
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </header>
     </>
   );
 }
