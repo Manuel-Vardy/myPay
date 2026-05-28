@@ -31,6 +31,7 @@ export default function MarketsPage() {
               src="/images/market-women.jpg"
               alt="Markets Hero background"
               fill
+              sizes="100vw"
               className="object-cover"
               priority
             />
@@ -38,7 +39,7 @@ export default function MarketsPage() {
             <div className="absolute inset-0 bg-black/50" />
           </div>
 
-          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-20 flex justify-end w-full">
+          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-32 sm:pt-40 lg:pt-48 flex justify-end w-full">
             <div className="max-w-3xl space-y-6 flex flex-col items-end text-right">
               <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl leading-[1.15]">
                 Expanding the Future <br /> of Payments with Trite
@@ -210,6 +211,7 @@ export default function MarketsPage() {
                   src="/images/stablecoin.png" 
                   alt="Stablecoin Payment" 
                   fill 
+                  sizes="(max-width: 1024px) 100vw, 40vw"
                   className="object-contain"
                 />
               </div>
@@ -220,81 +222,138 @@ export default function MarketsPage() {
         {/* REMAINING MARKET LISTINGS */}
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-32 mb-32">
           <div className="space-y-32">
-            {/* d. E-Commerce & Merchant Solutions */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
-              <div className="lg:col-span-12 space-y-6">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-50 border border-black/[0.06] text-black font-extrabold">
-                  d
-                </div>
+            {/* d. E-Commerce & Merchant Solutions - Redesigned as per reference */}
+            <div className="space-y-16">
+              {/* Centered Text Content */}
+              <div className="text-center space-y-4">
                 <h3 className="text-2xl font-bold text-black">E-Commerce & Merchant Solutions</h3>
                 <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Merchant suite</p>
-                <p className="text-lg leading-relaxed text-gray-600 font-medium max-w-3xl">
+                <p className="text-lg leading-relaxed text-gray-600 font-medium max-w-2xl mx-auto">
                   We empower merchants with a unified payment ecosystem that supports both stablecoins and fiat currencies.
                 </p>
+              </div>
+
+              {/* Image Container Card */}
+              <div className="bg-white border border-black/[0.05] rounded-[2.5rem] p-4 sm:p-6 lg:p-8 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.05)]">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6">
+                  {/* Image 1: business-1.jpg */}
+                  <div className="relative h-[400px] lg:h-[550px] rounded-[1.5rem] overflow-hidden">
+                    <Image
+                      src="/images/business.avif"
+                      alt="Merchant Business Owner"
+                      fill
+                      sizes="(max-width: 640px) 100vw, 33vw"
+                      className="object-cover"
+                    />
+                  </div>
+
+                  {/* Image 2: imac-Desk-Mockup.jpg */}
+                  <div className="relative h-[400px] lg:h-[550px] rounded-[1.5rem] overflow-hidden">
+                    <Image
+                      src="/images/imac-Desk-Mockup.jpg"
+                      alt="Trite Dashboard Mockup"
+                      fill
+                      sizes="(max-width: 640px) 100vw, 33vw"
+                      className="object-cover"
+                    />
+                  </div>
+
+                  {/* Image 3: man-shopping.jpg */}
+                  <div className="relative h-[400px] lg:h-[550px] rounded-[1.5rem] overflow-hidden">
+                    <Image
+                      src="/images/man-shopping.jpg"
+                      alt="Customer Shopping"
+                      fill
+                      sizes="(max-width: 640px) 100vw, 33vw"
+                      className="object-cover object-top"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* e. Cross-Border Remittance */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
-              <div className="lg:col-span-12 space-y-6">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-50 border border-black/[0.06] text-black font-extrabold">
-                  e
-                </div>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center">
+              <div className="lg:col-span-8 space-y-6">
                 <h3 className="text-2xl font-bold text-black">Cross-Border Remittance</h3>
                 <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Liquidity settlements</p>
-                <p className="text-lg leading-relaxed text-gray-600 font-medium max-w-3xl">
+                <p className="text-lg leading-relaxed text-gray-600 font-medium">
                   Cross-border payments remain one of the largest and fastest-growing financial sectors. Traditional remittance systems often involve delays, high fees and limited transparency.
                 </p>
-                <p className="text-lg leading-relaxed text-gray-600 font-medium max-w-3xl">
+                <p className="text-lg leading-relaxed text-gray-600 font-medium">
                   Trite PSP solves these challenges through blockchain-enabled settlement systems combined with traditional financial connectivity.
                 </p>
               </div>
-            </div>
-
-            {/* f. Enterprise & Institutional Solutions */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
-              <div className="lg:col-span-12 space-y-6">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-50 border border-black/[0.06] text-black font-extrabold">
-                  f
-                </div>
-                <h3 className="text-2xl font-bold text-black">Enterprise & Institutional Solutions</h3>
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Enterprise scale</p>
-                <p className="text-lg leading-relaxed text-gray-600 font-medium max-w-3xl">
-                  Large organizations require scalable, compliant, and efficient payment infrastructure capable of supporting high transaction volumes and multiple currencies.
-                </p>
-                <p className="text-lg leading-relaxed text-gray-600 font-medium max-w-3xl">
-                  Trite PSP delivers enterprise-grade solutions for:
-                </p>
-                <ul className="grid grid-cols-2 gap-4 text-sm text-black font-bold max-w-4xl">
-                  <li className="flex items-center gap-2">&bull; Corporations</li>
-                  <li className="flex items-center gap-2">&bull; Fintech companies</li>
-                  <li className="flex items-center gap-2">&bull; NGOs</li>
-                  <li className="flex items-center gap-2">&bull; Government institutions</li>
-                  <li className="flex items-center gap-2">&bull; Payment aggregators</li>
-                  <li className="flex items-center gap-2">&bull; International businesses</li>
-                </ul>
+              <div className="lg:col-span-4 relative h-[300px] sm:h-[400px] flex items-center justify-center">
+                <Image
+                  src="/images/mtn-man1.png"
+                  alt="Cross-Border Remittance"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 30vw"
+                  className="object-contain"
+                />
               </div>
             </div>
           </div>
         </div>
 
-        {/* BOTTOM CTA */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-24">
-          <div className="bg-black rounded-3xl p-8 sm:p-12 text-center space-y-6">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white">Expand Your Market Operations Globally</h2>
-            <p className="text-sm sm:text-base text-white/70 max-w-xl mx-auto font-medium">
-              Join leading global enterprises scaling cross-border liquidity and digital payouts with Trite PSP.
-            </p>
-            <div className="flex justify-center gap-4">
-              <Link 
-                href="/get-started" 
-                className="px-6 py-3 font-semibold bg-[#22c55e] text-black rounded-full hover:bg-[#16a34a] transition-all flex items-center gap-2"
-              >
-                Contact Sales <ArrowRight className="h-4 w-4" />
-              </Link>
+        {/* f. Enterprise & Institutional Solutions - Full Width */}
+        <section className="bg-[#f0fdf4] py-24 sm:py-32 overflow-hidden border-y border-green-100">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+              {/* Left: Image */}
+              <div className="relative h-[400px] lg:h-[600px] flex items-center justify-center">
+                <Image
+                  src="/images/woman-point-hands.png"
+                  alt="Enterprise Solutions"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-contain"
+                />
+              </div>
+
+              {/* Right: Text */}
+              <div className="space-y-8 text-left">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#22c55e] text-white shadow-lg shadow-[#22c55e]/20">
+                  <Building2 className="h-6 w-6" />
+                </div>
+                
+                <div className="space-y-4">
+                  <h3 className="text-3xl lg:text-4xl font-extrabold text-black tracking-tight leading-tight">
+                    Enterprise & Institutional Solutions
+                  </h3>
+                  <p className="text-sm font-bold text-[#22c55e] uppercase tracking-widest">
+                    Enterprise scale
+                  </p>
+                </div>
+
+                <div className="space-y-6">
+                  <p className="text-lg leading-relaxed text-gray-600 font-medium">
+                    Large organizations require scalable, compliant, and efficient payment infrastructure capable of supporting high transaction volumes and multiple currencies.
+                  </p>
+                  <p className="text-lg leading-relaxed text-gray-600 font-medium">
+                    Trite PSP delivers enterprise-grade solutions for:
+                  </p>
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-8 text-black font-bold">
+                    {[
+                      "Corporations",
+                      "Fintech companies",
+                      "NGOs",
+                      "Government institutions",
+                      "Payment aggregators",
+                      "International businesses"
+                    ].map((item) => (
+                      <li key={item} className="flex items-center gap-3">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#22c55e]" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        </section>
 
       </main>
 

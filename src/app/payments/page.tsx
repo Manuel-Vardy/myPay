@@ -38,7 +38,7 @@ export default function PaymentsPage() {
             <div className="absolute inset-0 bg-black/50" />
           </div>
 
-          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-20">
+          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-32 sm:pt-40 lg:pt-48 w-full">
             <div className="max-w-4xl mx-auto text-center">
               <div className="space-y-8">
                 <div>
@@ -75,179 +75,137 @@ export default function PaymentsPage() {
           </div>
         </div>
 
-        {/* GRID OF THE 7 MAIN PAYMENT RAILS */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-32">
-          <div className="mb-16">
-            <div className="max-w-3xl">
-              <h2 className="text-3xl font-extrabold text-[#474747] tracking-tight sm:text-4xl mb-4">Accept Multiple Payment Methods</h2>
-              <p className="text-lg text-gray-500 font-medium max-w-xl">Our comprehensive payment rails are optimized for localized checkout flows and global digital settlements.</p>
+        {/* ALTERNATING PAYMENT METHODS SECTION */}
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-32 space-y-32">
+          <div className="mb-16 text-center">
+            <div className="max-w-3xl mx-auto">
+              <h2 className="text-3xl font-extrabold text-black tracking-tight sm:text-4xl mb-4">Accept Multiple Payment Methods</h2>
+              <p className="text-lg text-black font-medium">Our comprehensive payment rails are optimized for localized checkout flows and global digital settlements.</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-12 lg:gap-12 pb-24">
-            {[
-              {
-                title: "Mobile Money",
-                desc: "In emerging markets and mobile-first economies, mobile money plays a critical role. Trite enables you to pay and get paid with Mobile Money.",
-                image: "/images/man-momo.png",
-                gradient: "linear-gradient(135deg, #d4ecff 0%, #d4ecff 45%, #c0e2ff 45.5%, #c0e2ff 100%)",
-                baseColor: "#d4ecff",
-                borderColor: "#bfdbfe",
-                hoverBorderColor: "#93c5fd",
-                titleColor: "#1e3a8a",
-                badge: "Popular",
-                badgeClass: "bg-blue-50 text-blue-700 border-blue-200/60",
-                layout: "lg:col-span-5 lg:translate-y-0"
-              },
-              {
-                title: "Stablecoin Gateway",
-                desc: "Integrate a dedicated stablecoin checkout option into your websites and apps. Settle instantly in USDT or USDC.",
-                image: "/images/stablecoin-logo2.png",
-                gradient: "linear-gradient(225deg, #b0ffd9 0%, #b0ffd9 52%, #82ffc2 52.5%, #82ffc2 100%)",
-                baseColor: "#b0ffd9",
-                borderColor: "#a7f3d0",
-                hoverBorderColor: "#6ee7b7",
-                titleColor: "#065f46",
-                badge: "Web3",
-                badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200/60",
-                layout: "lg:col-span-7 lg:mt-24"
-              },
-              {
-                title: "Credit Card & Debit Card",
-                desc: "We allow businesses to accept card payments from major card providers globally. Fast, secure, and globally recognized.",
-                image: "/images/woman-with-card-Photoroom.png",
-                gradient: "linear-gradient(135deg, #ffd5bc 0%, #ffd5bc 40%, #ffc39e 40.5%, #ffc39e 100%)",
-                baseColor: "#ffd5bc",
-                borderColor: "#fed7aa",
-                hoverBorderColor: "#fdba74",
-                titleColor: "#7c2d12",
-                badge: "Global",
-                badgeClass: "bg-orange-50 text-orange-700 border-orange-200/60",
-                layout: "lg:col-span-7 lg:mt-12"
-              },
-              {
-                title: "USSD",
-                desc: "A single short code to collect all payments. Set up a custom menu to receive payments from all networks. All you need is one code for all payments.",
-                image: "/images/ussd1.png",
-                gradient: "linear-gradient(225deg, #ffd6d6 0%, #ffd6d6 55%, #ffc2c2 55.5%, #ffc2c2 100%)",
-                baseColor: "#ffd6d6",
-                borderColor: "#fecdd3",
-                hoverBorderColor: "#fda4af",
-                titleColor: "#9f1239",
-                badge: "Offline",
-                badgeClass: "bg-rose-50 text-rose-700 border-rose-200/60",
-                layout: "lg:col-span-5 lg:mt-12",
-                imgPadding: "p-2 pb-0"
-              },
-              {
-                title: "Invoice",
-                desc: "Generate secure payment links and digital invoices for your customers using Trite. Perfect for professional service providers.",
-                image: "/images/gateway.png",
-                gradient: "linear-gradient(225deg, #fffec7 0%, #fffec7 50%, #fffca1 50.5%, #fffca1 100%)",
-                baseColor: "#fffec7",
-                borderColor: "#fef08a",
-                hoverBorderColor: "#fde047",
-                titleColor: "#713f12",
-                badge: "Business",
-                badgeClass: "bg-yellow-50 text-yellow-700 border-yellow-200/60",
-                layout: "lg:col-span-4 lg:mt-0"
-              },
-              {
-                title: "Bank Transfer",
-                desc: "Businesses can accept direct bank payments through local and international banking networks. Secure and high-volume ready.",
-                image: "/images/excited-girl1.png",
-                gradient: "linear-gradient(135deg, #ecfeff 0%, #ecfeff 48%, #c2faff 48.5%, #c2faff 100%)",
-                baseColor: "#ecfeff",
-                borderColor: "#99f6e4",
-                hoverBorderColor: "#5eead4",
-                titleColor: "#115e59",
-                badge: "Institutional",
-                badgeClass: "bg-teal-50 text-teal-700 border-teal-200/60",
-                layout: "lg:col-span-4 lg:translate-y-20"
-              },
-              {
-                title: "QR Code Payments",
-                desc: "Trite PSP supports blockchain-enabled QR payment systems for fast and easy customer transactions. Scan, pay, and go.",
-                image: "/images/qr-mockup.png",
-                gradient: "linear-gradient(135deg, #fce7f3 0%, #fce7f3 42%, #fbcfe8 42.5%, #fbcfe8 100%)",
-                baseColor: "#fce7f3",
-                borderColor: "#fbcfe8",
-                hoverBorderColor: "#f9a8d4",
-                titleColor: "#86198f",
-                badge: "Contactless",
-                badgeClass: "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200/60",
-                layout: "lg:col-span-4 lg:-translate-y-8"
-              }
-            ].map((item, idx) => (
-              <div 
-                key={idx} 
-                className={cn(
-                  "group flex flex-col overflow-hidden rounded-[2rem] border transition-all duration-500",
-                  item.layout || ""
-                )}
-                style={{ 
-                  backgroundColor: item.baseColor,
-                  borderColor: item.borderColor
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = item.hoverBorderColor;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = item.borderColor;
-                }}
-              >
-                {/* Card Image Header with Gradient */}
-                <div 
-                  className={cn(
-                    "relative h-64 sm:h-72 w-full overflow-hidden flex items-center justify-center transition-all duration-500",
-                    item.imgPadding || "p-8 pb-0"
-                  )}
-                  style={{ background: item.gradient }}
-                >
-                  <div className="relative h-full w-full">
+          {[
+            {
+              title: "Mobile Money",
+              desc: "In emerging markets and mobile-first economies, mobile money plays a critical role. Trite enables you to pay and get paid with Mobile Money.",
+              image: "/images/man-momo.png",
+              badge: "Popular",
+              badgeColor: "bg-blue-100 text-blue-700",
+              accentColor: "bg-[#d4ecff]",
+              imgPadding: "p-12 sm:p-16"
+            },
+            {
+              title: "Stablecoin Gateway",
+              desc: "Integrate a dedicated stablecoin checkout option into your websites and apps. Settle instantly in USDT or USDC.",
+              image: "/images/stablecoin-logo2.png",
+              badge: "Web3",
+              badgeColor: "bg-emerald-100 text-emerald-700",
+              accentColor: "bg-[#b0ffd9]"
+            },
+            {
+              title: "Credit Card & Debit Card",
+              desc: "We allow businesses to accept card payments from major card providers globally. Fast, secure, and globally recognized.",
+              image: "/images/woman-with-card-Photoroom.png",
+              badge: "Global",
+              badgeColor: "bg-orange-100 text-orange-700",
+              accentColor: "bg-[#ffd5bc]"
+            },
+            {
+              title: "USSD",
+              desc: "A single short code to collect all payments. Set up a custom menu to receive payments from all networks. All you need is one code for all payments.",
+              image: "/images/ussd1.png",
+              badge: "Offline",
+              badgeColor: "bg-rose-100 text-rose-700",
+              accentColor: "bg-[#ffd6d6]",
+              imgPadding: "p-12 sm:p-16"
+            },
+            {
+              title: "Invoice",
+              desc: "Generate secure payment links and digital invoices for your customers using Trite. Perfect for professional service providers.",
+              image: "/images/gateway.png",
+              badge: "Business",
+              badgeColor: "bg-yellow-100 text-yellow-700",
+              accentColor: "bg-[#fffec7]"
+            },
+            {
+              title: "Bank Transfer",
+              desc: "Businesses can accept direct bank payments through local and international banking networks. Secure and high-volume ready.",
+              image: "/images/excited-girl1.png",
+              badge: "Institutional",
+              badgeColor: "bg-teal-100 text-teal-700",
+              accentColor: "bg-[#ecfeff]",
+              imgPadding: "p-12 sm:p-16"
+            },
+            {
+              title: "QR Code Payments",
+              desc: "Trite PSP supports blockchain-enabled QR payment systems for fast and easy customer transactions. Scan, pay, and go.",
+              image: "/images/qr-mockup.png",
+              badge: "Contactless",
+              badgeColor: "bg-fuchsia-100 text-fuchsia-700",
+              accentColor: "bg-[#fce7f3]"
+            }
+          ].map((item, idx) => (
+            <div 
+              key={idx} 
+              className={cn(
+                "grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center",
+                idx % 2 === 1 ? "lg:flex-row-reverse" : ""
+              )}
+            >
+              {/* Image Side */}
+              <div className={cn(
+                "relative h-[400px] sm:h-[500px] flex items-center justify-center rounded-[2.5rem] overflow-visible",
+                idx % 2 === 1 ? "lg:order-2" : "lg:order-1"
+              )}>
+                {/* Decorative blob backgrounds like the reference */}
+                <div className={cn(
+                  "absolute top-0 left-0 w-32 h-32 rounded-full blur-3xl opacity-40 -translate-x-1/2 -translate-y-1/2",
+                  item.accentColor
+                )} />
+                <div className={cn(
+                  "absolute bottom-0 right-0 w-48 h-48 rounded-full blur-3xl opacity-30 translate-x-1/4 translate-y-1/4",
+                  item.accentColor
+                )} />
+                
+                <div className={cn(
+                    "relative w-full h-full rounded-[2.5rem] overflow-hidden z-10",
+                    item.accentColor,
+                    item.imgPadding || ""
+                  )}>
                     <Image 
                       src={item.image} 
                       alt={item.title} 
                       fill 
-                      className="object-contain"
+                      className={cn(
+                        "transition-transform duration-500",
+                        item.imgPadding ? "object-contain" : "object-cover"
+                      )}
                     />
                   </div>
-                  <div className="absolute top-6 left-6 z-20">
+                </div>
+
+                {/* Text Side */}
+                <div className={cn(
+                  "space-y-6",
+                  idx % 2 === 1 ? "lg:order-1" : "lg:order-2"
+                )}>
+                  <div className="space-y-4">
                     <span className={cn(
-                      "backdrop-blur-md text-[10px] font-black uppercase tracking-widest px-3.5 py-1.5 rounded-full shadow-sm border",
-                      item.badgeClass
+                      "inline-block px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest",
+                      item.badgeColor
                     )}>
                       {item.badge}
                     </span>
+                    <h3 className="text-3xl sm:text-4xl font-extrabold text-black tracking-tight leading-tight">
+                      {item.title}
+                    </h3>
                   </div>
-                  {/* Smooth multi-stop fade to match card background perfectly */}
-                  <div 
-                    className="absolute inset-0 pointer-events-none z-10" 
-                    style={{ 
-                      background: `linear-gradient(to bottom, 
-                        transparent 0%, 
-                        transparent 45%, 
-                        ${item.baseColor}88 75%, 
-                        ${item.baseColor} 100%)` 
-                    }} 
-                  />
-                </div>
-
-                {/* Card Content */}
-                <div className="flex flex-col flex-grow p-8 sm:p-10 pt-6 pb-12">
-                  <h3 
-                    className="text-xl sm:text-2xl font-extrabold tracking-tight mb-3"
-                    style={{ color: item.titleColor }}
-                  >
-                    {item.title}
-                  </h3>
-                  <p className="text-[15px] sm:text-base leading-relaxed text-slate-600 font-medium">
+                  <p className="text-lg sm:text-xl leading-relaxed text-gray-600 font-medium">
                     {item.desc}
                   </p>
                 </div>
               </div>
-            ))}
-          </div>
+          ))}
         </div>
 
         {/* INTEGRATION SUBSECTIONS - ABOUT STYLE */}
