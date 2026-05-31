@@ -93,7 +93,7 @@ export default function DashboardPage() {
               <div className="rounded-2xl bg-gradient-to-br from-[#1a1f2e] to-[#0f1419] p-6 text-white">
                 <div className="flex items-start justify-between">
                   <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-wide text-white/60">
+                    <div className="text-[11px] font-semibold uppercase tracking-wide text-white/80">
                       Available Institutional Balance
                     </div>
                     <div className="mt-2 flex items-baseline gap-1">
@@ -125,9 +125,9 @@ export default function DashboardPage() {
               <div className="mt-6 rounded-2xl bg-[color:var(--trite-ink)] p-6 text-white ring-1 ring-black/10">
                 <div className="flex items-start justify-between">
                   <div>
-                    <div className="text-sm font-medium text-white/60">Settlement Status</div>
+                    <div className="text-sm font-medium text-white/80">Settlement Status</div>
                     <div className="mt-2 text-2xl font-bold">Next: Today 18:00</div>
-                    <p className="mt-2 text-xs leading-5 text-white/60">
+                    <p className="mt-2 text-xs leading-5 text-white/80">
                       Auto-settlement to GCB Bank account ending in 4421. Expected: {formatGHS(dashData ? Math.max(0, dashData.available_balance * 0.985) : 0)}
                     </p>
                   </div>

@@ -210,12 +210,12 @@ export default function AdminDashboardPage() {
                     <div className="mt-0.5 h-2 w-2 rounded-full bg-red-400" />
                     <div>
                       <p className="text-sm font-medium">{dash.security_alerts} Flagged Transactions</p>
-                      <p className="text-xs text-white/60">Medium or High flag level</p>
+                      <p className="text-xs text-white/80">Medium or High flag level</p>
                     </div>
                   </div>
                 </div>
               ) : (
-                <p className="text-xs text-white/60">No active alerts</p>
+                <p className="text-xs text-white/80">No active alerts</p>
               )}
             </div>
             <button className="mt-4 w-full rounded-xl bg-white/10 py-2 text-sm font-medium hover:bg-white/20">

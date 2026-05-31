@@ -96,19 +96,19 @@ export default function Home() {
             <div className="absolute inset-0 bg-black/40" />
           </div>
 
-          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-48 sm:pt-56 lg:pt-64">
+          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-40 sm:pt-56 lg:pt-64">
             <div className="max-w-2xl pb-20">
 
               {/* Hero Texts */}
               <div className="space-y-6">
                 <div>
-                  <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl leading-[1.08]">
+                  <h1 className="text-3xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl sm:font-extrabold leading-[1.1] sm:leading-[1.08]">
                     Powering the Future of Payments in Africa
                   </h1>
                   <div className="mt-6 h-px w-full max-w-2xl bg-white/20"></div>
                 </div>
 
-                <p className="max-w-2xl text-lg sm:text-xl leading-relaxed text-white/90">
+                <p className="max-w-2xl text-base sm:text-xl leading-relaxed text-white/80 sm:text-white/90">
                   Seamless bank, mobile money, and stablecoin payments - built for businesses and institutions scaling across Ghana and the continent – pay and get paid with Trite!
                 </p>
 
@@ -144,8 +144,8 @@ export default function Home() {
         <section className="relative bg-white py-16 sm:py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {/* Heading Card - Overlaps hero */}
-            <div className="relative -mt-32 sm:-mt-40 mb-16">
-              <div className="inline-block bg-white px-8 pt-10 pb-16 sm:px-12 sm:pt-8 sm:pb-20">
+            <div className="relative -mt-32 sm:-mt-40 mb-8 sm:mb-16">
+              <div className="inline-block bg-white px-8 pt-10 pb-10 sm:pb-16 sm:px-12 sm:pt-8 sm:pb-20">
                 <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
                   Payment Solutions
                 </p>
@@ -370,7 +370,7 @@ export default function Home() {
                 Trite gives your business everything you need to collect payments - online, in-store, and across borders - without stress or technical complexity.
               </p>
               <p className="text-base font-bold text-slate-500">
-                --- One integration, multiple payment options, zero headaches.
+                One integration, multiple payment options, zero headaches.
               </p>
             </div>
 
@@ -643,7 +643,7 @@ export default function Home() {
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mt-12 grid grid-cols-1 items-start gap-10 lg:mt-16 lg:grid-cols-12 lg:gap-12">
               {/* Copy — standalone */}
-              <div className="lg:col-span-7">
+              <div className="lg:col-span-6">
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-4">
                   BUSINESSES
                 </h2>
@@ -692,16 +692,29 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Image — standalone */}
-              <div className="relative min-h-[360px] w-full overflow-hidden rounded-2xl sm:rounded-3xl sm:min-h-[420px] lg:col-span-5 lg:ml-auto lg:min-h-[600px] lg:max-w-[30rem]">
-                <Image
-                  src="/images/traders.jpg"
-                  alt="Business traders"
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 40vw"
-                  className="rounded-2xl object-cover sm:rounded-3xl"
-                />
-              </div>
+              {/* Image — Staggered Pair (No Overlap) */}
+                <div className="relative lg:col-span-6 lg:ml-auto h-[450px] sm:h-[550px] lg:h-[650px] w-full max-w-[48rem] mt-12 lg:mt-0 flex items-center justify-between gap-6 sm:gap-8">
+                 {/* First Image - Shifted Up */}
+                 <div className="relative w-1/2 h-[85%] sm:h-[90%] overflow-hidden rounded-2xl sm:rounded-3xl shadow-lg -translate-y-8 lg:-translate-y-12">
+                   <Image
+                     src="/images/traders.jpg"
+                     alt="Business traders"
+                     fill
+                     sizes="(max-width: 1024px) 45vw, 25vw"
+                     className="object-cover"
+                   />
+                 </div>
+                 {/* Second Image - Shifted Down */}
+                 <div className="relative w-1/2 h-[85%] sm:h-[90%] overflow-hidden rounded-2xl sm:rounded-3xl shadow-xl translate-y-8 lg:translate-y-12">
+                   <Image
+                     src="/images/businessman-working-laptop.jpg"
+                     alt="Businessman working on laptop"
+                     fill
+                     sizes="(max-width: 1024px) 45vw, 25vw"
+                     className="object-cover"
+                   />
+                 </div>
+               </div>
             </div>
           </div>
         </section>
@@ -716,7 +729,7 @@ export default function Home() {
             <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 1423 560" className="w-full h-full"> 
                 <g mask="url(#SvgjsMask1034)" fill="none"> 
                     <rect width="1423" height="560" x="0" y="0" fill="rgba(231, 231, 231, 1)"></rect> 
-                    <path d="M 0,97 C 95,116.2 285,192.2 475,193 C 665,193.8 760.4,100.6 950,101 C 1139.6,101.4 1328.4,176.2 1423,195L1423 560L0 560z" fill="rgba(241, 241, 241, 1)"></path> 
+                    <path d="M 0,97 C 95,116.2 285,192.2 475,193 C 665,193.8 760.4,100.6 950,101 C 1139.6,101.4 1328.4,176.2 1423,195L1423 560L0 560z" fill="rgba(255, 255, 255, 1)"></path> 
                     <path d="M 0,439 C 142.4,411.4 427.4,281.6 712,301 C 996.6,320.4 1280.8,489 1423,536L1423 560L0 560z" fill="rgba(255, 255, 255, 1)"></path> 
                 </g> 
                 <defs> 
@@ -909,36 +922,56 @@ export default function Home() {
                 </div>
 
                 <div className="space-y-8">
-                  <div className="w-full">
-                    <div className="bg-white rounded-2xl p-8 border border-black/[0.03] min-h-[320px] flex flex-col justify-center relative overflow-hidden shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_4px_6px_-2px_rgba(0,0,0,0.05)]">
-                      <div className="relative h-full flex flex-col justify-center">
+                  {/* Custom Indicators - Fixed width, no scroll */}
+                  <div className="flex flex-wrap lg:flex-nowrap items-center justify-start gap-2 pb-4">
+                    {whyTriteItems.map((item, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setWhyTriteIndex(idx)}
+                        className={cn(
+                          "px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all duration-300 border flex-1 text-center whitespace-nowrap",
+                          whyTriteIndex === idx
+                            ? "bg-black text-white border-black shadow-md scale-[1.02]"
+                            : "bg-white text-gray-500 border-gray-100 hover:border-gray-200 hover:text-gray-900"
+                        )}
+                      >
+                        {idx + 1}. {item.title}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="w-full relative">
+                    <div className="bg-white rounded-[2rem] p-8 sm:p-10 border border-gray-50 min-h-[260px] flex flex-col justify-center relative overflow-hidden shadow-[0_15px_40px_-10px_rgba(0,0,0,0.05)]">
+                      
+                      <div className="relative h-full flex flex-col justify-center w-full">
                         {whyTriteItems.map((item, idx) => (
                           <motion.div
                             key={idx}
-                            initial={{ opacity: 0, x: 40 }}
+                            initial={{ opacity: 0, y: 15, scale: 0.98 }}
                             animate={{
                               opacity: whyTriteIndex === idx ? 1 : 0,
-                              x: whyTriteIndex === idx ? 0 : -40,
+                              y: whyTriteIndex === idx ? 0 : -15,
+                              scale: whyTriteIndex === idx ? 1 : 0.98,
                               pointerEvents: whyTriteIndex === idx ? "auto" : "none"
                             }}
                             transition={{ 
-                              duration: 0.6, 
-                              ease: [0.22, 1, 0.36, 1] // Custom cubic-bezier for a smoother swipe
+                              duration: 0.5, 
+                              ease: [0.23, 1, 0.32, 1] 
                             }}
                             className={cn(
                               "space-y-4",
                               whyTriteIndex === idx ? "relative" : "absolute inset-0 flex flex-col justify-center"
                             )}
                           >
-                            <div className="text-2xl font-extrabold text-black flex items-center gap-3">
-                              <span className="h-3 w-3 rounded-full bg-[#22c55e]" />
+                            <div className="text-xl sm:text-2xl font-extrabold text-[#0c1e43] flex items-center gap-3">
+                              <span className="h-2 w-2 rounded-full bg-[#22c55e]" />
                               {item.title}
                             </div>
-                            <p className="text-lg text-gray-500 leading-relaxed font-medium">
+                            <p className="text-base sm:text-lg text-gray-600 leading-relaxed font-medium">
                               {item.content}
                             </p>
                             {item.subPoints && (
-                              <ul className="text-sm text-black font-bold space-y-2 pl-6 list-disc opacity-70">
+                              <ul className="text-sm text-gray-800 font-bold space-y-2 pl-6 list-disc">
                                 {item.subPoints.map((sub, sIdx) => (
                                   <li key={sIdx}>{sub}</li>
                                 ))}
@@ -949,39 +982,21 @@ export default function Home() {
                       </div>
 
                       {/* Progress Bar (Moving Line) */}
-                      <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-100">
+                      <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-50">
                         <motion.div
                             initial={{ width: "0%" }}
                             animate={{ width: "100%" }}
                             transition={{ duration: 5, ease: "linear" }}
                             key={whyTriteIndex}
-                            className="h-full bg-[#22c55e]"
+                            className="h-full bg-gradient-to-r from-[#22c55e] to-[#92bd30]"
                           />
                       </div>
                     </div>
                   </div>
-
-                  {/* Custom Indicators */}
-                  <div className="flex flex-wrap gap-3">
-                    {whyTriteItems.map((item, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setWhyTriteIndex(idx)}
-                        className={cn(
-                          "px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 border",
-                          whyTriteIndex === idx
-                            ? "bg-black text-white border-black shadow-md scale-105"
-                            : "bg-white text-gray-400 border-gray-100 hover:border-gray-200 hover:text-gray-600"
-                        )}
-                      >
-                        {idx + 1}. {item.title}
-                      </button>
-                    ))}
-                  </div>
                 </div>
 
-                {/* Decorative background element (Orange) */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-orange-500/5 rounded-full blur-3xl -z-10" />
+                {/* Decorative background element (Green) */}
+                <div className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 w-[100%] h-[120%] bg-[#22c55e]/5 rounded-full blur-3xl -z-10" />
               </div>
 
               {/* Right Column: Image */}
@@ -1046,7 +1061,7 @@ export default function Home() {
                     >
                       {/* Number Circle */}
                       <div className="relative">
-                        <div className="h-20 w-20 rounded-full bg-[#f97316] flex items-center justify-center text-white text-3xl font-bold shadow-xl shadow-orange-200/50 transition-all duration-300 group-hover:scale-110 group-hover:bg-[#ea580c]">
+                        <div className="h-20 w-20 rounded-full bg-[#22c55e] flex items-center justify-center text-white text-3xl font-bold shadow-xl shadow-green-200/50 transition-all duration-300 group-hover:scale-110 group-hover:bg-[#16a34a]">
                           {item.step}
                         </div>
 

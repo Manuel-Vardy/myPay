@@ -172,12 +172,15 @@ export default function PaymentsPage() {
                     item.accentColor,
                     item.imgPadding || ""
                   )}>
+                    {/* Diagonal Line Pattern Overlay */}
+                    <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: "repeating-linear-gradient(45deg, #000 0, #000 1px, transparent 0, transparent 50%)", backgroundSize: "10px 10px" }}></div>
+                    
                     <Image 
                       src={item.image} 
                       alt={item.title} 
                       fill 
                       className={cn(
-                        "transition-transform duration-500",
+                        "transition-transform duration-500 relative z-10",
                         item.imgPadding ? "object-contain" : "object-cover"
                       )}
                     />

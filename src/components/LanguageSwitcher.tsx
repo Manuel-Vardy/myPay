@@ -76,14 +76,14 @@ export default function LanguageSwitcher() {
       <div className="relative flex items-center">
         <button 
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-3 px-5 py-2.5 rounded-full bg-gray-700/80 hover:bg-gray-700 text-white transition-all backdrop-blur-sm"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-700/80 hover:bg-gray-700 text-white transition-all backdrop-blur-sm"
           aria-label="Change Language"
         >
-          <Globe className="h-5 w-5 text-blue-400" />
-          <span className="text-sm font-semibold bg-gradient-to-r from-blue-400 via-purple-400 to-yellow-400 bg-clip-text text-transparent">
+          <Globe className="h-4 w-4 text-blue-400" />
+          <span className="text-xs font-semibold bg-gradient-to-r from-blue-400 via-purple-400 to-yellow-400 bg-clip-text text-transparent">
             {currentLanguage.label}
           </span>
-          <svg className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className={`h-3 w-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </button>
