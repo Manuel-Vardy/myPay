@@ -58,12 +58,12 @@ export default function AdminRolesPage() {
   return (
     <>
       {/* Page Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold text-[color:var(--trite-ink)] sm:text-2xl">Role Management</h1>
-          <p className="mt-1 text-sm text-[color:var(--trite-muted)]">Define and govern institutional access levels. Ensure security through granular permission-based control across all TRITE PSP systems.</p>
+          <p className="mt-1 text-xs text-[color:var(--trite-muted)] sm:text-sm">Define and govern institutional access levels. Ensure security through granular permission-based control across all TRITE PSP systems.</p>
         </div>
-        <button className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">
+        <button className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">
           <ShieldPlus className="h-4 w-4" />
           Create New Role
         </button>
@@ -77,14 +77,14 @@ export default function AdminRolesPage() {
             <span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700">{apiRoles.length} System Roles</span>
           </div>
 
-          <div className="space-y-3">
+          <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar lg:flex-col lg:overflow-visible lg:pb-0">
             {apiRoles.map((role) => {
               const isSelected = selectedRole?.id === role.id;
               return (
                 <button
                   key={role.id}
                   onClick={() => { setSelectedRoleId(role.id); setCheckedPerms({}); }}
-                  className={`w-full rounded-2xl border p-4 text-left transition-all ${
+                  className={`min-w-[200px] shrink-0 rounded-2xl border p-4 text-left transition-all lg:min-w-0 ${
                     isSelected ? "border-blue-500 bg-blue-50/50 shadow-sm" : "border-black/5 bg-white hover:bg-black/[0.02]"
                   }`}
                 >
@@ -96,10 +96,10 @@ export default function AdminRolesPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <p className={`font-semibold ${isSelected ? "text-blue-700" : "text-[color:var(--trite-ink)]"}`}>{role.name}</p>
-                        <ChevronRight className={`h-4 w-4 ${isSelected ? "text-blue-500" : "text-[color:var(--trite-muted)]"}`} />
+                        <p className={`font-semibold truncate ${isSelected ? "text-blue-700" : "text-[color:var(--trite-ink)]"}`}>{role.name}</p>
+                        <ChevronRight className={`h-4 w-4 hidden lg:block ${isSelected ? "text-blue-500" : "text-[color:var(--trite-muted)]"}`} />
                       </div>
-                      <p className="mt-0.5 text-xs text-[color:var(--trite-muted)]">{role.description}</p>
+                      <p className="mt-0.5 text-[10px] text-[color:var(--trite-muted)] line-clamp-1">{role.description}</p>
                     </div>
                   </div>
                 </button>
@@ -150,7 +150,7 @@ export default function AdminRolesPage() {
 
           {/* Permissions */}
           <div className="rounded-2xl border border-black/5 bg-white p-6">
-            <h3 className="text-sm font-semibold text-[color:var(--trite-muted)] uppercase tracking-wide mb-4">Permissions & Access Control</h3>
+            <h3 className="text-sm font-semibold text-[color:var(--trite-muted)] uppercase tracking-wide mb-4 text-center sm:text-left">Permissions & Access Control</h3>
             
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {displayPerms.map((permission) => (
@@ -169,18 +169,18 @@ export default function AdminRolesPage() {
               ))}
             </div>
 
-            <div className="mt-6 flex items-center justify-between border-t border-black/5 pt-4">
-              <div className="flex items-center gap-2">
-                <Info className="h-4 w-4 text-blue-500" />
+            <div className="mt-6 flex flex-col gap-4 border-t border-black/5 pt-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-2">
+                <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
                 <p className="text-xs text-[color:var(--trite-muted)]">
                   Changes to this role will trigger a system-wide re-authentication for all users assigned to "{selectedRole?.name}".
                 </p>
               </div>
-              <div className="flex items-center gap-2 sm:gap-3">
-                <button className="rounded-xl border border-black/10 bg-white px-4 py-2 text-sm font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.02]">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                <button className="w-full rounded-xl border border-black/10 bg-white px-4 py-2 text-sm font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.02] sm:w-auto">
                   Discard Changes
                 </button>
-                <button onClick={handleSave} disabled={saving} className="rounded-xl bg-[color:var(--trite-ink)] px-4 py-2 text-sm font-medium text-white hover:bg-black disabled:opacity-60">
+                <button onClick={handleSave} disabled={saving} className="w-full rounded-xl bg-[color:var(--trite-ink)] px-4 py-2 text-sm font-medium text-white hover:bg-black disabled:opacity-60 sm:w-auto">
                   {saving ? "Saving..." : "Save Role Configuration"}
                 </button>
               </div>

@@ -130,13 +130,13 @@ export default function AdminTransactionsPage() {
         </div>
       </div>
 
-      {/* Live Ledger Table */}
+      {/* Live Ledger List */}
       <div className="mb-6 rounded-2xl border border-black/5 bg-white overflow-hidden">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-black/5 px-6 py-5">
           <div>
             <h2 className="text-lg font-bold text-[color:var(--trite-ink)]">Live Ledger</h2>
             <p className="text-xs text-[color:var(--trite-muted)] mt-1">
-              Showing 1-{Math.min(transactions.length, rowsPerPage)} of {pagination?.total ?? 0}
+              Showing {pagination?.total === 0 ? 0 : (page - 1) * rowsPerPage + 1}-{Math.min(page * rowsPerPage, pagination?.total ?? 0)} of {pagination?.total ?? 0}
             </p>
           </div>
           <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[color:var(--trite-muted)]">
@@ -145,98 +145,188 @@ export default function AdminTransactionsPage() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-        <table className="w-full min-w-[900px]">
-          <thead>
-            <tr className="border-b border-black/5 text-left text-[10px] font-bold text-[color:var(--trite-muted)] uppercase tracking-wider">
-              <th className="py-4 px-6">TX ID</th>
-              <th className="py-4 px-4">User/Merchant</th>
-              <th className="py-4 px-4">Amount</th>
-              <th className="py-4 px-4">Currency</th>
-              <th className="py-4 px-4">Method</th>
-              <th className="py-4 px-4">Status</th>
-              <th className="py-4 px-6">Flag</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-black/5">
-            {transactions.map((tx) => (
-              <tr key={tx.id} className="border-b border-black/5 last:border-0 hover:bg-black/[0.02]">
-                <td className="py-4 px-6">
-                  <div className="flex h-10 w-16 items-center justify-center rounded-lg bg-blue-50">
+        {/* Mobile View: Cards */}
+        <div className="divide-y divide-black/5 lg:hidden">
+          {transactions.map((tx) => (
+            <div key={tx.id} className="p-4 space-y-4 hover:bg-black/[0.01] transition-colors">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50">
                     <span className="text-xs font-mono font-medium text-blue-600">{tx.tx_id_display.split("-")[1] ?? tx.tx_id_display.slice(0,6)}</span>
                   </div>
-                  <p className="mt-1 text-xs text-[color:var(--trite-muted)]">{tx.tx_id_display}</p>
-                </td>
-                <td className="py-4 px-4">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-slate-700 to-slate-900">
-                      <span className="text-sm font-semibold text-white">{tx.method.slice(0,2)}</span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-[color:var(--trite-ink)]">{tx.method}</p>
-                      <p className="text-xs text-[color:var(--trite-muted)]">Merchant #{tx.merchant_id.slice(0,8)}</p>
-                    </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[color:var(--trite-muted)]">Transaction ID</p>
+                    <p className="text-xs font-mono font-bold text-[color:var(--trite-ink)]">{tx.tx_id_display}</p>
                   </div>
-                </td>
-                <td className="py-4 px-4"><span className="text-sm font-semibold text-[color:var(--trite-ink)]">{formatAmount(tx.amount)}</span></td>
-                <td className="py-4 px-4"><span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">{tx.currency}</span></td>
-                <td className="py-4 px-4">
-                  <div className="flex items-center gap-2">
+                </div>
+                <span className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${getStatusColor(tx.status)}`}>
+                  {tx.status.toLowerCase()}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-slate-700 to-slate-900">
+                    <span className="text-xs font-bold text-white">{tx.method.slice(0,2)}</span>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[color:var(--trite-muted)]">Merchant ID</p>
+                    <p className="text-xs font-medium text-[color:var(--trite-ink)]">#{tx.merchant_id.slice(0,8)}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[color:var(--trite-muted)]">Amount</p>
+                  <p className="text-sm font-black text-[color:var(--trite-ink)]">{formatAmount(tx.amount)}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 pt-2 border-t border-black/[0.03]">
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-[color:var(--trite-muted)]">Method</p>
+                  <div className="flex items-center gap-1 mt-0.5">
                     <MethodIcon method={tx.method} />
-                    <span className="text-sm text-[color:var(--trite-muted)]">{tx.method}</span>
+                    <span className="text-[10px] font-bold text-[color:var(--trite-ink)] truncate">{tx.method}</span>
                   </div>
-                </td>
-                <td className="py-4 px-4">
-                  <span className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1 text-xs font-medium capitalize ${getStatusColor(tx.status)}`}>
-                    <span className={`h-1.5 w-1.5 rounded-full ${
-                      tx.status === "SUCCESS" ? "bg-emerald-500" :
-                      tx.status === "PENDING" ? "bg-blue-500" :
-                      tx.status === "FAILED" ? "bg-red-500" : "bg-amber-500"
-                    }`} />
-                    {tx.status.toLowerCase()}
-                  </span>
-                </td>
-                <td className="py-4 px-6">
+                </div>
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-[color:var(--trite-muted)]">Currency</p>
+                  <span className="mt-0.5 inline-block rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-700">{tx.currency}</span>
+                </div>
+                <div className="text-right">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-[color:var(--trite-muted)]">Risk Flag</p>
                   {tx.flag_level && tx.flag_level !== "NONE" ? (
-                    <div className="flex items-center gap-1.5">
-                      <AlertTriangle className={`h-4 w-4 ${tx.flag_level === "HIGH" ? "text-red-500" : "text-amber-500"}`} />
-                      <span className={`text-xs font-medium ${tx.flag_level === "HIGH" ? "text-red-500" : "text-amber-500"}`}>{tx.flag_level}</span>
+                    <div className="flex items-center justify-end gap-1 mt-0.5">
+                      <AlertTriangle className={`h-3 w-3 ${tx.flag_level === "HIGH" ? "text-red-500" : "text-amber-500"}`} />
+                      <span className={`text-[10px] font-bold ${tx.flag_level === "HIGH" ? "text-red-500" : "text-amber-500"}`}>{tx.flag_level}</span>
                     </div>
-                  ) : <span className="text-xs text-[color:var(--trite-muted)]">—</span>}
-                </td>
+                  ) : <span className="text-[10px] text-[color:var(--trite-muted)]">—</span>}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2">
+                <p className="text-[9px] font-medium text-[color:var(--trite-muted)]">
+                  {new Date(tx.created_at).toLocaleString()}
+                </p>
+                <button className="text-[10px] font-bold uppercase tracking-widest text-blue-600">View Details</button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop View: Table */}
+        <div className="hidden lg:block overflow-x-auto">
+          <table className="w-full min-w-[900px]">
+            <thead>
+              <tr className="border-b border-black/5 text-left text-[10px] font-bold text-[color:var(--trite-muted)] uppercase tracking-wider">
+                <th className="py-4 px-6">TX ID</th>
+                <th className="py-4 px-4">User/Merchant</th>
+                <th className="py-4 px-4">Amount</th>
+                <th className="py-4 px-4">Currency</th>
+                <th className="py-4 px-4">Method</th>
+                <th className="py-4 px-4">Status</th>
+                <th className="py-4 px-6">Flag</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-black/5">
+              {transactions.map((tx) => (
+                <tr key={tx.id} className="border-b border-black/5 last:border-0 hover:bg-black/[0.02]">
+                  <td className="py-4 px-6">
+                    <div className="flex h-10 w-16 items-center justify-center rounded-lg bg-blue-50">
+                      <span className="text-xs font-mono font-medium text-blue-600">{tx.tx_id_display.split("-")[1] ?? tx.tx_id_display.slice(0,6)}</span>
+                    </div>
+                    <p className="mt-1 text-xs text-[color:var(--trite-muted)]">{tx.tx_id_display}</p>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-slate-700 to-slate-900">
+                        <span className="text-sm font-semibold text-white">{tx.method.slice(0,2)}</span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-[color:var(--trite-ink)]">{tx.method}</p>
+                        <p className="text-xs text-[color:var(--trite-muted)]">Merchant #{tx.merchant_id.slice(0,8)}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-4"><span className="text-sm font-semibold text-[color:var(--trite-ink)]">{formatAmount(tx.amount)}</span></td>
+                  <td className="py-4 px-4"><span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">{tx.currency}</span></td>
+                  <td className="py-4 px-4">
+                    <div className="flex items-center gap-2">
+                      <MethodIcon method={tx.method} />
+                      <span className="text-sm text-[color:var(--trite-muted)]">{tx.method}</span>
+                    </div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <span className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1 text-xs font-medium capitalize ${getStatusColor(tx.status)}`}>
+                      <span className={`h-1.5 w-1.5 rounded-full ${
+                        tx.status === "SUCCESS" ? "bg-emerald-500" :
+                        tx.status === "PENDING" ? "bg-blue-500" :
+                        tx.status === "FAILED" ? "bg-red-500" : "bg-amber-500"
+                      }`} />
+                      {tx.status.toLowerCase()}
+                    </span>
+                  </td>
+                  <td className="py-4 px-6">
+                    {tx.flag_level && tx.flag_level !== "NONE" ? (
+                      <div className="flex items-center gap-1.5">
+                        <AlertTriangle className={`h-4 w-4 ${tx.flag_level === "HIGH" ? "text-red-500" : "text-amber-500"}`} />
+                        <span className={`text-xs font-medium ${tx.flag_level === "HIGH" ? "text-red-500" : "text-amber-500"}`}>{tx.flag_level}</span>
+                      </div>
+                    ) : <span className="text-xs text-[color:var(--trite-muted)]">—</span>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between border-t border-black/5 px-6 py-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-t border-black/5 px-6 py-4">
           <div className="flex items-center gap-2">
             <span className="text-sm text-[color:var(--trite-muted)]">Rows per page:</span>
             <select
               value={rowsPerPage}
-              onChange={(e) => setRowsPerPage(Number(e.target.value))}
+              onChange={(e) => {
+                setRowsPerPage(Number(e.target.value));
+                setPage(1);
+              }}
               className="h-8 rounded-lg border border-black/10 bg-white px-2 text-sm outline-none"
             >
-              <option>15</option>
-              <option>25</option>
-              <option>50</option>
+              <option value={15}>15</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
             </select>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-[color:var(--trite-muted)]">1-{Math.min(rowsPerPage, transactions.length)} of {pagination?.total ?? 0}</span>
+          <div className="flex items-center justify-between sm:justify-end gap-4">
+            <span className="text-sm text-[color:var(--trite-muted)]">
+              {pagination?.total === 0 ? 0 : (page - 1) * rowsPerPage + 1}-{Math.min(page * rowsPerPage, pagination?.total ?? 0)} of {pagination?.total ?? 0}
+            </span>
             <div className="flex items-center gap-1">
-              <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-sm text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50" disabled>
+              <button 
+                onClick={() => setPage(1)}
+                disabled={page <= 1}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-sm text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50 transition-colors"
+              >
                 &lt;&lt;
               </button>
-              <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-sm text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50" disabled>
+              <button 
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page <= 1}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-sm text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50 transition-colors"
+              >
                 &lt;
               </button>
-              <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-sm text-[color:var(--trite-muted)] hover:bg-black/[0.02]">
+              <button 
+                onClick={() => setPage(p => Math.min(pagination?.total_pages ?? 1, p + 1))}
+                disabled={page >= (pagination?.total_pages ?? 1)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-sm text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50 transition-colors"
+              >
                 &gt;
               </button>
-              <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-sm text-[color:var(--trite-muted)] hover:bg-black/[0.02]">
+              <button 
+                onClick={() => setPage(pagination?.total_pages ?? 1)}
+                disabled={page >= (pagination?.total_pages ?? 1)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-sm text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50 transition-colors"
+              >
                 &gt;&gt;
               </button>
             </div>
@@ -250,7 +340,7 @@ export default function AdminTransactionsPage() {
         <div className="lg:col-span-2 rounded-2xl bg-[color:var(--trite-ink)] p-6 text-white">
           <p className="text-xs font-medium text-white/60 uppercase tracking-wide">Architect Insights</p>
           <h3 className="mt-3 text-xl font-semibold">Anomaly detection is operating at 99.8% precision.</h3>
-          <div className="mt-4 flex items-center gap-4">
+          <div className="mt-4 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
             <button className="rounded-xl bg-[color:var(--trite-lime)] px-5 py-2.5 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-[color:var(--trite-lime-strong)]">
               Review Security Audit
             </button>

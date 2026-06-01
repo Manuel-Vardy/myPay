@@ -110,6 +110,16 @@ const sidebarItems = [
   { id: "settings", label: "Settings", href: "/merchant/settings", icon: SettingsIcon },
 ];
 
+function LogOutIcon(props: any) {
+  return (
+    <svg {...props} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" y1="12" x2="9" y2="12" />
+    </svg>
+  );
+}
+
 export default function MerchantLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -133,6 +143,16 @@ export default function MerchantLayout({ children }: { children: React.ReactNode
   const initials = profile?.first_name 
     ? profile.first_name[0] + (profile.last_name?.[0] || "") 
     : (fullName.slice(0, 2).toUpperCase());
+
+  const handleSignOut = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      router.push("/");
+    } catch (error) {
+      console.error("Sign out failed:", error);
+      router.push("/");
+    }
+  };
 
   // Derive active tab from pathname
   const activeTab = sidebarItems.find(item => {
@@ -186,20 +206,25 @@ export default function MerchantLayout({ children }: { children: React.ReactNode
 
           <div className="border-t border-black/5 p-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[color:var(--trite-ink)]">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[color:var(--trite-ink)] shadow-sm">
                 <span className="text-sm font-semibold text-white">{initials}</span>
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-[color:var(--trite-ink)] truncate" title={fullName}>
+                <div className="text-sm font-bold text-[color:var(--trite-ink)] truncate" title={fullName}>
                   {fullName}
                 </div>
-                <div className="text-xs text-[color:var(--trite-muted)] truncate">{businessName}</div>
+                {fullName !== businessName && (
+                  <div className="text-[10px] font-medium text-[color:var(--trite-muted)] uppercase tracking-tight truncate">
+                    {businessName}
+                  </div>
+                )}
               </div>
             </div>
             <button
-              onClick={() => router.push("/")}
-              className="mt-3 text-xs font-medium text-red-500 hover:text-red-600"
+              onClick={handleSignOut}
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-red-50 py-2.5 text-xs font-bold text-red-600 transition-all hover:bg-red-100 active:scale-[0.98]"
             >
+              <LogOutIcon className="h-3.5 w-3.5" />
               Sign Out
             </button>
           </div>

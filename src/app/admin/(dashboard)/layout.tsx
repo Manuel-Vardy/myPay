@@ -79,9 +79,6 @@ export default function AdminDashboardLayout({
                 priority
               />
             </Link>
-            <span className="hidden text-xs font-medium text-[color:var(--trite-muted)] sm:block">
-              Admin
-            </span>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="relative hidden md:block">
@@ -128,7 +125,6 @@ export default function AdminDashboardLayout({
                   width={80}
                   height={20}
                 />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[color:var(--trite-muted)]">Admin</span>
               </div>
               <button onClick={() => setSidebarOpen(false)} className="text-[color:var(--trite-muted)] hover:text-[color:var(--trite-ink)] transition-colors">
                 <X className="h-6 w-6" />

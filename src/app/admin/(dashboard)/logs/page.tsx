@@ -165,12 +165,12 @@ export default function AdminLogsPage() {
               <span className="h-2.5 w-2.5 rounded-full bg-amber-400 shadow-sm" />
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-sm" />
             </div>
-            <span className="text-[10px] font-bold font-mono text-white/40 uppercase tracking-[0.2em]">Live Auditing Console</span>
+            <span className="text-[10px] font-bold font-mono text-white/70 uppercase tracking-[0.2em]">Live Auditing Console</span>
           </div>
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsLive(!isLive)}
-              className="flex items-center gap-2 text-[10px] font-bold font-mono text-white/70 hover:text-white transition-colors"
+              className="flex items-center gap-2 text-[10px] font-bold font-mono text-white hover:text-[color:var(--trite-lime)] transition-colors"
             >
               {isLive ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
               {isLive ? "PAUSE FEED" : "RESUME FEED"}
@@ -178,7 +178,28 @@ export default function AdminLogsPage() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Console Content */}
+        <div className="lg:hidden divide-y divide-black/5">
+          {filteredLogs.map((log) => (
+            <div key={log.id} className="p-4 space-y-3 bg-[color:var(--trite-ink)] text-white/90 font-mono text-[11px]">
+              <div className="flex items-start justify-between">
+                <span className="text-white/40">{String(log.timestamp)}</span>
+                <span className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-bold ${getLevelColor(log.level as LogLevel)}`}>
+                  {log.level}
+                </span>
+              </div>
+              <div>
+                <span className="text-emerald-400">source:</span> {log.source}
+              </div>
+              <div className="text-white/70 break-words leading-relaxed">
+                <span className="text-blue-400">event:</span> {log.event_description}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop View: Table */}
+        <div className="hidden lg:block overflow-x-auto">
           <table className="w-full min-w-[800px]">
             <thead>
               <tr className="border-b border-black/5 bg-slate-50 text-left text-xs font-medium text-[color:var(--trite-muted)] uppercase">
@@ -188,51 +209,96 @@ export default function AdminLogsPage() {
                 <th className="py-3 px-4">Event Description</th>
               </tr>
             </thead>
-          <tbody className="font-mono text-sm">
-            {filteredLogs.map((log) => (
-              <tr key={log.id} className="border-b border-black/5 last:border-0 hover:bg-black/[0.02]">
-                <td className="py-3 px-6 text-[color:var(--trite-muted)]">{String(log.timestamp)}</td>
-                <td className="py-3 px-4">
-                  <span className={`inline-flex items-center gap-1.5 rounded px-2 py-1 text-xs font-semibold ${getLevelColor(log.level as LogLevel)}`}>
-                    <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                    {log.level}
-                  </span>
-                </td>
-                <td className="py-3 px-4 text-[color:var(--trite-ink)]">{log.source}</td>
-                <td className="py-3 px-4 text-[color:var(--trite-muted)] truncate max-w-md">{log.event_description}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            <tbody className="font-mono text-sm">
+              {filteredLogs.map((log) => (
+                <tr key={log.id} className="border-b border-black/5 last:border-0 hover:bg-black/[0.02]">
+                  <td className="py-3 px-6 text-[color:var(--trite-muted)]">{String(log.timestamp)}</td>
+                  <td className="py-3 px-4">
+                    <span className={`inline-flex items-center gap-1.5 rounded px-2 py-1 text-xs font-semibold ${getLevelColor(log.level as LogLevel)}`}>
+                      <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                      {log.level}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 text-[color:var(--trite-ink)]">{log.source}</td>
+                  <td className="py-3 px-4 text-[color:var(--trite-muted)] truncate max-w-md">{log.event_description}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between border-t border-black/5 px-6 py-3">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-t border-black/5 px-6 py-4">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-[color:var(--trite-muted)]">Showing</span>
+            <span className="text-xs font-medium text-[color:var(--trite-muted)]">Showing</span>
             <select
               value={rowsPerPage}
-              onChange={(e) => setRowsPerPage(Number(e.target.value))}
-              className="h-8 rounded-lg border border-black/10 bg-white px-2 text-xs outline-none"
+              onChange={(e) => {
+                setRowsPerPage(Number(e.target.value));
+                setPage(1);
+              }}
+              className="h-8 rounded-lg border border-black/10 bg-white px-2 text-xs font-bold text-[color:var(--trite-ink)] outline-none focus:border-blue-500 transition-colors"
             >
-              <option>50</option>
-              <option>100</option>
-              <option>250</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+              <option value={250}>250</option>
             </select>
-            <span className="text-xs text-[color:var(--trite-muted)]">entries</span>
+            <span className="text-xs font-medium text-[color:var(--trite-muted)]">entries</span>
           </div>
-          <div className="flex items-center gap-1">
-            <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-xs text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50" disabled>
-              &lt;&lt;
-            </button>
-            <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-xs text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50" disabled>
-              &lt;
-            </button>
-            <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-xs font-medium text-white">1</button>
-            <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-xs text-[color:var(--trite-muted)] hover:bg-black/[0.02]">2</button>
-            <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-xs text-[color:var(--trite-muted)] hover:bg-black/[0.02]">3</button>
-            <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-xs text-[color:var(--trite-muted)] hover:bg-black/[0.02]">&gt;</button>
-            <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-xs text-[color:var(--trite-muted)] hover:bg-black/[0.02]">&gt;&gt;</button>
+          <div className="flex items-center justify-between sm:justify-end gap-1 w-full sm:w-auto">
+            <div className="flex items-center gap-1">
+              <button 
+                onClick={() => setPage(1)}
+                disabled={page <= 1}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-xs font-bold text-[color:var(--trite-ink)] hover:bg-black/[0.02] disabled:opacity-30 transition-colors"
+              >
+                &lt;&lt;
+              </button>
+              <button 
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page <= 1}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-xs font-bold text-[color:var(--trite-ink)] hover:bg-black/[0.02] disabled:opacity-30 transition-colors"
+              >
+                &lt;
+              </button>
+            </div>
+            
+            <div className="flex items-center gap-1">
+              {[...Array(Math.min(5, Math.ceil((logsData?.pagination?.total ?? 0) / rowsPerPage)))].map((_, i) => {
+                const p = i + 1;
+                // Simple pagination display for now
+                return (
+                  <button 
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`flex h-8 w-8 items-center justify-center rounded-lg border text-xs font-bold transition-colors ${
+                      page === p 
+                        ? "bg-blue-600 border-blue-600 text-white shadow-sm" 
+                        : "border-black/10 text-[color:var(--trite-ink)] hover:bg-black/[0.02]"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center gap-1">
+              <button 
+                onClick={() => setPage(p => Math.min(Math.ceil((logsData?.pagination?.total ?? 0) / rowsPerPage), p + 1))}
+                disabled={page >= Math.ceil((logsData?.pagination?.total ?? 0) / rowsPerPage)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-xs font-bold text-[color:var(--trite-ink)] hover:bg-black/[0.02] disabled:opacity-30 transition-colors"
+              >
+                &gt;
+              </button>
+              <button 
+                onClick={() => setPage(Math.ceil((logsData?.pagination?.total ?? 0) / rowsPerPage))}
+                disabled={page >= Math.ceil((logsData?.pagination?.total ?? 0) / rowsPerPage)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-xs font-bold text-[color:var(--trite-ink)] hover:bg-black/[0.02] disabled:opacity-30 transition-colors"
+              >
+                &gt;&gt;
+              </button>
+            </div>
           </div>
         </div>
       </div>

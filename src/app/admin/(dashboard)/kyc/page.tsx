@@ -84,7 +84,7 @@ export default function AdminKycPage() {
   const demoActivity: ActivityItem[] = [
     { id: "ACT-001", type: "approved", actor: "Admin Sarah", target: "User #9921", time: "10 minutes ago", detailId: "ID: TR-KYC-0032" },
     { id: "ACT-002", type: "rejected", actor: "System", target: "User #8821 (Expired ID)", time: "2 hours ago", detailId: "ID: TR-KYC-9901" },
-    { id: "ACT-003", type: "requested", actor: "Admin David", target: "additional documents from User #4412", time: "4 hours ago", detailId: "ID: TR-KYC-7721" },
+    { id: "ACT-003", type: "requested", actor: "Admin David", target: "User #4412", time: "4 hours ago", detailId: "ID: TR-KYC-7721" },
   ];
 
 
@@ -125,7 +125,7 @@ export default function AdminKycPage() {
         </div>
       </div>
 
-      {/* Verification Queue Table */}
+      {/* Verification Queue List */}
       <div className="mb-6 rounded-2xl border border-black/5 bg-white overflow-hidden shadow-sm">
         <div className="flex flex-col gap-4 border-b border-black/5 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
@@ -155,81 +155,167 @@ export default function AdminKycPage() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-        <table className="w-full min-w-[900px]">
-          <thead>
-            <tr className="border-b border-black/5 bg-slate-50 text-left">
-              <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">User Entity</th>
-              <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Identity ID</th>
-              <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Tier</th>
-              <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Status</th>
-              <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Submitted</th>
-              <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Action</th>
-            </tr>
-          </thead>
-          <tbody className="text-sm">
-            {filtered.map((k) => (
-              <tr key={k.id} className="border-b border-black/5 last:border-b-0 hover:bg-black/[0.02]">
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-slate-700 to-slate-900 text-xs font-semibold text-white">
-                      {k.email.slice(0, 2).toUpperCase()}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-[color:var(--trite-ink)]">{k.business_name ?? k.email.split("@")[0]}</p>
-                      <p className="text-xs text-[color:var(--trite-muted)]">{k.email}</p>
-                    </div>
+        {/* Mobile View: Cards */}
+        <div className="divide-y divide-black/5 lg:hidden">
+          {filtered.map((k) => (
+            <div key={k.id} className="p-4 space-y-4 hover:bg-black/[0.01] transition-colors">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-slate-700 to-slate-900 text-xs font-semibold text-white">
+                    {k.email.slice(0, 2).toUpperCase()}
                   </div>
-                </td>
-                <td className="px-6 py-4 text-[color:var(--trite-muted)]">{k.identity_id}</td>
-                <td className="px-6 py-4"><TierBadge tier={k.tier as "Premium" | "Merchant" | "Standard"} /></td>
-                <td className="px-6 py-4"><StatusBadge status={k.status.toLowerCase() as "pending" | "approved" | "flagged"} /></td>
-                <td className="px-6 py-4 text-[color:var(--trite-muted)]">{new Date(k.submitted_at).toLocaleDateString()}</td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
-                    <button 
-                      onClick={() => handleUpdateStatus(k.id, "APPROVED")}
-                      disabled={updatingId === k.id}
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--trite-lime)] text-[color:var(--trite-ink)] hover:bg-[color:var(--trite-lime-strong)] disabled:opacity-50"
-                    >
-                      {updatingId === k.id ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-[color:var(--trite-ink)] border-t-transparent" /> : <CheckIcon className="h-4 w-4" />}
-                    </button>
-                    <button 
-                      onClick={() => handleUpdateStatus(k.id, "REJECTED")}
-                      disabled={updatingId === k.id}
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600 hover:bg-red-200 disabled:opacity-50"
-                    >
-                      {updatingId === k.id ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-red-600 border-t-transparent" /> : <XIcon className="h-4 w-4" />}
-                    </button>
-                    <button className="flex h-8 w-8 items-center justify-center rounded-full bg-black/[0.04] text-[color:var(--trite-muted)] hover:bg-black/[0.08]">
-                      <ChevronRightIcon className="h-4 w-4" />
-                    </button>
+                  <div>
+                    <p className="text-sm font-bold text-[color:var(--trite-ink)]">{k.business_name ?? k.email.split("@")[0]}</p>
+                    <p className="text-[10px] text-[color:var(--trite-muted)] uppercase tracking-tight">{k.email}</p>
                   </div>
-                </td>
+                </div>
+                <StatusBadge status={k.status.toLowerCase() as "pending" | "approved" | "flagged"} />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[color:var(--trite-muted)]">Identity ID</p>
+                  <p className="mt-1 font-mono text-[10px] font-bold text-[color:var(--trite-ink)] truncate">{k.identity_id}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[color:var(--trite-muted)]">Tier</p>
+                  <div className="mt-1">
+                    <TierBadge tier={k.tier as "Premium" | "Merchant" | "Standard"} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-3 border-t border-black/[0.03]">
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => handleUpdateStatus(k.id, "APPROVED")}
+                    disabled={updatingId === k.id}
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--trite-lime)] text-[color:var(--trite-ink)] hover:bg-[color:var(--trite-lime-strong)] disabled:opacity-50 shadow-sm"
+                  >
+                    {updatingId === k.id ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-[color:var(--trite-ink)] border-t-transparent" /> : <CheckIcon className="h-4 w-4" />}
+                  </button>
+                  <button 
+                    onClick={() => handleUpdateStatus(k.id, "REJECTED")}
+                    disabled={updatingId === k.id}
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600 hover:bg-red-200 disabled:opacity-50 shadow-sm"
+                  >
+                    {updatingId === k.id ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-red-600 border-t-transparent" /> : <XIcon className="h-4 w-4" />}
+                  </button>
+                </div>
+                <p className="text-[9px] font-medium text-[color:var(--trite-muted)] uppercase">
+                  Submitted: {new Date(k.submitted_at).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+          ))}
+          {filtered.length === 0 && (
+            <div className="py-12 text-center text-sm text-[color:var(--trite-muted)]">
+              No KYC requests found.
+            </div>
+          )}
+        </div>
+
+        {/* Desktop View: Table */}
+        <div className="hidden lg:block overflow-x-auto">
+          <table className="w-full min-w-[900px]">
+            <thead>
+              <tr className="border-b border-black/5 bg-slate-50 text-left">
+                <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">User Entity</th>
+                <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Identity ID</th>
+                <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Tier</th>
+                <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Status</th>
+                <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Submitted</th>
+                <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Action</th>
               </tr>
-            ))}
-            {filtered.length === 0 && (
-              <tr>
-                <td className="px-6 py-10 text-center text-sm text-[color:var(--trite-muted)]" colSpan={6}>
-                  No KYC requests found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="text-sm">
+              {filtered.map((k) => (
+                <tr key={k.id} className="border-b border-black/5 last:border-b-0 hover:bg-black/[0.02]">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-slate-700 to-slate-900 text-xs font-semibold text-white">
+                        {k.email.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-[color:var(--trite-ink)]">{k.business_name ?? k.email.split("@")[0]}</p>
+                        <p className="text-xs text-[color:var(--trite-muted)]">{k.email}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-[color:var(--trite-muted)]">{k.identity_id}</td>
+                  <td className="px-6 py-4"><TierBadge tier={k.tier as "Premium" | "Merchant" | "Standard"} /></td>
+                  <td className="px-6 py-4"><StatusBadge status={k.status.toLowerCase() as "pending" | "approved" | "flagged"} /></td>
+                  <td className="px-6 py-4 text-[color:var(--trite-muted)]">{new Date(k.submitted_at).toLocaleDateString()}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => handleUpdateStatus(k.id, "APPROVED")}
+                        disabled={updatingId === k.id}
+                        className="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--trite-lime)] text-[color:var(--trite-ink)] hover:bg-[color:var(--trite-lime-strong)] disabled:opacity-50"
+                      >
+                        {updatingId === k.id ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-[color:var(--trite-ink)] border-t-transparent" /> : <CheckIcon className="h-4 w-4" />}
+                      </button>
+                      <button 
+                        onClick={() => handleUpdateStatus(k.id, "REJECTED")}
+                        disabled={updatingId === k.id}
+                        className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600 hover:bg-red-200 disabled:opacity-50"
+                      >
+                        {updatingId === k.id ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-red-600 border-t-transparent" /> : <XIcon className="h-4 w-4" />}
+                      </button>
+                      <button className="flex h-8 w-8 items-center justify-center rounded-full bg-black/[0.04] text-[color:var(--trite-muted)] hover:bg-black/[0.08]">
+                        <ChevronRightIcon className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {filtered.length === 0 && (
+                <tr>
+                  <td className="px-6 py-10 text-center text-sm text-[color:var(--trite-muted)]" colSpan={6}>
+                    No KYC requests found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between border-t border-black/5 px-6 py-4">
-          <p className="text-xs text-[color:var(--trite-muted)]">Showing 1 - {filtered.length} of {pagination?.total ?? 0} requests</p>
-          <div className="flex items-center gap-2">
-            <button className="flex h-9 w-9 items-center justify-center rounded-xl border border-black/10 bg-white text-[color:var(--trite-muted)] hover:bg-black/[0.02]">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-t border-black/5 px-6 py-4">
+          <p className="text-xs text-[color:var(--trite-muted)]">
+            Showing {pagination?.total === 0 ? 0 : (page - 1) * 20 + 1} - {Math.min(page * 20, pagination?.total ?? 0)} of {pagination?.total ?? 0} requests
+          </p>
+          <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
+            <button 
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page <= 1}
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-black/10 bg-white text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50 transition-colors"
+            >
               <ChevronLeftIcon className="h-4 w-4" />
             </button>
-            <button className="flex h-9 w-9 items-center justify-center rounded-xl bg-[color:var(--trite-ink)] text-xs font-semibold text-white">1</button>
-            <button className="flex h-9 w-9 items-center justify-center rounded-xl border border-black/10 bg-white text-xs font-semibold text-[color:var(--trite-ink)] hover:bg-black/[0.02]">2</button>
-            <button className="flex h-9 w-9 items-center justify-center rounded-xl border border-black/10 bg-white text-xs font-semibold text-[color:var(--trite-ink)] hover:bg-black/[0.02]">3</button>
-            <button className="flex h-9 w-9 items-center justify-center rounded-xl border border-black/10 bg-white text-[color:var(--trite-muted)] hover:bg-black/[0.02]">
+            <div className="flex items-center gap-1">
+              {[...Array(Math.min(5, pagination?.total_pages ?? 0))].map((_, i) => {
+                const p = i + 1;
+                return (
+                  <button 
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`flex h-9 w-9 items-center justify-center rounded-xl text-xs font-semibold transition-colors ${
+                      page === p 
+                        ? "bg-[color:var(--trite-ink)] text-white shadow-sm" 
+                        : "border border-black/10 bg-white text-[color:var(--trite-ink)] hover:bg-black/[0.02]"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                );
+              })}
+            </div>
+            <button 
+              onClick={() => setPage(p => Math.min(pagination?.total_pages ?? 1, p + 1))}
+              disabled={page >= (pagination?.total_pages ?? 1)}
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-black/10 bg-white text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50 transition-colors"
+            >
               <ChevronRightIcon className="h-4 w-4" />
             </button>
           </div>
@@ -244,8 +330,9 @@ export default function AdminKycPage() {
           <div className="mt-4 space-y-4">
             {demoActivity.map((act) => (
               <div key={act.id} className="flex items-start gap-3">
-                <div className={`mt-0.5 flex h-8 w-8 items-center justify-center rounded-full ${
-                  act.type === "approved" ? "bg-[color:var(--trite-lime)]" : act.type === "rejected" ? "bg-red-100" : "bg-blue-100"
+                <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+                  act.type === "approved" ? "bg-[color:var(--trite-lime)]" : 
+                  act.type === "rejected" ? "bg-red-50" : "bg-blue-50"
                 }`}>
                   {act.type === "approved" ? (
                     <CheckIcon className="h-4 w-4 text-[color:var(--trite-ink)]" />

@@ -73,53 +73,51 @@ export default function AdminSupportPage() {
   return (
     <>
       {/* Page Header */}
-      <div className="mb-6">
-        <h1 className="text-4xl font-semibold text-[color:var(--trite-ink)]">
-          Support <span className="text-blue-500">Center</span>
-        </h1>
-        <p className="mt-1 text-sm text-[color:var(--trite-muted)]">
-          Manage merchant inquiries and system escalations with architectural precision.
-        </p>
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-black text-[color:var(--trite-ink)] sm:text-4xl">
+            Support <span className="text-blue-500">Center</span>
+          </h1>
+          <p className="mt-1 text-xs text-[color:var(--trite-muted)] sm:text-sm">
+            Manage merchant inquiries and system escalations with architectural precision.
+          </p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* Tickets List */}
         <div className="lg:col-span-8">
           {/* Filter Tabs */}
-          <div className="mb-4 flex items-center gap-2">
+          <div className="mb-4 flex flex-wrap items-center gap-2">
             <button
               onClick={() => setActiveFilter("all")}
-              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              className={`rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-widest transition-all ${
                 activeFilter === "all"
-                  ? "bg-[color:var(--trite-ink)] text-white"
-                  : "bg-white text-[color:var(--trite-muted)] hover:bg-black/[0.02]"
+                  ? "bg-[color:var(--trite-ink)] text-white shadow-md"
+                  : "bg-white text-[color:var(--trite-muted)] border border-black/5 hover:bg-black/[0.02]"
               }`}
             >
-              All Tickets ({ticketCounts.all})
+              All ({ticketCounts.all})
             </button>
             <button
               onClick={() => setActiveFilter("unassigned")}
-              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              className={`rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-widest transition-all ${
                 activeFilter === "unassigned"
-                  ? "bg-[color:var(--trite-ink)] text-white"
-                  : "bg-white text-[color:var(--trite-muted)] hover:bg-black/[0.02]"
+                  ? "bg-[color:var(--trite-ink)] text-white shadow-md"
+                  : "bg-white text-[color:var(--trite-muted)] border border-black/5 hover:bg-black/[0.02]"
               }`}
             >
               Unassigned ({ticketCounts.unassigned})
             </button>
             <button
               onClick={() => setActiveFilter("escalated")}
-              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              className={`rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-widest transition-all ${
                 activeFilter === "escalated"
-                  ? "bg-[color:var(--trite-ink)] text-white"
-                  : "bg-white text-[color:var(--trite-muted)] hover:bg-black/[0.02]"
+                  ? "bg-[color:var(--trite-ink)] text-white shadow-md"
+                  : "bg-white text-[color:var(--trite-muted)] border border-black/5 hover:bg-black/[0.02]"
               }`}
             >
               Escalated ({ticketCounts.escalated})
-            </button>
-            <button className="ml-auto flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.02]">
-              <Filter className="h-4 w-4" />
-              Filter
             </button>
           </div>
 

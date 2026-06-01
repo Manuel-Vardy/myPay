@@ -196,14 +196,14 @@ export default function SettlementsPage() {
       </div>
 
       <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-[color:var(--trite-ink)]">Settlement Accounts</h2>
             <p className="text-xs text-[color:var(--trite-muted)]">Saved destinations for payouts</p>
           </div>
           <button 
             onClick={() => setAddModalOpen(true)}
-            className="flex h-9 items-center gap-1.5 rounded-lg bg-[color:var(--trite-lime-strong)] px-4 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-[color:var(--trite-lime)]"
+            className="flex h-9 items-center gap-1.5 self-start rounded-lg bg-[color:var(--trite-lime-strong)] px-4 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-[color:var(--trite-lime)] sm:self-auto"
           >
             <PlusIcon className="h-4 w-4" />
             Add Account

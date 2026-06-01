@@ -128,7 +128,7 @@ export default function Header({
           "w-full z-40 transition-transform duration-300 ease-in-out",
           !mounted ? "bg-white border-b border-black/[0.06] py-3 sm:py-6 relative" : 
           isSticky 
-            ? "fixed top-0 left-0 right-0 bg-transparent py-2 sm:py-4" 
+            ? "fixed top-0 left-0 right-0 bg-transparent py-2 sm:py-4 flex justify-center" 
             : transparent 
               ? "absolute left-0 right-0 py-3 sm:py-6 bg-white sm:bg-transparent border-b border-black/[0.06] sm:border-none" 
               : "bg-white border-b border-black/[0.06] py-3 sm:py-6 relative",

@@ -44,7 +44,7 @@ export default function ProductsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white text-black selection:bg-[#22c55e]/30 selection:text-black">
+    <div className="min-h-screen bg-white text-black selection:bg-[#22c55e]/30 selection:text-black overflow-x-hidden">
       <Header transparent={true} darkLogo={true} />
 
       <main>
@@ -54,8 +54,9 @@ export default function ProductsPage() {
           className="relative z-10 bg-white pt-32 sm:pt-40 md:pt-48 pb-10 sm:pb-16 md:pb-20 overflow-hidden"
         >
           {/* SVG Background */}
-          <div className="absolute top-0 left-0 w-full h-full z-0 pointer-events-none opacity-50">
-            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 1423 560" className="w-full h-full"> 
+          <div className="absolute top-0 left-0 w-full h-full z-0 pointer-events-none">
+            {/* Desktop Background SVG */}
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 1423 560" className="hidden sm:block w-full h-full opacity-50"> 
                 <g mask="url(#SvgjsMask1034)" fill="none"> 
                     <rect width="1423" height="560" x="0" y="0" fill="rgba(231, 231, 231, 1)"></rect> 
                     <path d="M 0,97 C 95,116.2 285,192.2 475,193 C 665,193.8 760.4,100.6 950,101 C 1139.6,101.4 1328.4,176.2 1423,195L1423 560L0 560z" fill="rgba(255, 255, 255, 1)"></path> 
@@ -67,6 +68,18 @@ export default function ProductsPage() {
                     </mask> 
                 </defs> 
             </svg>
+
+            {/* Mobile Background - Smoother and less sharp */}
+            <div className="block sm:hidden absolute inset-0 bg-[#f4f4f4]">
+              <div 
+                className="absolute inset-0 opacity-40"
+                style={{
+                  backgroundImage: `radial-gradient(circle at 50% -20%, #ffffff 0%, transparent 70%), 
+                                    radial-gradient(circle at 0% 50%, #ffffff 0%, transparent 50%),
+                                    radial-gradient(circle at 100% 80%, #ffffff 0%, transparent 60%)`
+                }}
+              />
+            </div>
           </div>
 
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -130,18 +143,18 @@ export default function ProductsPage() {
                   ].map((prod, idx) => (
                     <div
                       key={idx}
-                      className="relative aspect-[1.3/1] overflow-hidden shadow-lg transition-all duration-500 hover:scale-[1.02] bg-white rounded-xl border border-gray-100"
+                      className="relative aspect-[1.1/1] sm:aspect-[1.3/1] overflow-hidden shadow-lg transition-all duration-500 hover:scale-[1.02] bg-white rounded-xl border border-gray-100"
                     >
                       {/* Secondary Color Block - Vibrant Base */}
-                      <div className={`absolute bottom-0 w-full h-[35%] z-0 ${prod.blockColor}`} />
+                      <div className={`absolute bottom-0 w-full h-[30%] sm:h-[35%] z-0 ${prod.blockColor}`} />
                       
                       {/* Content Overlay - Top White Part */}
-                      <div className="relative z-20 p-7 h-full flex flex-col justify-between">
-                        <div className={`w-[60%] ${prod.layout === 'right' ? 'ml-auto text-right' : ''}`}>
-                          <h3 className="text-2xl font-black leading-tight mb-2 text-black">
+                      <div className="relative z-20 p-5 sm:p-7 h-full flex flex-col justify-between">
+                        <div className={`w-[85%] sm:w-[60%] ${prod.layout === 'right' ? 'ml-auto text-right' : ''}`}>
+                          <h3 className="text-xl sm:text-2xl font-black leading-tight mb-2 text-black">
                             {prod.title}
                           </h3>
-                          <p className="text-lg font-medium leading-relaxed text-gray-600">
+                          <p className="text-sm sm:text-lg font-medium leading-relaxed text-gray-600">
                             {prod.desc}
                           </p>
                         </div>
@@ -151,7 +164,7 @@ export default function ProductsPage() {
                       </div>
 
                       {/* Product Image - Pushed to corners */}
-                      <div className={`absolute ${prod.imgPos} w-[55%] h-[80%] z-10 ${prod.layout === 'left' ? '-right-4' : (prod.imgSide || '-left-4')}`}>
+                      <div className={`absolute ${prod.imgPos} w-[50%] sm:w-[55%] h-[70%] sm:h-[80%] z-10 ${prod.layout === 'left' ? '-right-4' : (prod.imgSide || '-left-4')}`}>
                         <img
                           src={prod.image}
                           alt={prod.title}
@@ -186,18 +199,18 @@ export default function ProductsPage() {
                   ].map((prod, idx) => (
                     <div
                       key={idx}
-                      className="relative aspect-[1.3/1] overflow-hidden shadow-lg transition-all duration-500 hover:scale-[1.02] bg-white rounded-xl border border-gray-100"
+                      className="relative aspect-[1.1/1] sm:aspect-[1.3/1] overflow-hidden shadow-lg transition-all duration-500 hover:scale-[1.02] bg-white rounded-xl border border-gray-100"
                     >
                       {/* Secondary Color Block - Vibrant Base */}
-                      <div className={`absolute bottom-0 w-full h-[35%] z-0 ${prod.blockColor}`} />
+                      <div className={`absolute bottom-0 w-full h-[30%] sm:h-[35%] z-0 ${prod.blockColor}`} />
                       
                       {/* Content Overlay - Top White Part */}
-                      <div className="relative z-20 p-7 h-full flex flex-col justify-between">
-                        <div className={`w-[60%] ${prod.layout === 'right' ? 'ml-auto text-right' : ''}`}>
-                          <h3 className="text-2xl font-black leading-tight mb-2 text-black">
+                      <div className="relative z-20 p-5 sm:p-7 h-full flex flex-col justify-between">
+                        <div className={`w-[85%] sm:w-[60%] ${prod.layout === 'right' ? 'ml-auto text-right' : ''}`}>
+                          <h3 className="text-xl sm:text-2xl font-black leading-tight mb-2 text-black">
                             {prod.title}
                           </h3>
-                          <p className="text-lg font-medium leading-relaxed text-gray-600">
+                          <p className="text-sm sm:text-lg font-medium leading-relaxed text-gray-600">
                             {prod.desc}
                           </p>
                         </div>
@@ -207,7 +220,7 @@ export default function ProductsPage() {
                       </div>
 
                       {/* Product Image - Pushed to corners */}
-                      <div className={`absolute ${prod.imgPos} w-[55%] h-[80%] z-10 ${prod.layout === 'left' ? '-right-4' : '-left-4'}`}>
+                      <div className={`absolute ${prod.imgPos} w-[50%] sm:w-[55%] h-[70%] sm:h-[80%] z-10 ${prod.layout === 'left' ? '-right-4' : '-left-4'}`}>
                         <img
                           src={prod.image}
                           alt={prod.title}
@@ -240,7 +253,7 @@ export default function ProductsPage() {
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
               {/* Left Column: Text content */}
-              <div className="lg:col-span-7 space-y-12 relative">
+              <div className="lg:col-span-7 space-y-12 relative text-left order-2 lg:order-1">
                 <div className="space-y-4">
                   <h3 className="text-3xl font-extrabold text-black tracking-tight sm:text-4xl lg:text-5xl">
                     Why Trite
@@ -329,7 +342,7 @@ export default function ProductsPage() {
               </div>
 
               {/* Right Column: Image */}
-              <div className="lg:col-span-5 relative">
+              <div className="lg:col-span-5 relative order-1 lg:order-2">
                 <div className="relative z-10 w-full h-auto">
                   <img 
                     src="/images/girl-copy.png" 

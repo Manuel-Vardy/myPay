@@ -7,7 +7,7 @@ import Link from "next/link";
 
 export default function ApiDocsPage() {
   return (
-    <div className="min-h-screen bg-white text-black">
+    <div className="min-h-screen bg-white text-black overflow-x-hidden">
       <Header transparent={false} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32">

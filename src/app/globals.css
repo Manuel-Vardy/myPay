@@ -72,6 +72,15 @@ body {
   background: rgba(0, 0, 0, 0.2);
 }
 
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Dog-eared top-left corner (About / Benefits style panels) */
 .about-panel-clip {
   clip-path: polygon(3rem 0, 100% 0, 100% 100%, 0 100%, 0 3rem);

@@ -378,12 +378,12 @@ export default function DashboardPage() {
 
           {/* Revenue Bar Chart */}
           <div className="mt-6 rounded-2xl bg-white p-6 ring-1 ring-black/5">
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-[color:var(--trite-ink)]">Revenue Overview</h2>
                 <p className="text-xs text-[color:var(--trite-muted)]">Track your earnings over time</p>
               </div>
-              <div className="flex items-center gap-1 rounded-lg bg-black/[0.04] p-1">
+              <div className="flex items-center gap-1 self-start rounded-lg bg-black/[0.04] p-1 sm:self-auto">
                 {(["day", "week", "month", "year"] as const).map((period) => (
                   <button
                     key={period}

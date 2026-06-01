@@ -35,75 +35,109 @@ const industriesItems = [
 ];
 
 function FeatureCard({ item, idx, total, containerScroll }: { item: any; idx: number; total: number; containerScroll: any }) {
-  // Each card darkens and scales down as the NEXT card slides over it
-  const stackEndTrigger = 0.8;
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const isMobile = mounted ? window.innerWidth < 640 : false;
+
+  // For card `idx`, it should stay at scale 1 until the next card starts scrolling over it.
+  // On mobile, keep the cards at the same size so the stack stays clean and readable.
+  const startScaleTrigger = (idx + 1) / total;
+  const desktopTargetScale = 1 - (total - 1 - idx) * 0.025;
+
+  const scaleX = useTransform(
+    containerScroll,
+    [startScaleTrigger, 1],
+    [1, isMobile ? 1 : desktopTargetScale]
+  );
+
+  const scaleY = useTransform(
+    containerScroll,
+    [startScaleTrigger, 1],
+    [1, isMobile ? 1 : desktopTargetScale]
+  );
+
+  // Stack offset controls the vertical spacing when cards are stuck
+  const stackOffset = mounted ? (window.innerWidth < 640 ? 16 : 18) : 18;
   
-  // The range in which THIS card is being covered by the next one
-  const start = ((idx + 1) / total) * stackEndTrigger;
-  const end = ((idx + 2) / total) * stackEndTrigger;
-  
-  // Base scale from the stack effect
-  const baseScale = 0.9 + (idx * 0.02);
-  // Recede slightly as the next card comes in
-  const recedingScale = useTransform(containerScroll, [start, end], [1, 0.98]);
-  const combinedScale = useTransform(recedingScale, s => s * baseScale);
+  // The sticky wrapper has a constant top position for all cards!
+  // This ensures they all unstick and scroll away together at the end of the container,
+  // preventing them from compressing or covering each other.
+  const stickyTop = mounted 
+    ? (window.innerWidth < 640 ? 60 : 80) 
+    : 80;
+
+  // The staircase stacking offset is applied as a top offset to the inner card instead of the sticky wrapper.
+  const cardTopOffset = idx * stackOffset;
 
   return (
-    <motion.div 
-      className="group lg:sticky relative overflow-hidden bg-white origin-top cursor-default shadow-[0_-20px_50px_-20px_rgba(0,0,0,0.15)]"
+    <div 
+      className="sticky w-full h-[85vh] sm:h-[80vh] flex items-center justify-center"
       style={{ 
-        zIndex: idx + 10,
-        top: `${130 + (idx * 20)}px`,
-        scale: combinedScale
+        top: `${stickyTop}px`,
+        zIndex: idx + 10
       }}
     >
-      <div className="grid grid-cols-1 lg:grid-cols-10 min-h-[700px]">
-        {/* Left Side: Text - 60% */}
-        <div className={cn("lg:col-span-6 p-8 sm:p-12 lg:p-16 flex flex-col justify-center space-y-8", item.bgColor)}>
-          <div className="space-y-6">
-            <div className={cn("flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm", item.iconBg, item.textColor)}>
-              {item.icon}
+      <motion.div 
+        className={cn(
+          "w-full group overflow-hidden relative origin-top cursor-default shadow-[0_25px_60px_-15px_rgba(0,0,0,0.25),0_-5px_20px_-10px_rgba(0,0,0,0.15)] rounded-none",
+          item.bgColor
+        )}
+        style={{ 
+          scaleX,
+          scaleY,
+          top: `${cardTopOffset}px`
+        }}
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-10 h-[700px] sm:h-auto sm:min-h-[550px] lg:min-h-[650px]">
+          {/* Left Side: Text - 60% */}
+          <div className={cn("lg:col-span-6 p-6 sm:p-12 lg:p-16 flex flex-col justify-center space-y-6 sm:space-y-8 flex-1", item.bgColor)}>
+            <div className="space-y-4 sm:space-y-6">
+              <div className={cn("flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-2xl shadow-sm", item.iconBg, item.textColor)}>
+                {item.icon}
+              </div>
+              <h3 className={cn("text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight", item.textColor)}>{item.title}</h3>
+              <p className={cn("text-sm sm:text-lg leading-relaxed font-medium", item.textColor === "text-white" ? "text-white/80" : "text-gray-600")}>
+                {item.desc}
+              </p>
             </div>
-            <h3 className={cn("text-4xl lg:text-5xl font-black tracking-tight leading-tight", item.textColor)}>{item.title}</h3>
-            <p className={cn("text-lg leading-relaxed font-medium", item.textColor === "text-white" ? "text-white/80" : "text-gray-600")}>
-              {item.desc}
-            </p>
+
+            {item.points && (
+              <ul className={cn("grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm font-bold", item.textColor)}>
+                {item.points.map((point: string) => (
+                  <li key={point} className="flex items-center gap-2">
+                    <span className={cn("h-1 w-1 sm:h-1.5 sm:w-1.5 rounded-full", item.textColor === "text-white" ? "bg-white/30" : "bg-black/20")} />
+                    {point}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {item.footer && (
+              <p className={cn("text-[10px] sm:text-sm leading-relaxed font-medium pt-3 sm:pt-4 border-t", item.textColor === "text-white" ? "text-white/60 border-white/10" : "text-gray-500 border-black/5")}>
+                {item.footer}
+              </p>
+            )}
           </div>
 
-          {item.points && (
-            <ul className={cn("grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm font-bold", item.textColor)}>
-              {item.points.map((point: string) => (
-                <li key={point} className="flex items-center gap-2">
-                  <span className={cn("h-1.5 w-1.5 rounded-full", item.textColor === "text-white" ? "bg-white/30" : "bg-black/20")} />
-                  {point}
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {item.footer && (
-            <p className={cn("text-sm leading-relaxed font-medium pt-4 border-t", item.textColor === "text-white" ? "text-white/60 border-white/10" : "text-gray-500 border-black/5")}>
-              {item.footer}
-            </p>
-          )}
+          {/* Right Side: Full Image - 40% */}
+          <div className="lg:col-span-4 relative h-[320px] sm:h-[300px] lg:h-auto overflow-hidden">
+            <Image
+              src={item.image}
+              alt={item.title}
+              fill
+              className="object-cover object-top sm:object-center"
+            />
+          </div>
         </div>
-
-        {/* Right Side: Full Image - 40% */}
-        <div className="lg:col-span-4 relative h-[300px] lg:h-auto overflow-hidden">
-             <Image
-               src={item.image}
-               alt={item.title}
-               fill
-               className="object-cover"
-             />
-           </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 }
 
 export default function BusinessesPage() {
   const [industriesIndex, setIndustriesIndex] = useState(0);
+  const industriesScrollRef = useRef<HTMLDivElement>(null);
 
   // Carousel timer for the Industries section
   useEffect(() => {
@@ -112,6 +146,22 @@ export default function BusinessesPage() {
     }, 3000);
     return () => clearInterval(timer);
   }, []);
+
+  // Scroll active industry item into view on mobile (without affecting page scroll)
+  useEffect(() => {
+    if (industriesScrollRef.current) {
+      const container = industriesScrollRef.current;
+      const activeItem = container.children[industriesIndex] as HTMLElement;
+      
+      if (activeItem) {
+        const scrollLeft = activeItem.offsetLeft - (container.clientWidth / 2) + (activeItem.clientWidth / 2);
+        container.scrollTo({
+          left: scrollLeft,
+          behavior: "smooth"
+        });
+      }
+    }
+  }, [industriesIndex]);
 
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({
@@ -187,7 +237,7 @@ export default function BusinessesPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white text-black selection:bg-[#22c55e]/30 selection:text-black">
+    <div className="min-h-screen bg-white text-black selection:bg-[#22c55e]/30 selection:text-black overflow-x-clip">
       <Header transparent={true} />
 
       <main>
@@ -208,28 +258,28 @@ export default function BusinessesPage() {
           </div>
 
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full">
-            <div className="max-w-4xl space-y-8 -mt-5">
-              <div className="space-y-4">
-                <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl leading-[1.1]">
+            <div className="max-w-4xl space-y-4 sm:space-y-8 -mt-10 sm:-mt-5">
+              <div className="space-y-3 sm:space-y-4">
+                <h1 className="text-2xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl leading-[1.15] sm:leading-[1.1]">
                   Business Solutions - Powering Modern Commerce with Trite.
                 </h1>
-                <div className="h-px w-full max-w-2xl bg-white/20 mt-6"></div>
+                <div className="h-px w-full max-w-2xl bg-white/20 mt-3 sm:mt-6"></div>
               </div>
               
-              <p className="text-lg sm:text-xl text-white/90 leading-relaxed max-w-2xl">
+              <p className="text-sm sm:text-xl text-white/90 leading-relaxed max-w-2xl">
                 Trite is more than a payment gateway - it is a complete financial operations platform designed for modern business growth. Through advanced stablecoin integration, fiat payment support, API connectivity, merchant tools, and financial automation features, businesses can streamline transactions while expanding into global markets.
               </p>
               
               {/* CTA Buttons - Homepage Style */}
-              <div className="flex flex-wrap gap-4 pt-4">
+              <div className="flex flex-wrap gap-2 sm:gap-4 pt-1 sm:pt-4">
                 <Link
-                  className="px-8 py-4 font-semibold bg-[#22c55e] text-black hover:bg-[#16a34a] rounded-full transition-all flex items-center gap-2 shadow-[0_10px_25px_-5px_rgba(34,197,94,0.3)] hover:scale-[1.02]"
-                  href="/demo"
+                  className="px-5 py-2.5 sm:px-8 sm:py-4 text-xs sm:text-base font-semibold bg-[#22c55e] text-black hover:bg-[#16a34a] rounded-full transition-all flex items-center gap-2 shadow-[0_10px_25px_-5px_rgba(34,197,94,0.3)] hover:scale-[1.02]"
+                  href="/contact-sales"
                 >
-                  Request a Demo <ArrowRight className="h-4 w-4" />
+                  Request a Demo <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
                 </Link>
                 <Link
-                  className="px-8 py-4 font-semibold bg-white/10 backdrop-blur-md text-white border border-white/20 hover:bg-white/20 rounded-full transition-all flex items-center gap-2 hover:scale-[1.02]"
+                  className="px-5 py-2.5 sm:px-8 sm:py-4 text-xs sm:text-base font-semibold bg-white/10 backdrop-blur-md text-white border border-white/20 hover:bg-white/20 rounded-full transition-all flex items-center gap-2 hover:scale-[1.02]"
                   href="/contact-sales"
                 >
                   Talk to Sales
@@ -258,7 +308,7 @@ export default function BusinessesPage() {
 
           <div 
             ref={containerRef} 
-            className="relative flex flex-col gap-0 pb-0"
+            className="relative mb-24 sm:mb-32 lg:mb-40"
           >
             {features.map((item, idx) => (
               <FeatureCard 
@@ -317,8 +367,43 @@ export default function BusinessesPage() {
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col lg:flex-row items-start justify-center">
 
+              {/* Mobile View Heading & Horizontal List (Visible only on small screens) */}
+              <div className="lg:hidden w-full mb-8 space-y-6">
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                  Industries We Serve
+                </p>
+                <h2 className="text-2xl font-extrabold tracking-tight text-black leading-tight">
+                  Trite PSP is designed for businesses across multiple sectors:
+                </h2>
+                
+                {/* Horizontal Scrollable List */}
+                <div className="relative">
+                  <div 
+                    ref={industriesScrollRef}
+                    className="flex overflow-x-auto pb-4 gap-3 no-scrollbar snap-x snap-mandatory scroll-smooth"
+                  >
+                    {industriesItems.map((item, idx) => (
+                      <div 
+                        key={idx}
+                        onClick={() => setIndustriesIndex(idx)}
+                        className={cn(
+                          "px-6 py-3 rounded-full border transition-all duration-300 text-center flex items-center justify-center shrink-0 snap-start cursor-pointer",
+                          idx === industriesIndex 
+                            ? "bg-black text-white border-black shadow-md" 
+                            : "bg-gray-50 text-gray-500 border-gray-100 hover:border-gray-200"
+                        )}
+                      >
+                        <span className="text-sm font-bold whitespace-nowrap">
+                          {item.name}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               {/* Left Side - Image Container */}
-              <div className="w-full lg:w-[53%] h-[350px] sm:h-[480px] lg:h-[660px] relative z-10 shrink-0 overflow-hidden group shadow-md">
+              <div className="w-full lg:w-[53%] h-[350px] sm:h-[480px] lg:h-[660px] relative z-10 shrink-0 overflow-hidden group shadow-md order-2 lg:order-1">
                 {industriesItems.map((item, idx) => (
                   <div
                     key={idx}
@@ -337,8 +422,8 @@ export default function BusinessesPage() {
                 <div className="absolute inset-0 bg-[#000]/5 mix-blend-overlay pointer-events-none z-20" />
               </div>
 
-              {/* Right Side - Overlapping White Card */}
-              <div className="w-full lg:w-[54%] lg:-ml-24 mt-8 lg:mt-24 bg-white p-8 sm:p-12 lg:p-16 z-20 relative rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
+              {/* Right Side - Overlapping White Card (Desktop only vertical list) */}
+              <div className="hidden lg:block lg:w-[54%] lg:-ml-24 mt-24 bg-white p-8 sm:p-12 lg:p-16 z-20 relative rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.05)] order-1 lg:order-2">
                 <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-4">
                   Industries We Serve
                 </p>
@@ -379,8 +464,8 @@ export default function BusinessesPage() {
         </section>
 
         {/* WHY CHOOSE TRITE PSP - Staggered Layout like reference */}
-         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-32 pb-32">
-          <div className="pt-24 border-t border-black/[0.06] space-y-16">
+         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-12 pb-32">
+          <div className="pt-12 border-t border-black/[0.06] space-y-16">
             <div className="text-center max-w-3xl mx-auto">
               <h3 className="text-3xl font-extrabold text-black tracking-tight sm:text-5xl">
                 Why Businesses Choose Trite PSP

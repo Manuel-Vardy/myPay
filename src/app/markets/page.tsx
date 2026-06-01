@@ -19,7 +19,7 @@ const Globe = dynamic(() => import("@/components/Globe"), { ssr: false });
 
 export default function MarketsPage() {
   return (
-    <div className="min-h-screen bg-white text-black selection:bg-[#22c55e]/30 selection:text-black">
+    <div className="min-h-screen bg-white text-black selection:bg-[#22c55e]/30 selection:text-black overflow-x-hidden">
       <Header transparent={true} />
 
       <main>
@@ -39,13 +39,13 @@ export default function MarketsPage() {
             <div className="absolute inset-0 bg-black/50" />
           </div>
 
-          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-32 sm:pt-40 lg:pt-48 flex justify-end w-full">
-            <div className="max-w-3xl space-y-6 flex flex-col items-end text-right">
-              <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl leading-[1.15]">
-                Expanding the Future <br /> of Payments with Trite
+          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-20 sm:pt-40 lg:pt-48 flex justify-center lg:justify-end w-full">
+            <div className="max-w-3xl space-y-4 sm:space-y-6 flex flex-col items-center text-center lg:items-end lg:text-right">
+              <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl leading-[1.15]">
+                Expanding the Future <br className="hidden sm:block" /> of Payments with Trite
               </h1>
-              <div className="h-px w-full bg-white/20 my-6"></div>
-              <p className="max-w-2xl text-lg sm:text-xl text-white/90 leading-relaxed">
+              <div className="h-px w-full bg-white/20 my-4 sm:my-6"></div>
+              <p className="max-w-2xl text-base sm:text-xl text-white/90 leading-relaxed">
                 At TRITE we are redefining how businesses, merchants, institutions, and individuals move money across both digital and traditional financial ecosystems. Our platform is uniquely designed to support stablecoin transactions and traditional cash payments within one secure, scalable, and intelligent infrastructure.
               </p>
             </div>
@@ -96,6 +96,11 @@ export default function MarketsPage() {
         {/* b. Traditional Cash & Banking - Full Width Section */}
         <section className="bg-[#fdfcf6] py-24 sm:py-32 overflow-hidden">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            {/* Mobile-only heading */}
+            <div className="lg:hidden mb-2 text-center">
+               <h3 className="text-2xl font-extrabold text-black leading-tight">Traditional Cash & Banking</h3>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 items-center">
               <div className="lg:col-span-6 relative h-[400px] sm:h-[600px] flex items-center justify-center">
                 <Image 
@@ -106,12 +111,12 @@ export default function MarketsPage() {
                 />
               </div>
               <div className="lg:col-span-6 space-y-6">
-                <h3 className="text-3xl font-bold text-black">Traditional Cash & Banking</h3>
+                <h3 className="hidden lg:block text-3xl font-bold text-black">Traditional Cash & Banking</h3>
                 <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Financial Rail Integration</p>
                 <p className="text-lg leading-relaxed text-gray-600 font-medium">
                   Trite maintains strong compatibility with conventional financial systems, allowing customers to transact using:
                 </p>
-                <ul className="grid grid-cols-2 gap-4 text-sm text-black font-bold">
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-black font-bold">
                   <li className="flex items-center gap-2">&bull; Mobile money services</li>
                   <li className="flex items-center gap-2">&bull; Bank transfers</li>
                   <li className="flex items-center gap-2">&bull; Debit and credit cards</li>
@@ -234,37 +239,37 @@ export default function MarketsPage() {
               </div>
 
               {/* Image Container Card */}
-              <div className="bg-white border border-black/[0.05] rounded-[2.5rem] p-4 sm:p-6 lg:p-8 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.05)]">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6">
+              <div className="bg-white rounded-[1.5rem] sm:rounded-[2.5rem] p-2 sm:p-6 lg:p-8 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.05)]">
+                <div className="grid grid-cols-3 gap-2 lg:gap-6">
                   {/* Image 1: business-1.jpg */}
-                  <div className="relative h-[400px] lg:h-[550px] rounded-[1.5rem] overflow-hidden">
+                  <div className="relative h-[150px] sm:h-[400px] lg:h-[550px] rounded-xl sm:rounded-[1.5rem] overflow-hidden">
                     <Image
                       src="/images/business.avif"
                       alt="Merchant Business Owner"
                       fill
-                      sizes="(max-width: 640px) 100vw, 33vw"
+                      sizes="33vw"
                       className="object-cover"
                     />
                   </div>
 
                   {/* Image 2: imac-Desk-Mockup.jpg */}
-                  <div className="relative h-[400px] lg:h-[550px] rounded-[1.5rem] overflow-hidden">
+                  <div className="relative h-[150px] sm:h-[400px] lg:h-[550px] rounded-xl sm:rounded-[1.5rem] overflow-hidden">
                     <Image
                       src="/images/imac-Desk-Mockup.jpg"
                       alt="Trite Dashboard Mockup"
                       fill
-                      sizes="(max-width: 640px) 100vw, 33vw"
+                      sizes="33vw"
                       className="object-cover"
                     />
                   </div>
 
                   {/* Image 3: man-shopping.jpg */}
-                  <div className="relative h-[400px] lg:h-[550px] rounded-[1.5rem] overflow-hidden">
+                  <div className="relative h-[150px] sm:h-[400px] lg:h-[550px] rounded-xl sm:rounded-[1.5rem] overflow-hidden">
                     <Image
                       src="/images/man-shopping.jpg"
                       alt="Customer Shopping"
                       fill
-                      sizes="(max-width: 640px) 100vw, 33vw"
+                      sizes="33vw"
                       className="object-cover object-top"
                     />
                   </div>
@@ -298,23 +303,23 @@ export default function MarketsPage() {
         </div>
 
         {/* f. Enterprise & Institutional Solutions - Full Width */}
-        <section className="bg-[#f0fdf4] py-24 sm:py-32 overflow-hidden border-y border-green-100">
+        <section className="bg-[#f0fdf4] py-24 sm:py-32 overflow-hidden">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-              {/* Left: Image */}
-              <div className="relative h-[400px] lg:h-[600px] flex items-center justify-center">
+              {/* Left: Image (Hidden on Mobile) */}
+              <div className="hidden lg:flex relative h-[600px] items-center justify-center">
                 <Image
                   src="/images/woman-point-hands.png"
                   alt="Enterprise Solutions"
                   fill
-                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  sizes="50vw"
                   className="object-contain"
                 />
               </div>
 
               {/* Right: Text */}
               <div className="space-y-8 text-left">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#22c55e] text-white shadow-lg shadow-[#22c55e]/20">
+                <div className="hidden lg:flex h-12 w-12 items-center justify-center rounded-xl bg-[#22c55e] text-white shadow-lg shadow-[#22c55e]/20">
                   <Building2 className="h-6 w-6" />
                 </div>
                 

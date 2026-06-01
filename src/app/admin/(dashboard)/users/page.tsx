@@ -130,14 +130,14 @@ export default function AdminUsersPage() {
             placeholder="Search system accounts..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-12 w-full rounded-xl border border-black/10 bg-white pl-11 pr-4 text-sm font-medium outline-none focus:border-[color:var(--trite-lime-strong)] transition-all shadow-sm"
+            className="h-12 w-full rounded-xl border border-black/10 bg-white pl-11 pr-4 text-sm font-medium outline-none focus:border-[color:var(--trite-lime-strong)] transition-all placeholder:text-gray-500"
           />
         </div>
         <div className="flex gap-3">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="h-12 flex-1 rounded-xl border border-black/10 bg-white px-4 text-xs font-bold uppercase tracking-widest outline-none focus:border-[color:var(--trite-lime-strong)] transition-all shadow-sm lg:w-40"
+            className="h-12 flex-1 rounded-xl border border-black/10 bg-white px-4 text-xs font-bold uppercase tracking-widest outline-none focus:border-[color:var(--trite-lime-strong)] transition-all lg:w-40"
           >
             <option>Status: All</option>
             <option>Active</option>
@@ -148,7 +148,7 @@ export default function AdminUsersPage() {
           <select
             value={tierFilter}
             onChange={(e) => setTierFilter(e.target.value)}
-            className="h-12 flex-1 rounded-xl border border-black/10 bg-white px-4 text-xs font-bold uppercase tracking-widest outline-none focus:border-[color:var(--trite-lime-strong)] transition-all shadow-sm lg:w-40"
+            className="h-12 flex-1 rounded-xl border border-black/10 bg-white px-4 text-xs font-bold uppercase tracking-widest outline-none focus:border-[color:var(--trite-lime-strong)] transition-all lg:w-40"
           >
             <option>Tier: All</option>
             <option>Institutional</option>
@@ -159,9 +159,69 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      {/* Users Table */}
+      {/* Users List */}
       <div className="rounded-2xl border border-black/5 bg-white overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
+        {/* Mobile View: Cards */}
+        <div className="divide-y divide-black/5 lg:hidden">
+          {users.map((user) => (
+            <div key={user.id} className="p-4 space-y-4 hover:bg-black/[0.01] transition-colors">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-slate-700 to-slate-900 shadow-inner">
+                    <span className="text-xs font-bold text-white">{user.email.slice(0, 2).toUpperCase()}</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-[color:var(--trite-ink)]">{user.business_name ?? user.email.split("@")[0]}</p>
+                    <p className="text-[10px] text-[color:var(--trite-muted)] uppercase tracking-tight">{user.email}</p>
+                  </div>
+                </div>
+                <button className="rounded-lg p-2 text-[color:var(--trite-muted)] hover:bg-black/5 hover:text-[color:var(--trite-ink)]">
+                  <MoreVertical className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[color:var(--trite-muted)]">Merchant ID</p>
+                  <p className="mt-1 font-mono text-[10px] font-bold text-[color:var(--trite-ink)] truncate">
+                    {user.merchant_display_id ?? user.id.slice(0, 8)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[color:var(--trite-muted)]">Status</p>
+                  <div className="mt-1 flex items-center gap-1.5">
+                    <span className={`h-1.5 w-1.5 rounded-full ${getStatusDot(user.status)}`} />
+                    <span className={`text-[10px] font-bold uppercase tracking-wider ${getStatusColor(user.status)}`}>
+                      {user.status}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[color:var(--trite-muted)]">Tier</p>
+                  <span className={`mt-1 inline-block rounded-lg px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${getTierBadge(user.merchant_tier ?? user.role)}`}>
+                    {(user.merchant_tier ?? user.role)}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[color:var(--trite-muted)]">Balance</p>
+                  <p className="mt-1 text-[11px] font-bold text-[color:var(--trite-ink)]">
+                    {user.available_balance != null ? `GH₵${Number(user.available_balance).toLocaleString()}` : "—"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-black/[0.03]">
+                <p className="text-[9px] font-medium text-[color:var(--trite-muted)]">
+                  Last login: {user.last_login ? new Date(user.last_login).toLocaleDateString() : "Never"}
+                </p>
+                <button className="text-[10px] font-bold uppercase tracking-widest text-blue-600">View Profile</button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop View: Table */}
+        <div className="hidden lg:block overflow-x-auto">
           <table className="w-full min-w-[1000px]">
             <thead>
               <tr className="border-b border-black/5 text-left text-[10px] font-bold text-[color:var(--trite-muted)] uppercase tracking-wider">
@@ -174,52 +234,52 @@ export default function AdminUsersPage() {
                 <th className="py-4 px-6 text-right">Actions</th>
               </tr>
             </thead>
-          <tbody className="divide-y divide-black/5">
-            {users.map((user) => (
-              <tr key={user.id} className="group hover:bg-black/[0.01] transition-colors">
-                <td className="py-4 px-6">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-slate-700 to-slate-900 shadow-inner">
-                      <span className="text-xs font-bold text-white">{user.email.slice(0, 2).toUpperCase()}</span>
+            <tbody className="divide-y divide-black/5">
+              {users.map((user) => (
+                <tr key={user.id} className="group hover:bg-black/[0.01] transition-colors">
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-slate-700 to-slate-900 shadow-inner">
+                        <span className="text-xs font-bold text-white">{user.email.slice(0, 2).toUpperCase()}</span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-[color:var(--trite-ink)]">{user.business_name ?? user.email.split("@")[0]}</p>
+                        <p className="text-[10px] text-[color:var(--trite-muted)] uppercase tracking-tight">{user.email}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-bold text-[color:var(--trite-ink)]">{user.business_name ?? user.email.split("@")[0]}</p>
-                      <p className="text-[10px] text-[color:var(--trite-muted)] uppercase tracking-tight">{user.email}</p>
+                  </td>
+                  <td className="py-4 px-4 font-mono text-[10px] font-bold tracking-wider text-[color:var(--trite-ink)]">
+                    {user.merchant_display_id ?? user.id.slice(0, 8)}
+                  </td>
+                  <td className="py-4 px-4">
+                    <span className={`rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${getTierBadge(user.merchant_tier ?? user.role)}`}>
+                      {(user.merchant_tier ?? user.role)}
+                    </span>
+                  </td>
+                  <td className="py-4 px-4">
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider bg-black/[0.02] ${getStatusColor(user.status)}`}>
+                      <span className={`h-1.5 w-1.5 rounded-full ${getStatusDot(user.status)}`} />
+                      {user.status}
+                    </span>
+                  </td>
+                  <td className="py-4 px-4 font-bold text-[color:var(--trite-ink)]">
+                    {user.available_balance != null ? `GH₵${Number(user.available_balance).toLocaleString()}` : "—"}
+                  </td>
+                  <td className="py-4 px-4 text-xs font-medium text-[color:var(--trite-muted)]">
+                    {user.last_login ? new Date(user.last_login).toLocaleDateString() : "Never"}
+                  </td>
+                  <td className="py-4 px-6">
+                    <div className="flex items-center justify-end gap-3">
+                      <button className="text-[10px] font-bold uppercase tracking-widest text-blue-600 hover:text-blue-700 transition-colors">View Profile</button>
+                      <button className="rounded-lg p-2 text-[color:var(--trite-muted)] hover:bg-black/5 hover:text-[color:var(--trite-ink)] transition-colors">
+                        <MoreVertical className="h-4 w-4" />
+                      </button>
                     </div>
-                  </div>
-                </td>
-                <td className="py-4 px-4 font-mono text-[10px] font-bold tracking-wider text-[color:var(--trite-ink)]">
-                  {user.merchant_display_id ?? user.id.slice(0, 8)}
-                </td>
-                <td className="py-4 px-4">
-                  <span className={`rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${getTierBadge(user.merchant_tier ?? user.role)}`}>
-                    {(user.merchant_tier ?? user.role)}
-                  </span>
-                </td>
-                <td className="py-4 px-4">
-                  <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider bg-black/[0.02] ${getStatusColor(user.status)}`}>
-                    <span className={`h-1.5 w-1.5 rounded-full ${getStatusDot(user.status)}`} />
-                    {user.status}
-                  </span>
-                </td>
-                <td className="py-4 px-4 font-bold text-[color:var(--trite-ink)]">
-                  {user.available_balance != null ? `GH₵${Number(user.available_balance).toLocaleString()}` : "—"}
-                </td>
-                <td className="py-4 px-4 text-xs font-medium text-[color:var(--trite-muted)]">
-                  {user.last_login ? new Date(user.last_login).toLocaleDateString() : "Never"}
-                </td>
-                <td className="py-4 px-6">
-                  <div className="flex items-center justify-end gap-3">
-                    <button className="text-[10px] font-bold uppercase tracking-widest text-blue-600 hover:text-blue-700 transition-colors">View Profile</button>
-                    <button className="rounded-lg p-2 text-[color:var(--trite-muted)] hover:bg-black/5 hover:text-[color:var(--trite-ink)] transition-colors">
-                      <MoreVertical className="h-4 w-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
         {/* Pagination */}

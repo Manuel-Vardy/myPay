@@ -19,7 +19,7 @@ import {
 
 export default function PaymentsPage() {
   return (
-    <div className="min-h-screen bg-white text-black selection:bg-[#22c55e]/30 selection:text-black">
+    <div className="min-h-screen bg-white text-black selection:bg-[#22c55e]/30 selection:text-black overflow-x-hidden">
       <Header transparent={true} />
 
       <main>
@@ -38,19 +38,19 @@ export default function PaymentsPage() {
             <div className="absolute inset-0 bg-black/50" />
           </div>
 
-          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-32 sm:pt-40 lg:pt-48 w-full">
+          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-28 sm:pt-40 lg:pt-48 w-full">
             <div className="max-w-4xl mx-auto text-center">
-              <div className="space-y-8">
+              <div className="space-y-6 sm:space-y-8">
                 <div>
-                  <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl leading-[1.1] max-w-3xl mx-auto">
-                    Get paid Faster, <br /> Anywhere, from Anyone.
+                  <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl leading-[1.2] sm:leading-[1.1] max-w-3xl mx-auto">
+                    Get paid Faster, <br className="hidden sm:block" /> Anywhere, from Anyone.
                   </h1>
-                  <div className="mt-6 h-px w-full max-w-3xl bg-white/20 mx-auto"></div>
+                  <div className="mt-4 sm:mt-6 h-px w-full max-w-3xl bg-white/20 mx-auto"></div>
                 </div>
-                <p className="max-w-2xl text-lg sm:text-xl leading-relaxed text-white/90 mx-auto">
+                <p className="max-w-2xl text-base sm:text-xl leading-relaxed text-white/90 mx-auto">
                   Trite gives your business everything you need to collect payments - online, in-store, and across borders - without stress or technical complexity.
                 </p>
-                <div className="inline-block rounded-full bg-white/10 backdrop-blur-xl px-8 py-3 text-base font-bold text-white">
+                <div className="inline-block rounded-3xl bg-white/10 backdrop-blur-xl px-6 sm:px-8 py-3 text-sm sm:text-base font-bold text-white leading-snug sm:leading-normal">
                   One integration, multiple payment options, zero headaches.
                 </div>
               </div>
@@ -92,7 +92,8 @@ export default function PaymentsPage() {
               badge: "Popular",
               badgeColor: "bg-blue-100 text-blue-700",
               accentColor: "bg-[#d4ecff]",
-              imgPadding: "p-12 sm:p-16"
+              imgPadding: "p-12 sm:p-16",
+              imgClass: "translate-y-6 sm:translate-y-0"
             },
             {
               title: "Stablecoin Gateway",
@@ -181,7 +182,8 @@ export default function PaymentsPage() {
                       fill 
                       className={cn(
                         "transition-transform duration-500 relative z-10",
-                        item.imgPadding ? "object-contain" : "object-cover"
+                        item.imgPadding ? "object-contain" : "object-cover",
+                        (item as any).imgClass || ""
                       )}
                     />
                   </div>

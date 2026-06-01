@@ -83,7 +83,7 @@ export default function Home() {
         {/* SECTION 1: HOME (HERO) */}
         <section
           id="home"
-          className="relative min-h-screen overflow-hidden bg-white"
+          className="relative min-h-[650px] min-[414px]:min-h-[750px] lg:min-h-screen overflow-hidden bg-white"
         >
           {/* Background Image */}
           <div className="absolute inset-0 z-0">
@@ -380,7 +380,7 @@ export default function Home() {
               {/* Left Column (Cards 1 and 3) */}
               <div className="space-y-8 lg:space-y-10">
                 {/* Card 1: Mobile Money & USSD */}
-                <div className="relative overflow-hidden bg-white rounded-[2rem] p-8 sm:p-10 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
+                <div className="relative overflow-hidden bg-white rounded-[2rem] p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
                   <div className="max-w-[55%] relative z-10 flex flex-col justify-between h-full">
                     <div>
                       <h3 className="text-xl sm:text-2xl font-bold text-[#0c1e43] mb-4 tracking-tight">Mobile Money & USSD</h3>
@@ -401,7 +401,7 @@ export default function Home() {
                   <div className="absolute -right-6 -bottom-10 w-64 h-64 rounded-full border-2 border-dashed border-violet-400/30 pointer-events-none transition-transform duration-1000 group-hover:rotate-45 group-hover:scale-105 z-0" />
                   <div className="absolute -right-2 -bottom-6 w-48 h-48 rounded-full border border-violet-300/40 pointer-events-none transition-transform duration-700 group-hover:scale-110 z-0" />
 
-                  <div className="absolute -bottom-8 -right-4 w-[48%] h-[78%] pointer-events-none select-none overflow-hidden flex items-end justify-end z-10">
+                  <div className="absolute -bottom-20 min-[390px]:-bottom-14 sm:-bottom-8 -right-4 w-[48%] h-[78%] pointer-events-none select-none overflow-hidden flex items-end justify-end z-10">
                     <img
                       src="/images/man-momo.png"
                       alt="Mobile Money & USSD"
@@ -411,7 +411,7 @@ export default function Home() {
                 </div>
 
                 {/* Card 3: Stablecoin Gateway */}
-                <div className="relative overflow-hidden bg-white rounded-[2rem] p-8 sm:p-10 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
+                <div className="relative overflow-hidden bg-white rounded-[2rem] p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
                   <div className="max-w-[55%] relative z-10 flex flex-col justify-between h-full">
                     <div>
                       <h3 className="text-xl sm:text-2xl font-bold text-[#0c1e43] mb-4 tracking-tight">Stablecoin Gateway</h3>
@@ -445,7 +445,7 @@ export default function Home() {
               {/* Right Column (Cards 2 and 4 - Staggered higher on desktop) */}
               <div className="space-y-8 lg:space-y-10 md:-mt-24 lg:-mt-32">
                 {/* Card 2: Card Collections */}
-                <div className="relative overflow-hidden bg-white rounded-[2rem] p-8 sm:p-10 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
+                <div className="relative overflow-hidden bg-white rounded-[2rem] p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
                   <div className="max-w-[55%] relative z-10 flex flex-col justify-between h-full">
                     <div>
                       <h3 className="text-xl sm:text-2xl font-bold text-[#0c1e43] mb-4 tracking-tight">Card Collections</h3>
@@ -474,7 +474,7 @@ export default function Home() {
                 </div>
 
                 {/* Card 4: Bank Settlements */}
-                <div className="relative overflow-hidden bg-white rounded-[2rem] p-8 sm:p-10 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
+                <div className="relative overflow-hidden bg-white rounded-[2rem] p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
                   <div className="max-w-[55%] relative z-10 flex flex-col justify-between h-full">
                     <div>
                       <h3 className="text-xl sm:text-2xl font-bold text-[#0c1e43] mb-4 tracking-tight">Bank Settlements</h3>
@@ -573,7 +573,7 @@ export default function Home() {
                 <div className="absolute inset-0 bg-black/70 z-[1]" />
 
                 {/* Card 1 */}
-                <div className="relative z-10 bg-white rounded-2xl p-6 border border-slate-100/50 transition-transform duration-300 hover:scale-105">
+                <div className="relative z-10 bg-white rounded-2xl p-6 transition-transform duration-300 hover:scale-105">
                   <h3 className="font-bold text-black text-lg mb-2">
                     Global Digital Infrastructure
                   </h3>
@@ -583,7 +583,7 @@ export default function Home() {
                 </div>
 
                 {/* Card 2 */}
-                <div className="relative z-10 bg-white rounded-2xl p-6 border border-slate-100/50 transition-transform duration-300 hover:scale-105">
+                <div className="relative z-10 bg-white rounded-2xl p-6 transition-transform duration-300 hover:scale-105">
                   <h3 className="font-bold text-black text-lg mb-2">
                     Traditional Banking Integrations
                   </h3>
@@ -593,7 +593,7 @@ export default function Home() {
                 </div>
 
                 {/* Card 3 */}
-                <div className="relative z-10 bg-white rounded-2xl p-6 border border-slate-100/50 transition-transform duration-300 hover:scale-105">
+                <div className="relative z-10 bg-white rounded-2xl p-6 transition-transform duration-300 hover:scale-105">
                   <h3 className="font-bold text-black text-lg mb-2">
                     Cross-Border Remittances
                   </h3>
@@ -651,26 +651,26 @@ export default function Home() {
                   Business Solutions - Powering Modern Commerce with Trite.
                 </h3>
 
-                <p className="mt-6 max-w-xl text-sm leading-[1.85] text-gray-500 sm:text-[15px]">
+                <p className="mt-6 max-w-xl text-sm leading-[1.85] text-gray-500 sm:text-[15px] font-normal">
                   Trite is more than a payment gateway - it is a complete financial operations platform designed for modern business growth. Through advanced stablecoin integration, fiat payment support, API connectivity, merchant tools, and financial automation features, businesses can streamline transactions while expanding into global markets.
                 </p>
 
-                <div className="mt-8 space-y-5 border-t border-gray-100 pt-8">
+                <div className="mt-8 space-y-5 pt-8">
                   <div className="space-y-1.5">
                     <div className="text-base font-bold text-[#0c1e43]">Business Wallet Infrastructure</div>
-                    <p className="text-sm leading-relaxed text-gray-500">
+                    <p className="text-sm leading-relaxed text-gray-500 font-normal">
                       Secure multi-currency custody and stablecoin asset management.
                     </p>
                   </div>
                   <div className="space-y-1.5">
                     <div className="text-base font-bold text-[#0c1e43]">API & Developer Solutions</div>
-                    <p className="text-sm leading-relaxed text-gray-500">
+                    <p className="text-sm leading-relaxed text-gray-500 font-normal">
                       Flexible endpoints to deploy checkout layers and bulk payout workflows.
                     </p>
                   </div>
                   <div className="space-y-1.5">
                     <div className="text-base font-bold text-[#0c1e43]">Advanced Reporting & Analytics</div>
-                    <p className="text-sm leading-relaxed text-gray-500">
+                    <p className="text-sm leading-relaxed text-gray-500 font-normal">
                       Gain real-time visibility into transactions and settlement analytics.
                     </p>
                   </div>
@@ -679,7 +679,7 @@ export default function Home() {
                 <div className="mt-10 flex flex-wrap gap-3">
                   <Link
                     className="inline-flex h-12 items-center justify-center rounded-full bg-[#22c55e] px-6 text-sm font-semibold text-black shadow-sm transition-all duration-200 hover:bg-[#16a34a]"
-                    href="/demo"
+                    href="/contact-sales"
                   >
                     Request a Demo
                   </Link>
@@ -725,8 +725,9 @@ export default function Home() {
           className="relative z-10 bg-white pt-20 sm:pt-28 md:pt-36 pb-10 sm:pb-16 md:pb-20 overflow-hidden"
         >
           {/* SVG Background */}
-          <div className="absolute top-0 left-0 w-full h-full z-0 pointer-events-none opacity-50">
-            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 1423 560" className="w-full h-full"> 
+          <div className="absolute top-0 left-0 w-full h-full z-0 pointer-events-none">
+            {/* Desktop Background SVG */}
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 1423 560" className="hidden sm:block w-full h-full opacity-50"> 
                 <g mask="url(#SvgjsMask1034)" fill="none"> 
                     <rect width="1423" height="560" x="0" y="0" fill="rgba(231, 231, 231, 1)"></rect> 
                     <path d="M 0,97 C 95,116.2 285,192.2 475,193 C 665,193.8 760.4,100.6 950,101 C 1139.6,101.4 1328.4,176.2 1423,195L1423 560L0 560z" fill="rgba(255, 255, 255, 1)"></path> 
@@ -738,6 +739,18 @@ export default function Home() {
                     </mask> 
                 </defs> 
             </svg>
+
+            {/* Mobile Background - Smoother and less sharp */}
+            <div className="block sm:hidden absolute inset-0 bg-[#f4f4f4]">
+              <div 
+                className="absolute inset-0 opacity-40"
+                style={{
+                  backgroundImage: `radial-gradient(circle at 50% -20%, #ffffff 0%, transparent 70%), 
+                                    radial-gradient(circle at 0% 50%, #ffffff 0%, transparent 50%),
+                                    radial-gradient(circle at 100% 80%, #ffffff 0%, transparent 60%)`
+                }}
+              />
+            </div>
           </div>
 
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -801,18 +814,18 @@ export default function Home() {
                   ].map((prod, idx) => (
                     <div
                       key={idx}
-                      className="relative aspect-[1.3/1] overflow-hidden shadow-lg transition-all duration-500 hover:scale-[1.02] bg-white rounded-xl border border-gray-100"
+                      className="relative aspect-[1.1/1] sm:aspect-[1.3/1] overflow-hidden shadow-lg transition-all duration-500 hover:scale-[1.02] bg-white rounded-xl"
                     >
                       {/* Secondary Color Block - Vibrant Base */}
-                      <div className={`absolute bottom-0 w-full h-[35%] z-0 ${prod.blockColor}`} />
+                      <div className={`absolute bottom-0 w-full h-[30%] sm:h-[35%] z-0 ${prod.blockColor}`} />
                       
                       {/* Content Overlay - Top White Part */}
-                      <div className="relative z-20 p-7 h-full flex flex-col justify-between">
-                        <div className={`w-[60%] ${prod.layout === 'right' ? 'ml-auto text-right' : ''}`}>
-                          <h3 className="text-2xl font-black leading-tight mb-2 text-black">
+                      <div className="relative z-20 p-5 sm:p-7 h-full flex flex-col justify-between">
+                        <div className={`w-[85%] sm:w-[60%] ${prod.layout === 'right' ? 'ml-auto text-right' : ''}`}>
+                          <h3 className="text-xl sm:text-2xl font-black leading-tight mb-2 text-black">
                             {prod.title}
                           </h3>
-                          <p className="text-lg font-medium leading-relaxed text-gray-600">
+                          <p className="text-sm sm:text-lg font-medium leading-relaxed text-gray-600">
                             {prod.desc}
                           </p>
                         </div>
@@ -822,7 +835,7 @@ export default function Home() {
                       </div>
 
                       {/* Product Image - Pushed to corners */}
-                      <div className={`absolute ${prod.imgPos} w-[55%] h-[80%] z-10 ${prod.layout === 'left' ? '-right-4' : (prod.imgSide || '-left-4')}`}>
+                      <div className={`absolute ${prod.imgPos} w-[50%] sm:w-[55%] h-[70%] sm:h-[80%] z-10 ${prod.layout === 'left' ? '-right-4' : (prod.imgSide || '-left-4')}`}>
                         <img
                           src={prod.image}
                           alt={prod.title}
@@ -857,18 +870,18 @@ export default function Home() {
                   ].map((prod, idx) => (
                     <div
                       key={idx}
-                      className="relative aspect-[1.3/1] overflow-hidden shadow-lg transition-all duration-500 hover:scale-[1.02] bg-white rounded-xl border border-gray-100"
+                      className="relative aspect-[1.1/1] sm:aspect-[1.3/1] overflow-hidden shadow-lg transition-all duration-500 hover:scale-[1.02] bg-white rounded-xl"
                     >
                       {/* Secondary Color Block - Vibrant Base */}
-                      <div className={`absolute bottom-0 w-full h-[35%] z-0 ${prod.blockColor}`} />
+                      <div className={`absolute bottom-0 w-full h-[30%] sm:h-[35%] z-0 ${prod.blockColor}`} />
                       
                       {/* Content Overlay - Top White Part */}
-                      <div className="relative z-20 p-7 h-full flex flex-col justify-between">
-                        <div className={`w-[60%] ${prod.layout === 'right' ? 'ml-auto text-right' : ''}`}>
-                          <h3 className="text-2xl font-black leading-tight mb-2 text-black">
+                      <div className="relative z-20 p-5 sm:p-7 h-full flex flex-col justify-between">
+                        <div className={`w-[85%] sm:w-[60%] ${prod.layout === 'right' ? 'ml-auto text-right' : ''}`}>
+                          <h3 className="text-xl sm:text-2xl font-black leading-tight mb-2 text-black">
                             {prod.title}
                           </h3>
-                          <p className="text-lg font-medium leading-relaxed text-gray-600">
+                          <p className="text-sm sm:text-lg font-medium leading-relaxed text-gray-600">
                             {prod.desc}
                           </p>
                         </div>
@@ -878,7 +891,7 @@ export default function Home() {
                       </div>
 
                       {/* Product Image - Pushed to corners */}
-                      <div className={`absolute ${prod.imgPos} w-[55%] h-[80%] z-10 ${prod.layout === 'left' ? '-right-4' : '-left-4'}`}>
+                      <div className={`absolute ${prod.imgPos} w-[50%] sm:w-[55%] h-[70%] sm:h-[80%] z-10 ${prod.layout === 'left' ? '-right-4' : '-left-4'}`}>
                         <img
                           src={prod.image}
                           alt={prod.title}
@@ -911,19 +924,19 @@ export default function Home() {
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
               {/* Left Column: Text content */}
-              <div className="lg:col-span-7 space-y-12 relative">
+              <div className="lg:col-span-7 space-y-12 relative text-left order-2 lg:order-1">
                 <div className="space-y-4">
                   <h3 className="text-3xl font-extrabold text-black tracking-tight sm:text-4xl lg:text-5xl">
                     Why Trite
                   </h3>
-                  <p className="text-xl sm:text-2xl text-gray-600 leading-relaxed font-medium max-w-2xl">
+                  <p className="text-xl sm:text-2xl text-gray-600 leading-relaxed font-medium max-w-2xl lg:mx-0">
                     We are building a unified financial infrastructure that connects traditional payments and digital assets - securely and compliantly.
                   </p>
                 </div>
 
-                <div className="space-y-8">
-                  {/* Custom Indicators - Fixed width, no scroll */}
-                  <div className="flex flex-wrap lg:flex-nowrap items-center justify-start gap-2 pb-4">
+                <div className="flex flex-col space-y-8">
+                  {/* Custom Indicators - Moved to bottom on mobile, top on desktop */}
+                  <div className="flex flex-wrap lg:flex-nowrap items-center justify-start gap-2 pb-4 order-2 lg:order-1 mt-8 lg:mt-0">
                     {whyTriteItems.map((item, idx) => (
                       <button
                         key={idx}
@@ -940,8 +953,9 @@ export default function Home() {
                     ))}
                   </div>
 
-                  <div className="w-full relative">
-                    <div className="bg-white rounded-[2rem] p-8 sm:p-10 border border-gray-50 min-h-[260px] flex flex-col justify-center relative overflow-hidden shadow-[0_15px_40px_-10px_rgba(0,0,0,0.05)]">
+                  {/* Interactive Card/Slide */}
+                  <div className="w-full relative order-1 lg:order-2">
+                    <div className="bg-white rounded-[2rem] p-8 sm:p-10 min-h-[260px] flex flex-col justify-center relative overflow-hidden shadow-[0_15px_40px_-10px_rgba(0,0,0,0.05)]">
                       
                       <div className="relative h-full flex flex-col justify-center w-full">
                         {whyTriteItems.map((item, idx) => (
@@ -1000,7 +1014,7 @@ export default function Home() {
               </div>
 
               {/* Right Column: Image */}
-              <div className="lg:col-span-5 relative">
+              <div className="lg:col-span-5 relative order-1 lg:order-2">
                 <div className="relative z-10 w-full h-auto">
                   <img 
                     src="/images/girl-copy.png" 
