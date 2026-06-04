@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Globe } from "lucide-react";
 import Script from "next/script";
+import { cn } from "@/lib/utils";
 
 const languages = [
   { code: "en", label: "English" },
@@ -11,7 +12,7 @@ const languages = [
   { code: "zh-CN", label: "Chinese" },
 ];
 
-export default function LanguageSwitcher() {
+export default function LanguageSwitcher({ minimal = false }: { minimal?: boolean }) {
   const [currentLang, setCurrentLang] = useState("en");
   const [mounted, setMounted] = useState(false);
 
@@ -76,16 +77,25 @@ export default function LanguageSwitcher() {
       <div className="relative flex items-center">
         <button 
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-700/80 hover:bg-gray-700 text-white transition-all backdrop-blur-sm"
+          className={cn(
+            "flex items-center transition-all backdrop-blur-sm",
+            minimal 
+              ? "w-8 h-8 justify-center rounded-full bg-white/10 hover:bg-white/20" 
+              : "gap-2 px-3 py-1.5 rounded-full bg-gray-700/80 hover:bg-gray-700"
+          )}
           aria-label="Change Language"
         >
-          <Globe className="h-4 w-4 text-blue-400" />
-          <span className="text-xs font-semibold bg-gradient-to-r from-blue-400 via-purple-400 to-yellow-400 bg-clip-text text-transparent">
-            {currentLanguage.label}
-          </span>
-          <svg className={`h-3 w-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
+          <Globe className="h-4 w-4 text-[#22c55e]" />
+          {!minimal && (
+            <>
+              <span className="text-xs font-semibold text-[#22c55e]">
+                {currentLanguage.label}
+              </span>
+              <svg className={`h-3 w-3 text-[#22c55e] transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </>
+          )}
         </button>
         
         {/* Dropdown - Uses state */}

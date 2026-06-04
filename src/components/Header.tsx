@@ -16,6 +16,7 @@ export default function Header({
   darkLogo?: boolean;
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDownloadOpen, setIsDownloadOpen] = useState(false);
   const pathname = usePathname();
   const [isSticky, setIsSticky] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
@@ -23,6 +24,16 @@ export default function Header({
 
   useEffect(() => {
     setMounted(true);
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest(".download-dropdown-container")) {
+        setIsDownloadOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    
     // Check initial scroll position
     const checkScroll = () => {
       const currentScrollY = window.scrollY;
@@ -55,7 +66,10 @@ export default function Header({
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   const navLinks = [
@@ -73,20 +87,27 @@ export default function Header({
   };
 
   return (
-    <>
+    <div className="relative">
       {/* TOP BLACK BAR WITH LANGUAGE SWITCHER */}
-      <div className="w-full bg-black text-white py-4 sm:py-2.5 px-4 sm:px-6 lg:px-8 relative z-50">
-        <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-3 sm:gap-8 text-center sm:text-left">
-          <span className="text-xs text-white/70 font-medium">
+      <div className="w-full bg-black text-white py-2.5 px-4 sm:px-6 lg:px-8 relative z-50">
+        <div className="mx-auto max-w-7xl flex flex-row items-center justify-between sm:justify-end gap-4">
+          <span className="text-[10px] sm:text-xs text-white/70 font-medium truncate">
             Seamless payments across Africa and beyond 
             <span className="hidden sm:inline"> – Available in multiple languages</span>
           </span>
-          <div className="flex items-center gap-3">
-            <LanguageSwitcher />
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {/* Language Switcher - Icon on mobile, Full on desktop */}
+            <div className="sm:hidden">
+              <LanguageSwitcher minimal={true} />
+            </div>
+            <div className="hidden sm:block">
+              <LanguageSwitcher minimal={false} />
+            </div>
             
             {/* Download Button with Dropdown */}
-            <div className="relative group">
+            <div className="relative group download-dropdown-container">
               <button 
+                onClick={() => setIsDownloadOpen(!isDownloadOpen)}
                 className="flex items-center justify-center w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
                 aria-label="Download"
               >
@@ -100,7 +121,7 @@ export default function Header({
                   strokeWidth="2" 
                   strokeLinecap="round" 
                   strokeLinejoin="round"
-                  className="text-white"
+                  className="text-[#22c55e]"
                 >
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                   <polyline points="7 10 12 15 17 10" />
@@ -108,8 +129,13 @@ export default function Header({
                 </svg>
               </button>
               
-              {/* Dropdown - appears on hover */}
-              <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              {/* Dropdown - appears on hover (desktop) or click (mobile/desktop) */}
+              <div className={cn(
+                "absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 transition-all duration-200 z-50",
+                isDownloadOpen 
+                  ? "opacity-100 visible" 
+                  : "opacity-0 invisible group-hover:opacity-100 group-hover:visible"
+              )}>
                 <div className="p-4">
                   {/* Placeholder for QR Code */}
                   <div className="w-full aspect-square bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
@@ -273,6 +299,6 @@ export default function Header({
           </div>
         )}
       </header>
-    </>
+    </div>
   );
 }

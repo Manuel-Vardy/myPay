@@ -83,20 +83,20 @@ export default function Home() {
         {/* SECTION 1: HOME (HERO) */}
         <section
           id="home"
-          className="relative min-h-[650px] min-[414px]:min-h-[750px] lg:min-h-screen overflow-hidden bg-white"
+          className="relative min-h-[550px] sm:min-h-[650px] lg:min-h-screen overflow-hidden bg-white"
         >
           {/* Background Image */}
           <div className="absolute inset-0 z-0">
             <img
               src="/images/tri-1.jpg"
               alt="Hero background"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover object-[70%_center] sm:object-center"
             />
             {/* Overlay for better text readability */}
-            <div className="absolute inset-0 bg-black/40" />
+            <div className="absolute inset-0 bg-black/45" />
           </div>
 
-          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-40 sm:pt-56 lg:pt-64">
+          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-32 sm:pt-56 lg:pt-64">
             <div className="max-w-2xl pb-20">
 
               {/* Hero Texts */}
@@ -286,7 +286,7 @@ export default function Home() {
             <div className="flex flex-col lg:flex-row items-start justify-center">
 
               {/* Left Side - Image Container */}
-              <div className="w-full lg:w-[53%] h-[350px] sm:h-[480px] lg:h-[660px] relative z-10 shrink-0 overflow-hidden group shadow-md">
+              <div className="w-full lg:w-[53%] h-[380px] sm:h-[480px] lg:h-[660px] relative z-10 shrink-0 overflow-hidden group shadow-md rounded-2xl lg:rounded-none">
                 {builtForItems.map((item, idx) => (
                   <div
                     key={idx}
@@ -298,7 +298,7 @@ export default function Home() {
                       alt={item.name}
                       fill
                       sizes="(max-width: 1024px) 100vw, 50vw"
-                      className="object-cover grayscale-[15%] group-hover:grayscale-0 transition-all duration-700 ease-out scale-100 group-hover:scale-105"
+                      className="object-cover object-center grayscale-[15%] group-hover:grayscale-0 transition-all duration-700 ease-out scale-100 group-hover:scale-105"
                     />
                   </div>
                 ))}
@@ -401,7 +401,7 @@ export default function Home() {
                   <div className="absolute -right-6 -bottom-10 w-64 h-64 rounded-full border-2 border-dashed border-violet-400/30 pointer-events-none transition-transform duration-1000 group-hover:rotate-45 group-hover:scale-105 z-0" />
                   <div className="absolute -right-2 -bottom-6 w-48 h-48 rounded-full border border-violet-300/40 pointer-events-none transition-transform duration-700 group-hover:scale-110 z-0" />
 
-                  <div className="absolute -bottom-20 min-[390px]:-bottom-14 sm:-bottom-8 -right-4 w-[48%] h-[78%] pointer-events-none select-none overflow-hidden flex items-end justify-end z-10">
+                  <div className="absolute -bottom-10 min-[390px]:-bottom-8 sm:-bottom-8 -right-4 w-[50%] h-[70%] sm:h-[78%] pointer-events-none select-none overflow-hidden flex items-end justify-end z-10">
                     <img
                       src="/images/man-momo.png"
                       alt="Mobile Money & USSD"
@@ -432,7 +432,7 @@ export default function Home() {
                   <div className="absolute -right-6 -bottom-10 w-64 h-64 rounded-full border-2 border-dashed border-yellow-400/30 pointer-events-none transition-transform duration-1000 group-hover:rotate-45 group-hover:scale-105 z-0" />
                   <div className="absolute -right-2 -bottom-6 w-48 h-48 rounded-full border border-yellow-300/40 pointer-events-none transition-transform duration-700 group-hover:scale-110 z-0" />
 
-                  <div className="absolute -bottom-20 -right-4 w-[48%] h-[78%] pointer-events-none select-none overflow-hidden flex items-end justify-end z-10">
+                  <div className="absolute -bottom-10 sm:-bottom-8 -right-4 w-[50%] h-[70%] sm:h-[78%] pointer-events-none select-none overflow-hidden flex items-end justify-end z-10">
                     <img
                       src="/images/stablecoin.png"
                       alt="Stablecoin Gateway"
@@ -469,7 +469,7 @@ export default function Home() {
                   <img
                     src="/images/woman-with-card-Photoroom.png"
                     alt="Card Collections"
-                    className="absolute -bottom-8 -right-6 w-[50%] h-auto max-h-[80%] object-contain object-bottom pointer-events-none select-none z-10"
+                    className="absolute -bottom-4 sm:-bottom-8 -right-4 sm:-right-6 w-[55%] sm:w-[50%] h-auto max-h-[85%] object-contain object-bottom pointer-events-none select-none z-10"
                   />
                 </div>
 
@@ -498,7 +498,7 @@ export default function Home() {
                   <img
                     src="/images/tri-5-Photoroom.png"
                     alt="Bank Settlements"
-                    className="absolute -bottom-6 -right-6 w-[54%] h-auto max-h-[80%] object-contain object-bottom pointer-events-none select-none z-10"
+                    className="absolute -bottom-4 sm:-bottom-6 -right-4 sm:-right-6 w-[58%] sm:w-[54%] h-auto max-h-[85%] object-contain object-bottom pointer-events-none select-none z-10"
                   />
                 </div>
               </div>
@@ -693,9 +693,9 @@ export default function Home() {
               </div>
 
               {/* Image — Staggered Pair (No Overlap) */}
-                <div className="relative lg:col-span-6 lg:ml-auto h-[450px] sm:h-[550px] lg:h-[650px] w-full max-w-[48rem] mt-12 lg:mt-0 flex items-center justify-between gap-6 sm:gap-8">
+                <div className="relative lg:col-span-6 lg:ml-auto h-[400px] sm:h-[550px] lg:h-[650px] w-full max-w-[48rem] mt-12 lg:mt-0 flex items-center justify-between gap-4 sm:gap-8">
                  {/* First Image - Shifted Up */}
-                 <div className="relative w-1/2 h-[85%] sm:h-[90%] overflow-hidden rounded-2xl sm:rounded-3xl shadow-lg -translate-y-8 lg:-translate-y-12">
+                 <div className="relative w-1/2 h-[85%] sm:h-[90%] overflow-hidden rounded-2xl sm:rounded-3xl shadow-lg -translate-y-4 sm:-translate-y-8 lg:-translate-y-12">
                    <Image
                      src="/images/traders.jpg"
                      alt="Business traders"
@@ -705,7 +705,7 @@ export default function Home() {
                    />
                  </div>
                  {/* Second Image - Shifted Down */}
-                 <div className="relative w-1/2 h-[85%] sm:h-[90%] overflow-hidden rounded-2xl sm:rounded-3xl shadow-xl translate-y-8 lg:translate-y-12">
+                 <div className="relative w-1/2 h-[85%] sm:h-[90%] overflow-hidden rounded-2xl sm:rounded-3xl shadow-xl translate-y-4 sm:translate-y-8 lg:translate-y-12">
                    <Image
                      src="/images/businessman-working-laptop.jpg"
                      alt="Businessman working on laptop"
@@ -955,7 +955,7 @@ export default function Home() {
 
                   {/* Interactive Card/Slide */}
                   <div className="w-full relative order-1 lg:order-2">
-                    <div className="bg-white rounded-[2rem] p-8 sm:p-10 min-h-[260px] flex flex-col justify-center relative overflow-hidden shadow-[0_15px_40px_-10px_rgba(0,0,0,0.05)]">
+                    <div className="bg-white rounded-none p-8 sm:p-10 min-h-[260px] flex flex-col justify-center relative overflow-hidden shadow-[0_15px_40px_-10px_rgba(0,0,0,0.05)]">
                       
                       <div className="relative h-full flex flex-col justify-center w-full">
                         {whyTriteItems.map((item, idx) => (
@@ -1159,7 +1159,7 @@ export default function Home() {
         {/* READY TO SCALE YOUR PAYMENTS? */}
         <section className="relative bg-white py-20 sm:py-28 md:py-36">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="relative overflow-hidden rounded-[2.5rem] bg-black text-white px-6 py-16 sm:py-20 text-center sm:px-12 shadow-2xl">
+            <div className="relative overflow-hidden rounded-[2.5rem] bg-black text-white px-6 py-12 sm:py-20 text-center sm:px-12 shadow-2xl">
 
               {/* background image and overlay */}
               <div className="absolute inset-0 z-0 pointer-events-none">
@@ -1175,16 +1175,18 @@ export default function Home() {
               <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-[#22c55e]/20 blur-[80px] pointer-events-none" />
               <div className="absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-[#22c55e]/20 blur-[80px] pointer-events-none" />
 
-              <div className="relative z-10 mx-auto max-w-4xl space-y-8">
-                <h2 className="text-4xl font-extrabold tracking-tight text-white sm:text-6xl leading-tight">
-                  Ready to Scale Your Payments?
+              <div className="relative z-10 mx-auto max-w-4xl space-y-6 sm:space-y-8">
+                <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-6xl leading-tight">
+                  <span className="sm:hidden">Ready to Scale?</span>
+                  <span className="hidden sm:inline">Ready to Scale Your Payments?</span>
                 </h2>
 
-                <p className="text-xl text-gray-200 font-medium max-w-2xl mx-auto leading-relaxed">
-                  Join businesses building the future of commerce with Trite.
+                <p className="text-lg sm:text-xl text-gray-200 font-medium max-w-2xl mx-auto leading-relaxed">
+                  <span className="sm:hidden">Join the future of commerce with Trite.</span>
+                  <span className="hidden sm:inline">Join businesses building the future of commerce with Trite.</span>
                 </p>
 
-                <div className="mt-8 flex flex-wrap items-center justify-center gap-5">
+                <div className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center gap-4 sm:gap-5">
                   <Link
                     className="inline-flex h-14 items-center justify-center rounded-full bg-[#22c55e] px-10 text-base font-bold text-black hover:bg-[#16a34a] shadow-lg hover:shadow-[#22c55e]/20 transition-all duration-300 hover:scale-105"
                     href="/get-started"

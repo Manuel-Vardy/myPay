@@ -48,7 +48,7 @@ export default function Footer() {
             <ul className="mt-4 space-y-2 text-xs text-gray-500 font-bold">
               <li><Link href="#" className="hover:text-black transition-colors">Developers</Link></li>
               <li><Link href="#" className="hover:text-black transition-colors">Compliance</Link></li>
-              <li><Link href="#" className="hover:text-black transition-colors">Contact</Link></li>
+              <li><Link href="/contact" className="hover:text-black transition-colors">Contact</Link></li>
             </ul>
           </div>
 
@@ -67,10 +67,6 @@ export default function Footer() {
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-gray-400 font-medium">
           <div>
             &copy; {new Date().getFullYear()} Trite. All rights reserved. Ghana Payment Infrastructure Gateway.
-          </div>
-          <div className="flex gap-4">
-            <Link href="#" className="hover:text-black transition-colors">Security rails</Link>
-            <Link href="#" className="hover:text-black transition-colors">Anti-Money Laundering</Link>
           </div>
         </div>
 

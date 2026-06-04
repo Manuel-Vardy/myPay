@@ -487,7 +487,7 @@ export default function ProductsPage() {
         {/* READY TO SCALE YOUR PAYMENTS? */}
         <section className="relative bg-white py-20 sm:py-28 md:py-36">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="relative overflow-hidden rounded-[2.5rem] bg-black text-white px-6 py-16 sm:py-20 text-center sm:px-12 shadow-2xl">
+            <div className="relative overflow-hidden rounded-[2.5rem] bg-black text-white px-6 py-12 sm:py-20 text-center sm:px-12 shadow-2xl">
 
               {/* background image and overlay */}
               <div className="absolute inset-0 z-0 pointer-events-none">
@@ -503,16 +503,18 @@ export default function ProductsPage() {
               <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-[#22c55e]/20 blur-[80px] pointer-events-none" />
               <div className="absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-[#22c55e]/20 blur-[80px] pointer-events-none" />
 
-              <div className="relative z-10 mx-auto max-w-4xl space-y-8">
-                <h2 className="text-4xl font-extrabold tracking-tight text-white sm:text-6xl leading-tight">
-                  Ready to Scale Your Payments?
+              <div className="relative z-10 mx-auto max-w-4xl space-y-6 sm:space-y-8">
+                <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-6xl leading-tight">
+                  <span className="sm:hidden">Ready to Scale?</span>
+                  <span className="hidden sm:inline">Ready to Scale Your Payments?</span>
                 </h2>
 
-                <p className="text-xl text-gray-200 font-medium max-w-2xl mx-auto leading-relaxed">
-                  Join businesses building the future of commerce with Trite.
+                <p className="text-lg sm:text-xl text-gray-200 font-medium max-w-2xl mx-auto leading-relaxed">
+                  <span className="sm:hidden">Join the future of commerce with Trite.</span>
+                  <span className="hidden sm:inline">Join businesses building the future of commerce with Trite.</span>
                 </p>
 
-                <div className="mt-8 flex flex-wrap items-center justify-center gap-5">
+                <div className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center gap-4 sm:gap-5">
                   <Link
                     className="inline-flex h-14 items-center justify-center rounded-full bg-[#22c55e] px-10 text-base font-bold text-black hover:bg-[#16a34a] shadow-lg hover:shadow-[#22c55e]/20 transition-all duration-300 hover:scale-105"
                     href="/get-started"

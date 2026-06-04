@@ -250,7 +250,7 @@ export default function BusinessesPage() {
               src="/images/bussines-1.jpg"
               alt="Business Solutions Hero background"
               fill
-              className="object-cover"
+              className="object-cover object-[60%_center] sm:object-center"
               priority
             />
             {/* Overlay for better text readability */}
@@ -323,7 +323,7 @@ export default function BusinessesPage() {
         </div>
 
         {/* ENTERPRISE SECURITY & COMPLIANCE - Redesigned */}
-        <section className="relative mt-8 pb-24 pt-16 overflow-hidden bg-gradient-to-t from-[#22c55e]/10 via-white to-white">
+        <section className="relative mt-8 pb-24 pt-16 overflow-hidden bg-white">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 border-t border-black/[0.06] pt-16">
             <div className="space-y-16">
               <div className="max-w-4xl">
@@ -335,8 +335,8 @@ export default function BusinessesPage() {
               {/* Security Image */}
               <div className="relative w-full h-[400px] sm:h-[550px] lg:h-[650px] overflow-hidden rounded-2xl shadow-2xl">
                 <Image
-                  src="/images/two-african-businessman.jpg"
-                  alt="Secure Business Operations"
+                  src="/images/male-sitting.jpg"
+                  alt="Secure Professional Environment"
                   fill
                   sizes="100vw"
                   className="object-cover"
