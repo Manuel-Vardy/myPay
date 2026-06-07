@@ -74,8 +74,8 @@ export default function AdminDashboardLayout({
               <Image
                 src="/tritee-logo.png"
                 alt="Trite logo"
-                width={90}
-                height={22}
+                width={75}
+                height={18}
                 priority
               />
             </Link>
@@ -131,8 +131,8 @@ export default function AdminDashboardLayout({
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-3 py-4">
-              <ul className="space-y-1">
+            <div className="flex-1 overflow-y-auto px-3 pt-10 pb-4">
+              <ul className="space-y-2">
                 {sidebarItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = activeTab === item.id;

@@ -5,6 +5,14 @@ const nextConfig: NextConfig = {
     root: __dirname,
   },
   serverExternalPackages: ["knex"],
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'i.pravatar.cc',
+      },
+    ],
+  },
   /* config options here */
 };
 

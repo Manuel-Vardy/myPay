@@ -29,9 +29,9 @@ export default function Footer() {
           <div>
             <h5 className="text-xs font-extrabold uppercase tracking-wider text-black">Company</h5>
             <ul className="mt-4 space-y-2 text-xs text-gray-500 font-bold">
-              <li><Link href="/" className="hover:text-black transition-colors">About us</Link></li>
+              <li><Link href="/about" className="hover:text-black transition-colors">About Us</Link></li>
               <li><Link href="#" className="hover:text-black transition-colors">Careers</Link></li>
-              <li><Link href="#" className="hover:text-black transition-colors">Leadership</Link></li>
+              <li><Link href="#" className="hover:text-black transition-colors">Press</Link></li>
             </ul>
           </div>
 

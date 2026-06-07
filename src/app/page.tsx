@@ -141,15 +141,15 @@ export default function Home() {
         </section>
 
         {/* Unified Payment Gateway Section */}
-        <section className="relative bg-white py-16 sm:py-20">
+        <section className="relative bg-white pt-16 pb-4 sm:pt-20 sm:pb-6">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {/* Heading Card - Overlaps hero */}
-            <div className="relative -mt-32 sm:-mt-40 mb-8 sm:mb-16">
-              <div className="inline-block bg-white px-8 pt-10 pb-10 sm:pb-16 sm:px-12 sm:pt-8 sm:pb-20">
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
+            <div className="relative -mt-32 sm:-mt-40 mb-4 sm:mb-6 flex justify-start">
+              <div className="bg-white p-8 sm:p-12 rounded-none text-left lg:w-5/12">
+                <p className="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-2">
                   Payment Solutions
                 </p>
-                <h3 className="text-2xl sm:text-3xl font-bold text-black">
+                <h3 className="text-3xl sm:text-4xl font-extrabold text-black tracking-tight">
                   Unified Payment Gateway
                 </h3>
               </div>
@@ -157,123 +157,91 @@ export default function Home() {
 
             {/* Content - On section background */}
             <div className="max-w-6xl mx-auto">
-              <p className="text-lg sm:text-xl text-gray-600 font-medium mb-12 text-center">
-                Trite enables you, your business and anyone to receive payments through;
-              </p>
+              <div className="flex flex-col items-center justify-center gap-6 mb-12">
+                <p className="text-lg sm:text-xl text-gray-600 font-medium text-center">
+                  Trite enables you, your business and anyone to receive payments through;
+                </p>
+              </div>
 
               {/* Desktop: Single row layout */}
-              <div className="hidden md:flex items-center justify-center gap-8 lg:gap-12">
+              <div className="hidden md:flex items-center justify-center gap-6 lg:gap-10">
                 {/* Card Payments */}
-                <div className="flex items-center gap-4">
-                  <img
-                    src="/images/mastercard-logo.png"
-                    alt="Mastercard"
-                    className="h-16 w-auto object-contain"
-                  />
-                  <img
-                    src="/images/visa-logo.png"
-                    alt="Visa"
-                    className="h-16 w-auto object-contain"
-                  />
-                </div>
+                <img
+                  src="/images/mastercard-logo.png"
+                  alt="Mastercard"
+                  className="h-16 w-auto object-contain"
+                />
+                <img
+                  src="/images/visa-logo.png"
+                  alt="Visa"
+                  className="h-16 w-auto object-contain"
+                />
 
                 {/* Mobile Money */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <img
                     src="/images/Telecel-logo.png"
                     alt="Telecel"
-                    className="h-16 w-auto object-contain"
+                    className="h-14 w-auto object-contain"
                   />
                   <img
                     src="/images/mtn-logo.png"
                     alt="MTN"
-                    className="h-18 w-auto object-contain"
+                    className="h-14 w-auto object-contain"
                   />
                   <img
                     src="/images/AirtelTigo-logo.png"
-                    alt="AirtelTigo"
-                    className="h-16 w-auto object-contain"
+                    alt="AT Money"
+                    className="h-14 w-auto object-contain"
                   />
                 </div>
 
                 {/* Stablecoins */}
-                <div className="flex flex-col items-center gap-3">
+                <div className="flex flex-col items-center gap-1">
                   <img
                     src="/images/stablecoin-logo1.png"
                     alt="Stablecoins"
-                    className="h-16 w-auto object-contain"
+                    className="h-14 w-auto object-contain"
                   />
-                  <span className="text-sm font-bold text-gray-400">Stablecoins</span>
+                  <span className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider">Stablecoins</span>
                 </div>
 
                 {/* Bank Transfers */}
-                <div className="flex flex-col items-center gap-3">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-100">
-                    <Building2 className="h-8 w-8 text-orange-500" />
+                <div className="flex flex-col items-center gap-1">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100">
+                    <Building2 className="h-6 w-6 text-orange-500" />
                   </div>
-                  <span className="text-sm font-bold text-blue-600">Bank Transfers</span>
+                  <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Bank Transfers</span>
                 </div>
               </div>
 
               {/* Mobile: Grid layout */}
-              <div className="grid grid-cols-1 md:hidden gap-12">
+              <div className="grid grid-cols-2 md:hidden gap-8">
                 {/* Card Payments */}
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-6 mb-6">
-                    <img
-                      src="/images/mastercard-logo.png"
-                      alt="Mastercard"
-                      className="h-12 w-auto object-contain"
-                    />
-                    <img
-                      src="/images/visa-logo.png"
-                      alt="Visa"
-                      className="h-12 w-auto object-contain"
-                    />
-                  </div>
+                <div className="flex items-center justify-center gap-4">
+                  <img src="/images/mastercard-logo.png" alt="Mastercard" className="h-10 w-auto object-contain" />
+                  <img src="/images/visa-logo.png" alt="Visa" className="h-10 w-auto object-contain" />
                 </div>
 
                 {/* Mobile Money */}
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-4 mb-6 flex-wrap">
-                    <img
-                      src="/images/Telecel-logo.png"
-                      alt="Telecel"
-                      className="h-12 w-auto object-contain"
-                    />
-                    <img
-                      src="/images/mtn-logo.png"
-                      alt="MTN"
-                      className="h-14 w-auto object-contain"
-                    />
-                    <img
-                      src="/images/AirtelTigo-logo.png"
-                      alt="AirtelTigo"
-                      className="h-12 w-auto object-contain"
-                    />
-                  </div>
+                <div className="flex items-center justify-center gap-3">
+                  <img src="/images/Telecel-logo.png" alt="Telecel" className="h-10 w-auto object-contain" />
+                  <img src="/images/mtn-logo.png" alt="MTN" className="h-10 w-auto object-contain" />
+                  <img src="/images/AirtelTigo-logo.png" alt="AT Money" className="h-10 w-auto object-contain" />
                 </div>
 
                 {/* Stablecoins */}
-                <div className="text-center">
-                  <div className="flex items-center justify-center mb-6">
-                    <img
-                      src="/images/stablecoin-logo1.png"
-                      alt="Stablecoins"
-                      className="h-16 w-auto object-contain"
-                    />
-                  </div>
-                  <h4 className="text-lg font-bold text-gray-400">Stablecoins</h4>
+                <div className="flex flex-col items-center gap-1">
+                  <img src="/images/stablecoin-logo1.png" alt="Stablecoins" className="h-12 w-auto object-contain" />
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Stablecoins</span>
                 </div>
 
                 {/* Bank Transfers */}
-                <div className="text-center">
-                  <div className="flex items-center justify-center mb-6">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-100">
-                      <Building2 className="h-8 w-8 text-orange-500" />
-                    </div>
+                <div className="flex flex-col items-center gap-1">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100">
+                    <Building2 className="h-6 w-6 text-orange-500" />
                   </div>
-                  <h4 className="text-lg font-bold text-blue-600">Bank Transfers</h4>
+                  <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Bank Transfers</span>
                 </div>
               </div>
             </div>
@@ -281,7 +249,7 @@ export default function Home() {
         </section>
 
         {/* Built For Section */}
-        <section className="relative bg-white py-16 sm:py-24 overflow-hidden">
+        <section className="relative bg-white pt-4 pb-4 sm:pt-6 sm:pb-6 overflow-hidden">
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col lg:flex-row items-start justify-center">
 
@@ -342,30 +310,24 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 4 dots divider */}
-        <div className="flex items-center justify-center gap-2.5 py-6 bg-white">
-          <span className="h-2 w-2 rounded-full bg-gray-300" />
-          <span className="h-2 w-2 rounded-full bg-gray-300" />
-          <span className="h-2 w-2 rounded-full bg-gray-300" />
-          <span className="h-2 w-2 rounded-full bg-gray-300" />
-        </div>
-
         {/* SECTION 2: PAYMENTS & SETTLEMENT */}
         <section
           id="payments"
-          className="relative bg-gradient-to-t from-[#22c55e]/12 via-[#22c55e]/2 to-[#f8fafc] py-20 sm:py-28 md:py-36"
+          className="relative bg-gradient-to-t from-[#22c55e]/12 via-[#22c55e]/2 to-[#f8fafc] pt-4 pb-4 sm:pt-6 sm:pb-6 md:pb-8"
         >
           {/* Subtle gradient accent */}
           <div className="absolute top-10 right-0 -z-10 h-[400px] w-[300px] bg-[#22c55e]/5 blur-[100px] pointer-events-none" />
 
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="space-y-6 max-w-3xl">
-              <p className="text-sm font-semibold uppercase tracking-wider text-gray-500">
-                PAYMENTS & SETTLEMENT
-              </p>
-              <h2 className="text-3xl font-extrabold tracking-tight text-black sm:text-4xl lg:text-5xl leading-tight">
-                Get paid Faster, <br /> Anywhere, from Anyone.
-              </h2>
+            <div className="space-y-6 max-w-3xl pt-8 sm:pt-12">
+              <div className="space-y-2">
+                <p className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+                  PAYMENTS & SETTLEMENT
+                </p>
+                <h2 className="text-3xl font-extrabold tracking-tight text-black sm:text-4xl lg:text-5xl leading-tight">
+                  Get paid Faster, <br /> Anywhere, from Anyone.
+                </h2>
+              </div>
               <p className="text-lg text-gray-600 leading-relaxed font-medium">
                 Trite gives your business everything you need to collect payments - online, in-store, and across borders - without stress or technical complexity.
               </p>
@@ -380,7 +342,7 @@ export default function Home() {
               {/* Left Column (Cards 1 and 3) */}
               <div className="space-y-8 lg:space-y-10">
                 {/* Card 1: Mobile Money & USSD */}
-                <div className="relative overflow-hidden bg-white rounded-[2rem] p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
+                <div className="relative overflow-hidden bg-white rounded-3xl p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
                   <div className="max-w-[55%] relative z-10 flex flex-col justify-between h-full">
                     <div>
                       <h3 className="text-xl sm:text-2xl font-bold text-[#0c1e43] mb-4 tracking-tight">Mobile Money & USSD</h3>
@@ -411,7 +373,7 @@ export default function Home() {
                 </div>
 
                 {/* Card 3: Stablecoin Gateway */}
-                <div className="relative overflow-hidden bg-white rounded-[2rem] p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
+                <div className="relative overflow-hidden bg-white rounded-3xl p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
                   <div className="max-w-[55%] relative z-10 flex flex-col justify-between h-full">
                     <div>
                       <h3 className="text-xl sm:text-2xl font-bold text-[#0c1e43] mb-4 tracking-tight">Stablecoin Gateway</h3>
@@ -445,7 +407,7 @@ export default function Home() {
               {/* Right Column (Cards 2 and 4 - Staggered higher on desktop) */}
               <div className="space-y-8 lg:space-y-10 md:-mt-24 lg:-mt-32">
                 {/* Card 2: Card Collections */}
-                <div className="relative overflow-hidden bg-white rounded-[2rem] p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
+                <div className="relative overflow-hidden bg-white rounded-3xl p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
                   <div className="max-w-[55%] relative z-10 flex flex-col justify-between h-full">
                     <div>
                       <h3 className="text-xl sm:text-2xl font-bold text-[#0c1e43] mb-4 tracking-tight">Card Collections</h3>
@@ -474,7 +436,7 @@ export default function Home() {
                 </div>
 
                 {/* Card 4: Bank Settlements */}
-                <div className="relative overflow-hidden bg-white rounded-[2rem] p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
+                <div className="relative overflow-hidden bg-white rounded-3xl p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
                   <div className="max-w-[55%] relative z-10 flex flex-col justify-between h-full">
                     <div>
                       <h3 className="text-xl sm:text-2xl font-bold text-[#0c1e43] mb-4 tracking-tight">Bank Settlements</h3>
@@ -519,7 +481,7 @@ export default function Home() {
         {/* SECTION 3: MARKETS */}
         <section
           id="markets"
-          className="relative bg-gradient-to-b from-[#92bd30]/12 via-[#92bd30]/2 to-white py-12 sm:py-16 md:py-20"
+          className="relative bg-gradient-to-b from-[#c4c4c4]/15 via-[#c4c4c4]/5 to-white pt-12 pb-4 sm:pt-16 sm:pb-6 md:pt-20 md:pb-8"
         >
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
@@ -614,30 +576,21 @@ export default function Home() {
                 Learn More About Markets <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
-
           </div>
         </section>
-
-        {/* 4 dots divider — between Markets & Businesses */}
-        <div className="flex items-center justify-center gap-2.5 py-6 bg-white">
-          <span className="h-2 w-2 rounded-full bg-gray-300" />
-          <span className="h-2 w-2 rounded-full bg-gray-300" />
-          <span className="h-2 w-2 rounded-full bg-gray-300" />
-          <span className="h-2 w-2 rounded-full bg-gray-300" />
-        </div>
 
         {/* SECTION 4: BUSINESSES */}
         <section
           id="businesses"
-          className="relative overflow-hidden bg-gradient-to-b from-white via-white to-[#e7e7e7]/50 py-16 sm:py-20 lg:py-24"
+          className="relative overflow-hidden bg-gradient-to-b from-white via-white to-[#e7e7e7]/50 pt-4 pb-16 sm:pt-6 sm:pb-20 lg:pt-8 lg:pb-24"
         >
-          {/* Decorative curve — full bleed so left arcs are not clipped */}
+          {/* Decorative spiral — full bleed so left arcs are not clipped */}
           <div
             className="pointer-events-none absolute inset-0 z-0 hidden overflow-visible md:block"
             aria-hidden
           >
             <div
-              className="absolute bottom-0 left-[100%] aspect-square h-[125%] w-[125%] min-h-[540px] min-w-[540px] -translate-x-1/2 translate-y-[44%] bg-[url('/images/curve.png')] bg-contain bg-center bg-no-repeat opacity-90 lg:left-[100%] lg:min-h-[620px] lg:min-w-[620px] lg:translate-y-[42%]"
+              className="absolute top-1/2 left-[65%] aspect-square h-[90%] w-[90%] min-h-[500px] min-w-[500px] -translate-x-1/2 -translate-y-1/2 bg-[url('/images/spiral.svg')] bg-contain bg-center bg-no-repeat opacity-90 lg:left-[70%] lg:min-h-[650px] lg:min-w-[650px]"
             />
           </div>
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -707,7 +660,7 @@ export default function Home() {
                  {/* Second Image - Shifted Down */}
                  <div className="relative w-1/2 h-[85%] sm:h-[90%] overflow-hidden rounded-2xl sm:rounded-3xl shadow-xl translate-y-4 sm:translate-y-8 lg:translate-y-12">
                    <Image
-                     src="/images/businessman-working-laptop.jpg"
+                     src="/images/business-1.jpg"
                      alt="Businessman working on laptop"
                      fill
                      sizes="(max-width: 1024px) 45vw, 25vw"
@@ -935,20 +888,20 @@ export default function Home() {
                 </div>
 
                 <div className="flex flex-col space-y-8">
-                  {/* Custom Indicators - Moved to bottom on mobile, top on desktop */}
-                  <div className="flex flex-wrap lg:flex-nowrap items-center justify-start gap-2 pb-4 order-2 lg:order-1 mt-8 lg:mt-0">
+                  {/* Custom Indicators - Styled as Segmented Control */}
+                  <div className="inline-flex items-center p-1.5 bg-white border border-gray-100 rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.03)] w-fit max-w-full overflow-x-auto no-scrollbar order-2 lg:order-1 mt-8 lg:mt-0">
                     {whyTriteItems.map((item, idx) => (
                       <button
                         key={idx}
                         onClick={() => setWhyTriteIndex(idx)}
                         className={cn(
-                          "px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all duration-300 border flex-1 text-center whitespace-nowrap",
+                          "px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 whitespace-nowrap min-w-[120px]",
                           whyTriteIndex === idx
-                            ? "bg-black text-white border-black shadow-md scale-[1.02]"
-                            : "bg-white text-gray-500 border-gray-100 hover:border-gray-200 hover:text-gray-900"
+                            ? "bg-[#0c1e43] text-white shadow-sm"
+                            : "text-[#22c55e] hover:text-[#16a34a]"
                         )}
                       >
-                        {idx + 1}. {item.title}
+                        {item.title}
                       </button>
                     ))}
                   </div>
@@ -1008,9 +961,6 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-
-                {/* Decorative background element (Green) */}
-                <div className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 w-[100%] h-[120%] bg-[#22c55e]/5 rounded-full blur-3xl -z-10" />
               </div>
 
               {/* Right Column: Image */}
@@ -1022,8 +972,6 @@ export default function Home() {
                     className="w-full h-auto object-contain drop-shadow-2xl"
                   />
                 </div>
-                {/* Decorative background element */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-[#22c55e]/5 rounded-full blur-3xl -z-10" />
               </div>
             </div>
           </div>
@@ -1121,6 +1069,16 @@ export default function Home() {
           id="about"
           className="relative z-10 bg-[#fdfcf6] py-24 sm:py-32 overflow-hidden"
         >
+          {/* Decorative spiral - Left side background */}
+          <div
+            className="pointer-events-none absolute inset-0 z-0 hidden md:block"
+            aria-hidden
+          >
+            <div
+              className="absolute top-1/2 -left-[20%] aspect-square h-[80%] w-[80%] -translate-y-1/2 bg-[url('/images/spiral.svg')] bg-contain bg-center bg-no-repeat opacity-60 mix-blend-multiply"
+            />
+          </div>
+
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
               {/* Left Column */}

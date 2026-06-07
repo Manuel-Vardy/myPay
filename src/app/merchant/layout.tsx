@@ -174,14 +174,14 @@ export default function MerchantLayout({ children }: { children: React.ReactNode
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       }`}>
         <div className="flex h-full flex-col">
-          <div className="flex h-16 items-center border-b border-black/5 px-4">
+          <div className="flex h-16 items-center border-b border-black/5 px-5">
             <Link href="/" className="flex items-center gap-3">
-              <Image src="/tritee-logo.png" alt="Trite logo" width={120} height={28} priority />
+              <Image src="/tritee-logo.png" alt="Trite logo" width={85} height={20} priority />
             </Link>
           </div>
 
-          <nav className="flex-1 overflow-y-auto px-3 py-4">
-            <ul className="space-y-1">
+          <nav className="flex-1 overflow-y-auto px-3 pt-10 pb-4">
+            <ul className="space-y-2">
               {sidebarItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;

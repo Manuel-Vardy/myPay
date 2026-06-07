@@ -19,7 +19,7 @@ import {
 
 export default function PaymentsPage() {
   return (
-    <div className="min-h-screen bg-white text-black selection:bg-[#22c55e]/30 selection:text-black overflow-x-hidden">
+    <div className="min-h-screen bg-white text-black selection:bg-[#22c55e]/30 selection:text-black">
       <Header transparent={true} />
 
       <main>
@@ -38,19 +38,19 @@ export default function PaymentsPage() {
             <div className="absolute inset-0 bg-black/50" />
           </div>
 
-          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-28 sm:pt-40 lg:pt-48 w-full">
+          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-20">
             <div className="max-w-4xl mx-auto text-center">
-              <div className="space-y-6 sm:space-y-8">
+              <div className="space-y-8">
                 <div>
-                  <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl leading-[1.2] sm:leading-[1.1] max-w-3xl mx-auto">
-                    Get paid Faster, <br className="hidden sm:block" /> Anywhere, from Anyone.
+                  <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl leading-[1.1] max-w-3xl mx-auto">
+                    Get paid Faster, <br /> Anywhere, from Anyone.
                   </h1>
-                  <div className="mt-4 sm:mt-6 h-px w-full max-w-3xl bg-white/20 mx-auto"></div>
+                  <div className="mt-6 h-px w-full max-w-3xl bg-white/20 mx-auto"></div>
                 </div>
-                <p className="max-w-2xl text-base sm:text-xl leading-relaxed text-white/90 mx-auto">
+                <p className="max-w-2xl text-lg sm:text-xl leading-relaxed text-white/90 mx-auto">
                   Trite gives your business everything you need to collect payments - online, in-store, and across borders - without stress or technical complexity.
                 </p>
-                <div className="inline-block rounded-3xl bg-white/10 backdrop-blur-xl px-6 sm:px-8 py-3 text-sm sm:text-base font-bold text-white leading-snug sm:leading-normal">
+                <div className="inline-block rounded-full bg-white/10 backdrop-blur-xl px-8 py-3 text-base font-bold text-white">
                   One integration, multiple payment options, zero headaches.
                 </div>
               </div>
@@ -75,142 +75,138 @@ export default function PaymentsPage() {
           </div>
         </div>
 
-        {/* ALTERNATING PAYMENT METHODS SECTION */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-32 space-y-32">
-          <div className="mb-16 text-center">
+        {/* GRID OF THE 7 MAIN PAYMENT RAILS */}
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-32">
+          <div className="mb-24 text-center">
             <div className="max-w-3xl mx-auto">
               <h2 className="text-3xl font-extrabold text-black tracking-tight sm:text-4xl mb-4">Accept Multiple Payment Methods</h2>
-              <p className="text-lg text-black font-medium">Our comprehensive payment rails are optimized for localized checkout flows and global digital settlements.</p>
+              <p className="text-lg text-gray-500 font-medium">Our comprehensive payment rails are optimized for localized checkout flows and global digital settlements.</p>
             </div>
           </div>
 
-          {[
-            {
-              title: "Mobile Money",
-              desc: "In emerging markets and mobile-first economies, mobile money plays a critical role. Trite enables you to pay and get paid with Mobile Money.",
-              image: "/images/man-momo.png",
-              badge: "Popular",
-              badgeColor: "bg-blue-100 text-blue-700",
-              accentColor: "bg-[#d4ecff]",
-              imgPadding: "p-12 sm:p-16",
-              imgClass: "translate-y-6 sm:translate-y-0"
-            },
-            {
-              title: "Stablecoin Gateway",
-              desc: "Integrate a dedicated stablecoin checkout option into your websites and apps. Settle instantly in USDT or USDC.",
-              image: "/images/stablecoin-logo2.png",
-              badge: "Web3",
-              badgeColor: "bg-emerald-100 text-emerald-700",
-              accentColor: "bg-[#b0ffd9]"
-            },
-            {
-              title: "Credit Card & Debit Card",
-              desc: "We allow businesses to accept card payments from major card providers globally. Fast, secure, and globally recognized.",
-              image: "/images/woman-with-card-Photoroom.png",
-              badge: "Global",
-              badgeColor: "bg-orange-100 text-orange-700",
-              accentColor: "bg-[#ffd5bc]"
-            },
-            {
-              title: "USSD",
-              desc: "A single short code to collect all payments. Set up a custom menu to receive payments from all networks. All you need is one code for all payments.",
-              image: "/images/ussd1.png",
-              badge: "Offline",
-              badgeColor: "bg-rose-100 text-rose-700",
-              accentColor: "bg-[#ffd6d6]",
-              imgPadding: "p-12 sm:p-16"
-            },
-            {
-              title: "Invoice",
-              desc: "Generate secure payment links and digital invoices for your customers using Trite. Perfect for professional service providers.",
-              image: "/images/gateway.png",
-              badge: "Business",
-              badgeColor: "bg-yellow-100 text-yellow-700",
-              accentColor: "bg-[#fffec7]"
-            },
-            {
-              title: "Bank Transfer",
-              desc: "Businesses can accept direct bank payments through local and international banking networks. Secure and high-volume ready.",
-              image: "/images/excited-girl1.png",
-              badge: "Institutional",
-              badgeColor: "bg-teal-100 text-teal-700",
-              accentColor: "bg-[#ecfeff]",
-              imgPadding: "p-12 sm:p-16"
-            },
-            {
-              title: "QR Code Payments",
-              desc: "Trite PSP supports blockchain-enabled QR payment systems for fast and easy customer transactions. Scan, pay, and go.",
-              image: "/images/qr-mockup.png",
-              badge: "Contactless",
-              badgeColor: "bg-fuchsia-100 text-fuchsia-700",
-              accentColor: "bg-[#fce7f3]"
-            }
-          ].map((item, idx) => (
-            <div 
-              key={idx} 
-              className={cn(
-                "grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center",
-                idx % 2 === 1 ? "lg:flex-row-reverse" : ""
-              )}
-            >
-              {/* Image Side */}
-              <div className={cn(
-                "relative h-[400px] sm:h-[500px] flex items-center justify-center rounded-[2.5rem] overflow-visible",
-                idx % 2 === 1 ? "lg:order-2" : "lg:order-1"
-              )}>
-                {/* Decorative blob backgrounds like the reference */}
-                <div className={cn(
-                  "absolute top-0 left-0 w-32 h-32 rounded-full blur-3xl opacity-40 -translate-x-1/2 -translate-y-1/2",
-                  item.accentColor
-                )} />
-                <div className={cn(
-                  "absolute bottom-0 right-0 w-48 h-48 rounded-full blur-3xl opacity-30 translate-x-1/4 translate-y-1/4",
-                  item.accentColor
-                )} />
-                
-                <div className={cn(
-                    "relative w-full h-full rounded-[2.5rem] overflow-hidden z-10",
-                    item.accentColor,
-                    item.imgPadding || ""
-                  )}>
-                    {/* Diagonal Line Pattern Overlay */}
-                    <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: "repeating-linear-gradient(45deg, #000 0, #000 1px, transparent 0, transparent 50%)", backgroundSize: "10px 10px" }}></div>
-                    
+          <div className="space-y-24 pb-24">
+            {[
+              {
+                title: "Mobile Money",
+                desc: "In emerging markets and mobile-first economies, mobile money plays a critical role. Trite enables you to pay and get paid with Mobile Money.",
+                image: "/images/man-momo.png",
+                baseColor: "#d4ecff",
+                titleColor: "#000",
+                badge: "Popular",
+                badgeClass: "bg-blue-500 text-white",
+                imgClass: "translate-y-8"
+              },
+              {
+                title: "Stablecoin Gateway",
+                desc: "Integrate a dedicated stablecoin checkout option into your websites and apps. Settle instantly in USDT or USDC.",
+                image: "/images/stablecoin-logo2.png",
+                baseColor: "#b0ffd9",
+                titleColor: "#000",
+                badge: "Web3",
+                badgeClass: "bg-[#22c55e] text-white",
+              },
+              {
+                title: "Credit Card & Debit Card",
+                desc: "We allow businesses to accept card payments from major card providers globally. Fast, secure, and globally recognized.",
+                image: "/images/woman-with-card-Photoroom.png",
+                baseColor: "#ffd5bc",
+                titleColor: "#000",
+                badge: "Global",
+                badgeClass: "bg-orange-400 text-white",
+              },
+              {
+                title: "USSD",
+                desc: "A single short code to collect all payments. Set up a custom menu to receive payments from all networks. All you need is one code for all payments.",
+                image: "/images/ussd1.png",
+                baseColor: "#ffd6d6",
+                titleColor: "#000",
+                badge: "Offline",
+                badgeClass: "bg-rose-500 text-white",
+              },
+              {
+                title: "Invoice",
+                desc: "Generate secure payment links and digital invoices for your customers using Trite. Perfect for professional service providers.",
+                image: "/images/gateway.png",
+                baseColor: "#fffec7",
+                titleColor: "#000",
+                badge: "Business",
+                badgeClass: "bg-yellow-500 text-white",
+                imgClass: "translate-y-12"
+              },
+              {
+                title: "Bank Transfer",
+                desc: "Businesses can accept direct bank payments through local and international banking networks. Secure and high-volume ready.",
+                image: "/images/excited-girl1.png",
+                baseColor: "#ecfeff",
+                titleColor: "#000",
+                badge: "Institutional",
+                badgeClass: "bg-teal-500 text-white",
+              },
+              {
+                title: "QR Code Payments",
+                desc: "Trite PSP supports blockchain-enabled QR payment systems for fast and easy customer transactions. Scan, pay, and go.",
+                image: "/images/qr-mockup.png",
+                baseColor: "#fce7f3",
+                titleColor: "#000",
+                badge: "Contactless",
+                badgeClass: "bg-fuchsia-500 text-white",
+              }
+            ].map((item, idx) => (
+              <div 
+                key={idx} 
+                className={cn(
+                  "flex flex-col lg:flex-row items-center gap-12 lg:gap-20",
+                  idx % 2 === 1 ? "lg:flex-row-reverse" : ""
+                )}
+              >
+                {/* Image Side */}
+                <div 
+                  className="relative w-full lg:w-[55%] aspect-[16/10] rounded-[2.5rem] overflow-hidden flex items-center justify-center"
+                  style={{ backgroundColor: item.baseColor }}
+                >
+                  {/* Spiral Background */}
+                  <div className="absolute inset-0 opacity-60 pointer-events-none mix-blend-multiply">
+                    <Image 
+                      src="/images/spiral.svg" 
+                      alt="" 
+                      fill 
+                      className="object-cover scale-110"
+                    />
+                  </div>
+
+                  <div className="relative h-full w-full z-10">
                     <Image 
                       src={item.image} 
                       alt={item.title} 
                       fill 
                       className={cn(
-                        "transition-transform duration-500 relative z-10",
-                        item.imgPadding ? "object-contain" : "object-cover",
-                        (item as any).imgClass || ""
+                        "object-contain scale-110 transition-transform duration-500",
+                        item.imgClass
                       )}
                     />
                   </div>
                 </div>
 
                 {/* Text Side */}
-                <div className={cn(
-                  "space-y-6",
-                  idx % 2 === 1 ? "lg:order-1" : "lg:order-2"
-                )}>
-                  <div className="space-y-4">
+                <div className="w-full lg:w-[45%] space-y-6">
+                  <div>
                     <span className={cn(
-                      "inline-block px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest",
-                      item.badgeColor
+                      "text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full",
+                      item.badgeClass
                     )}>
                       {item.badge}
                     </span>
-                    <h3 className="text-3xl sm:text-4xl font-extrabold text-black tracking-tight leading-tight">
-                      {item.title}
-                    </h3>
                   </div>
-                  <p className="text-lg sm:text-xl leading-relaxed text-gray-600 font-medium">
+                  <h3 className="text-3xl sm:text-4xl font-extrabold text-black tracking-tight">
+                    {item.title}
+                  </h3>
+                  <p className="text-lg sm:text-xl text-gray-600 font-medium leading-relaxed">
                     {item.desc}
                   </p>
                 </div>
               </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         {/* INTEGRATION SUBSECTIONS - ABOUT STYLE */}

@@ -264,20 +264,20 @@ export default function ProductsPage() {
                 </div>
 
                 <div className="space-y-8">
-                  {/* Custom Indicators - Fixed width, no scroll */}
-                  <div className="flex flex-wrap lg:flex-nowrap items-center justify-start gap-2 pb-4">
+                  {/* Custom Indicators - Styled as Segmented Control */}
+                  <div className="inline-flex items-center p-1.5 bg-white border border-gray-100 rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.03)] w-fit max-w-full overflow-x-auto no-scrollbar">
                     {whyTriteItems.map((item, idx) => (
                       <button
                         key={idx}
                         onClick={() => setWhyTriteIndex(idx)}
                         className={cn(
-                          "px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all duration-300 border flex-1 text-center whitespace-nowrap",
+                          "px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 whitespace-nowrap min-w-[120px]",
                           whyTriteIndex === idx
-                            ? "bg-black text-white border-black shadow-md scale-[1.02]"
-                            : "bg-white text-gray-500 border-gray-100 hover:border-gray-200 hover:text-gray-900"
+                            ? "bg-[#0c1e43] text-white shadow-sm"
+                            : "text-[#22c55e] hover:text-[#16a34a]"
                         )}
                       >
-                        {idx + 1}. {item.title}
+                        {item.title}
                       </button>
                     ))}
                   </div>
@@ -336,9 +336,6 @@ export default function ProductsPage() {
                     </div>
                   </div>
                 </div>
-
-                {/* Decorative background element (Green) */}
-                <div className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 w-[100%] h-[120%] bg-[#22c55e]/5 rounded-full blur-3xl -z-10" />
               </div>
 
               {/* Right Column: Image */}
@@ -350,8 +347,6 @@ export default function ProductsPage() {
                     className="w-full h-auto object-contain drop-shadow-2xl"
                   />
                 </div>
-                {/* Decorative background element */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-[#22c55e]/5 rounded-full blur-3xl -z-10" />
               </div>
             </div>
           </div>
@@ -449,6 +444,16 @@ export default function ProductsPage() {
           id="about"
           className="relative z-10 bg-[#fdfcf6] py-24 sm:py-32 overflow-hidden"
         >
+          {/* Decorative spiral - Left side background */}
+          <div
+            className="pointer-events-none absolute inset-0 z-0 hidden md:block"
+            aria-hidden
+          >
+            <div
+              className="absolute top-1/2 -left-[20%] aspect-square h-[80%] w-[80%] -translate-y-1/2 bg-[url('/images/spiral.svg')] bg-contain bg-center bg-no-repeat opacity-60 mix-blend-multiply"
+            />
+          </div>
+
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
               {/* Left Column */}
