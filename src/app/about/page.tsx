@@ -13,13 +13,6 @@ import Image from "next/image";
 
 const leadershipMembers = [
   {
-    name: "Digna Nana Boadi",
-    role: "Advisory Council",
-    bio: "Digna provides strategic guidance and institutional oversight, ensuring Trite's mission aligns with global financial standards.",
-    image: "/leadership-images/digna.jpeg",
-    objectPosition: "top"
-  },
-  {
     name: "Fred Parker",
     role: "General Manager",
     bio: "Fred oversees platform-wide operations, focusing on high-velocity global settlements and regional scalability.",
@@ -159,9 +152,9 @@ export default function AboutPage() {
               <h2 className="text-3xl sm:text-5xl font-extrabold text-black tracking-tight mb-4">Leadership</h2>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-16 mb-32">
+            <div className="mx-auto mb-32 grid max-w-6xl grid-cols-1 gap-x-8 gap-y-16 sm:grid-cols-2 lg:grid-cols-4 justify-items-center">
               {leadershipMembers.map((member, idx) => (
-                <div key={idx} className="text-center group">
+                <div key={idx} className="group w-full max-w-[260px] text-center">
                   <div className="relative mb-6 inline-block">
                     {/* Circular Dashed Border */}
                     <div className="absolute -inset-3 border-2 border-dashed border-yellow-400 rounded-full opacity-40 group-hover:opacity-100 transition-opacity" />

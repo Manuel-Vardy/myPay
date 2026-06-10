@@ -4,6 +4,12 @@ import React from 'react';
 import Image from "next/image";
 import Link from "next/link";
 
+const labelClass = "text-xs font-bold text-gray-900 uppercase tracking-wider";
+const fieldClass =
+  "flex h-11 w-full rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-900 transition-all placeholder:text-gray-500 focus:border-[#22c55e] focus:ring-4 focus:ring-[#22c55e]/10 outline-none";
+const textareaClass =
+  "min-h-24 w-full rounded-xl border border-gray-200 bg-white p-4 text-sm font-medium text-gray-900 outline-none transition-all placeholder:text-gray-500 focus:border-[#22c55e] focus:ring-4 focus:ring-[#22c55e]/10";
+
 export default function ContactSalesPage() {
   return (
     <main className="min-h-screen bg-white font-montserrat flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
@@ -42,7 +48,7 @@ export default function ContactSalesPage() {
             <h1 className="text-2xl font-black tracking-tight text-black">
               Contact Sales
             </h1>
-            <p className="text-sm text-gray-500 font-medium">
+            <p className="text-sm text-gray-600 font-medium">
               We typically respond within 24 hours (business days).
             </p>
           </div>
@@ -50,22 +56,22 @@ export default function ContactSalesPage() {
           <form className="space-y-6">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider" htmlFor="fullName">
+                <label className={labelClass} htmlFor="fullName">
                   Full name
                 </label>
                 <input
-                  className="flex h-11 w-full rounded-xl border border-black/[0.08] bg-gray-50/50 px-4 py-2 text-sm font-medium transition-all focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/5 outline-none placeholder:text-gray-400"
+                  className={fieldClass}
                   id="fullName"
                   placeholder="Ama Owusu"
                   required
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider" htmlFor="workEmail">
+                <label className={labelClass} htmlFor="workEmail">
                   Work email
                 </label>
                 <input
-                  className="flex h-11 w-full rounded-xl border border-black/[0.08] bg-gray-50/50 px-4 py-2 text-sm font-medium transition-all focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/5 outline-none placeholder:text-gray-400"
+                  className={fieldClass}
                   id="workEmail"
                   type="email"
                   placeholder="ama@company.com"
@@ -75,11 +81,11 @@ export default function ContactSalesPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider" htmlFor="company">
+              <label className={labelClass} htmlFor="company">
                 Company / business
               </label>
               <input
-                className="flex h-11 w-full rounded-xl border border-black/[0.08] bg-gray-50/50 px-4 py-2 text-sm font-medium transition-all focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/5 outline-none placeholder:text-gray-400"
+                className={fieldClass}
                 id="company"
                 placeholder="Trite Stores"
                 required
@@ -88,21 +94,21 @@ export default function ContactSalesPage() {
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider" htmlFor="phone">
+                <label className={labelClass} htmlFor="phone">
                   Phone / WhatsApp
                 </label>
                 <input
-                  className="flex h-11 w-full rounded-xl border border-black/[0.08] bg-gray-50/50 px-4 py-2 text-sm font-medium transition-all focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/5 outline-none placeholder:text-gray-400"
+                  className={fieldClass}
                   id="phone"
                   placeholder="+233 20 000 0000"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider" htmlFor="volume">
+                <label className={labelClass} htmlFor="volume">
                   Monthly Volume (GHS)
                 </label>
                 <select
-                  className="flex h-11 w-full rounded-xl border border-black/[0.08] bg-gray-50/50 px-4 py-2 text-sm font-medium transition-all focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/5 outline-none placeholder:text-gray-400"
+                  className={fieldClass}
                   id="volume"
                 >
                   <option>₵0 - ₵10k</option>
@@ -115,25 +121,25 @@ export default function ContactSalesPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider">
+              <label className={labelClass}>
                 What do you want to build?
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {["Online Payments", "Payouts", "Subscriptions", "Cross-border"].map((item) => (
-                  <label key={item} className="flex items-center gap-2 rounded-xl border border-black/[0.08] bg-gray-50/50 p-3 text-xs font-medium cursor-pointer transition-all hover:bg-white hover:border-[#22c55e] group">
+                  <label key={item} className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white p-3 text-sm font-medium cursor-pointer transition-all hover:border-[#22c55e] group">
                     <input type="checkbox" className="accent-[#22c55e] h-4 w-4" />
-                    <span className="text-gray-600 group-hover:text-black">{item}</span>
+                    <span className="text-gray-800 group-hover:text-black">{item}</span>
                   </label>
                 ))}
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider" htmlFor="message">
+              <label className={labelClass} htmlFor="message">
                 Message
               </label>
               <textarea
-                className="min-h-24 w-full rounded-xl border border-black/[0.08] bg-gray-50/50 p-4 text-sm font-medium outline-none transition-all focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/5 placeholder:text-gray-400"
+                className={textareaClass}
                 id="message"
                 placeholder="Tell us what you're building..."
               />
@@ -146,7 +152,7 @@ export default function ContactSalesPage() {
               Submit Inquiry
             </button>
             
-            <p className="text-center text-xs text-gray-500 mt-4 font-medium">
+            <p className="text-center text-xs text-gray-600 mt-4 font-medium">
               Prefer email? Write to us at <a href="mailto:sales@trite.com" className="font-bold text-black hover:text-[#22c55e] transition-colors">sales@trite.com</a>
             </p>
           </form>
