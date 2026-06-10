@@ -5,31 +5,87 @@ import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import WhyTriteCarouselAccent from "@/components/WhyTriteCarouselAccent";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 import {
   ArrowRight,
   ChevronRight,
+  Code2,
+  Wallet,
+  Coins,
+  BarChart3,
+  Plug,
+  CreditCard,
+  ArrowDownToLine,
+  Activity,
+  type LucideIcon,
 } from "lucide-react";
+
+const howItWorksSteps = [
+  {
+    title: "Integrate",
+    text: "Integrate Trite via API or hosted checkout.",
+    icon: Code2,
+    iconSecondary: Plug,
+  },
+  {
+    title: "Accept",
+    text: "Accept payments via mobile money, fiat or stablecoins.",
+    icon: Wallet,
+    iconSecondary: CreditCard,
+  },
+  {
+    title: "Receive",
+    text: "Receive payments in local currency or digital assets.",
+    icon: Coins,
+    iconSecondary: ArrowDownToLine,
+  },
+  {
+    title: "Monitor",
+    text: "Monitor performance in real-time via dashboard analytics.",
+    icon: BarChart3,
+    iconSecondary: Activity,
+  },
+];
+
+function HowItWorksIcon({
+  icon: Primary,
+  iconSecondary: Secondary,
+}: {
+  icon: LucideIcon;
+  iconSecondary: LucideIcon;
+}) {
+  return (
+    <div className="relative mb-6 h-14 w-[4.5rem]" aria-hidden>
+      <div className="absolute bottom-0 left-0 flex h-11 w-11 items-center justify-center rounded-xl bg-[#bbf7d0]">
+        <Secondary className="h-5 w-5 text-[#22c55e]" strokeWidth={1.75} />
+      </div>
+      <div className="absolute top-0 right-0 flex h-11 w-11 items-center justify-center rounded-xl bg-[#22c55e] shadow-sm">
+        <Primary className="h-5 w-5 text-white" strokeWidth={2} />
+      </div>
+    </div>
+  );
+}
 
 const whyTriteItems = [
   {
     title: "Built for Africa",
-    content: "Africa’s payment ecosystem is fragmented. Trite simplifies complexity by integrating local payment rails and digital asset infrastructure into a single secure layer."
+    content: "Africa’s payment ecosystem is fragmented. Trite simplifies complexity by integrating local payment rails and digital asset infrastructure into a single secure layer.",
   },
   {
     title: "Security First",
     content: "Our high-security compliance standard includes AI-powered fraud detection and real-time monitoring.",
-    subPoints: ["PCI-aligned architecture", "AML & KYC automation"]
+    subPoints: ["PCI-aligned architecture", "AML & KYC automation"],
   },
   {
     title: "Compliance-Driven",
-    content: "We operate within regulatory frameworks and embed compliance directly into our systems."
+    content: "We operate within regulatory frameworks and embed compliance directly into our systems.",
   },
   {
     title: "Scalable by Design",
-    content: "From local SMEs to cross-border enterprises, Trite grows with your business."
-  }
+    content: "From local SMEs to cross-border enterprises, Trite grows with your business.",
+  },
 ];
 
 export default function ProductsPage() {
@@ -237,7 +293,7 @@ export default function ProductsPage() {
             <div className="mt-20 flex justify-center">
               <Link
                 href="/products"
-                className="inline-flex items-center justify-center px-10 py-5 font-bold bg-[#22c55e] text-black hover:bg-[#16a34a] rounded-full transition-all gap-2 shadow-xl hover:shadow-2xl"
+                className="inline-flex items-center justify-center px-10 py-5 font-bold bg-[#22c55e] text-white hover:bg-[#16a34a] rounded-full transition-all gap-2 shadow-xl hover:shadow-2xl"
               >
                 Explore Product Suite <ArrowRight className="h-5 w-5" />
               </Link>
@@ -263,15 +319,15 @@ export default function ProductsPage() {
                   </p>
                 </div>
 
-                <div className="space-y-8">
-                  {/* Custom Indicators - Styled as Segmented Control */}
-                  <div className="inline-flex items-center p-1.5 bg-white border border-gray-100 rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.03)] w-fit max-w-full overflow-x-auto no-scrollbar">
+                <div className="flex flex-col space-y-5">
+                  {/* Tab navigation */}
+                  <div className="grid w-full max-w-full grid-cols-2 gap-1 rounded-2xl border border-gray-200 bg-white p-1 sm:inline-flex sm:w-fit sm:items-center sm:overflow-x-auto sm:rounded-full sm:p-1.5 no-scrollbar">
                     {whyTriteItems.map((item, idx) => (
                       <button
                         key={idx}
                         onClick={() => setWhyTriteIndex(idx)}
                         className={cn(
-                          "px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 whitespace-nowrap min-w-[120px]",
+                          "w-full rounded-full px-2 py-1.5 text-center text-[10px] font-bold leading-tight transition-all duration-300 sm:w-auto sm:min-w-[120px] sm:whitespace-nowrap sm:px-6 sm:py-2.5 sm:text-sm",
                           whyTriteIndex === idx
                             ? "bg-[#0c1e43] text-white shadow-sm"
                             : "text-[#22c55e] hover:text-[#16a34a]"
@@ -282,56 +338,67 @@ export default function ProductsPage() {
                     ))}
                   </div>
 
-                  <div className="w-full relative">
-                    <div className="bg-white rounded-[2rem] p-8 sm:p-10 border border-gray-50 min-h-[260px] flex flex-col justify-center relative overflow-hidden shadow-[0_15px_40px_-10px_rgba(0,0,0,0.05)]">
-                      
-                      <div className="relative h-full flex flex-col justify-center w-full">
+                  {/* Carousel card */}
+                  <div className="relative w-full">
+                    <div className="relative min-h-[200px] overflow-hidden border border-gray-200 bg-[#f6f9fc] sm:min-h-[220px]">
+                      <div className="relative h-full min-h-[200px] sm:min-h-[220px]">
                         {whyTriteItems.map((item, idx) => (
                           <motion.div
                             key={idx}
-                            initial={{ opacity: 0, y: 15, scale: 0.98 }}
+                            initial={{ opacity: 0, y: 12 }}
                             animate={{
                               opacity: whyTriteIndex === idx ? 1 : 0,
-                              y: whyTriteIndex === idx ? 0 : -15,
-                              scale: whyTriteIndex === idx ? 1 : 0.98,
-                              pointerEvents: whyTriteIndex === idx ? "auto" : "none"
+                              y: whyTriteIndex === idx ? 0 : 12,
+                              pointerEvents: whyTriteIndex === idx ? "auto" : "none",
                             }}
-                            transition={{ 
-                              duration: 0.5, 
-                              ease: [0.23, 1, 0.32, 1] 
+                            transition={{
+                              duration: 0.45,
+                              ease: [0.23, 1, 0.32, 1],
                             }}
                             className={cn(
-                              "space-y-4",
-                              whyTriteIndex === idx ? "relative" : "absolute inset-0 flex flex-col justify-center"
+                              "flex h-full min-h-[200px] flex-col justify-center sm:min-h-[220px]",
+                              whyTriteIndex === idx
+                                ? "relative"
+                                : "absolute inset-0"
                             )}
                           >
-                            <div className="text-xl sm:text-2xl font-extrabold text-[#0c1e43] flex items-center gap-3">
-                              <span className="h-2 w-2 rounded-full bg-[#22c55e]" />
-                              {item.title}
+                            {/* Text — left side */}
+                            <div className="relative z-10 flex flex-col justify-center px-6 py-5 pr-[38%] sm:px-8 sm:py-6 sm:pr-[42%]">
+                              <div className="mb-3 flex items-center gap-2.5">
+                                <span className="h-2 w-2 shrink-0 rounded-full bg-white/90" />
+                                <h4 className="text-lg font-extrabold text-white sm:text-xl">
+                                  {item.title}
+                                </h4>
+                              </div>
+                              <p className="text-sm leading-relaxed text-white/90 sm:text-base">
+                                {item.content}
+                              </p>
+                              {item.subPoints && (
+                                <ul className="mt-4 space-y-1.5 pl-4 text-sm font-semibold text-white/90">
+                                  {item.subPoints.map((sub, sIdx) => (
+                                    <li key={sIdx} className="flex items-center gap-2">
+                                      <span className="h-1 w-1 shrink-0 rounded-full bg-white/80" />
+                                      {sub}
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
                             </div>
-                            <p className="text-base sm:text-lg text-gray-600 leading-relaxed font-medium">
-                              {item.content}
-                            </p>
-                            {item.subPoints && (
-                              <ul className="text-sm text-gray-800 font-bold space-y-2 pl-6 list-disc">
-                                {item.subPoints.map((sub, sIdx) => (
-                                  <li key={sIdx}>{sub}</li>
-                                ))}
-                              </ul>
-                            )}
+
+                            <WhyTriteCarouselAccent />
                           </motion.div>
                         ))}
                       </div>
 
-                      {/* Progress Bar (Moving Line) */}
-                      <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-50">
+                      {/* Auto-advance progress bar */}
+                      <div className="absolute bottom-0 left-0 z-20 h-[3px] w-full bg-gray-200/60">
                         <motion.div
-                            initial={{ width: "0%" }}
-                            animate={{ width: "100%" }}
-                            transition={{ duration: 5, ease: "linear" }}
-                            key={whyTriteIndex}
-                            className="h-full bg-gradient-to-r from-[#22c55e] to-[#92bd30]"
-                          />
+                          key={whyTriteIndex}
+                          initial={{ width: "0%" }}
+                          animate={{ width: "100%" }}
+                          transition={{ duration: 5, ease: "linear" }}
+                          className="h-full bg-gradient-to-r from-[#22c55e] to-[#86efac]"
+                        />
                       </div>
                     </div>
                   </div>
@@ -354,86 +421,37 @@ export default function ProductsPage() {
 
         {/* SECTION 7: HOW TRITE WORKS & ABOUT */}
         <section
-          className="relative z-10 bg-white pt-10 sm:pt-14 md:pt-20 pb-20 sm:pb-28 md:py-36 overflow-hidden"
+          className="relative z-10 overflow-hidden bg-[#f6f9fc] pt-10 sm:pt-14 md:pt-20 pb-20 sm:pb-28 md:py-36"
         >
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {/* How Trite Works */}
-            <div className="space-y-20">
-              <div className="text-center max-w-3xl mx-auto space-y-4">
-                <h3 className="text-3xl font-extrabold text-black tracking-tight sm:text-4xl lg:text-5xl">
+            <div className="space-y-14 sm:space-y-16">
+              <div className="mx-auto max-w-3xl space-y-4 text-center">
+                <h3 className="text-3xl font-extrabold tracking-tight text-[#0a2540] sm:text-4xl lg:text-5xl">
                   How Trite Works
                 </h3>
-                <p className="text-lg text-gray-500 font-medium">
+                <p className="text-lg font-medium text-[#425466]">
                   Our integration process is designed for speed and reliability, allowing you to start accepting payments across multiple channels in just four simple steps.
                 </p>
               </div>
 
-              <div className="relative">
-                <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-4 relative z-10">
-                  {[
-                    {
-                      step: "1",
-                      title: "Integrate",
-                      text: "Integrate Trite via API or hosted checkout."
-                    },
-                    {
-                      step: "2",
-                      title: "Accept",
-                      text: "Accept payments via mobile money, fiat or stablecoins."
-                    },
-                    {
-                      step: "3",
-                      title: "Receive",
-                      text: "Receive payments in local currency or digital assets."
-                    },
-                    {
-                      step: "4",
-                      title: "Monitor",
-                      text: "Monitor performance in real-time via dashboard analytics."
-                    }
-                  ].map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="flex flex-col items-center text-center space-y-8 group relative"
-                    >
-                      {/* Number Circle */}
-                      <div className="relative">
-                        <div className="h-20 w-20 rounded-full bg-[#22c55e] flex items-center justify-center text-white text-3xl font-bold shadow-xl shadow-green-200/50 transition-all duration-300 group-hover:scale-110 group-hover:bg-[#16a34a]">
-                          {item.step}
-                        </div>
-
-                        {/* Connecting Line - Desktop (Horizontal) */}
-                        {idx < 3 && (
-                          <div className="hidden lg:block absolute top-10 left-20 w-[calc(100vw/4-80px)] xl:w-[220px] h-0.5 pointer-events-none">
-                            <svg className="w-full h-full" preserveAspectRatio="none">
-                              <line x1="0" y1="1" x2="50%" y2="1" stroke="#e5e7eb" strokeWidth="2" />
-                              <line x1="50%" y1="1" x2="100%" y2="1" stroke="#e5e7eb" strokeWidth="2" strokeDasharray="8, 6" />
-                            </svg>
-                          </div>
-                        )}
-
-                        {/* Connecting Line - Mobile (Vertical) */}
-                        {idx < 3 && (
-                          <div className="absolute left-1/2 top-20 w-0.5 h-12 -translate-x-1/2 lg:hidden pointer-events-none">
-                            <svg className="w-full h-full" preserveAspectRatio="none">
-                              <line x1="1" y1="0" x2="1" y2="50%" stroke="#e5e7eb" strokeWidth="2" />
-                              <line x1="1" y1="50%" x2="1" y2="100%" stroke="#e5e7eb" strokeWidth="2" strokeDasharray="8, 6" />
-                            </svg>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="space-y-3">
-                        <h4 className="text-2xl font-bold text-[#22c55e]">
-                          {item.title}
-                        </h4>
-                        <p className="text-base text-gray-500 font-medium leading-relaxed max-w-[240px]">
-                          {item.text}
-                        </p>
-                      </div>
+              <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+                {howItWorksSteps.map((item) => (
+                  <div key={item.title} className="flex flex-col items-center text-center sm:items-start sm:text-left">
+                    <HowItWorksIcon
+                      icon={item.icon}
+                      iconSecondary={item.iconSecondary}
+                    />
+                    <div className="border-b-2 border-[#22c55e] pb-1 w-fit mx-auto sm:border-b-0 sm:border-l-2 sm:pb-0 sm:pl-3 sm:mx-0 sm:w-auto">
+                      <h4 className="text-lg font-bold text-[#0a2540]">
+                        {item.title}
+                      </h4>
                     </div>
-                  ))}
-                </div>
+                    <p className="mt-3 text-sm leading-relaxed text-[#425466] sm:text-base">
+                      {item.text}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -521,7 +539,7 @@ export default function ProductsPage() {
 
                 <div className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center gap-4 sm:gap-5">
                   <Link
-                    className="inline-flex h-14 items-center justify-center rounded-full bg-[#22c55e] px-10 text-base font-bold text-black hover:bg-[#16a34a] shadow-lg hover:shadow-[#22c55e]/20 transition-all duration-300 hover:scale-105"
+                    className="inline-flex h-14 items-center justify-center rounded-full bg-[#22c55e] px-10 text-base font-bold text-white hover:bg-[#16a34a] shadow-lg hover:shadow-[#22c55e]/20 transition-all duration-300 hover:scale-105"
                     href="/get-started"
                   >
                     Start Accepting Payments

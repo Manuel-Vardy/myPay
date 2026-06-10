@@ -75,7 +75,7 @@ export default function ApiDocsPage() {
               directly from your browser without writing a single line of code.
             </p>
             <div className="flex flex-wrap gap-4">
-              <button className="px-8 py-4 bg-[#22c55e] text-black font-bold rounded-full hover:bg-[#16a34a] transition-all">
+              <button className="px-8 py-4 bg-[#22c55e] text-white font-bold rounded-full hover:bg-[#16a34a] transition-all">
                 Join the Waitlist
               </button>
             </div>

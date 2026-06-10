@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import HeroHeadingCard from "@/components/HeroHeadingCard";
 import { cn } from "@/lib/utils";
 import { 
   Smartphone, 
@@ -60,14 +61,22 @@ export default function PaymentsPage() {
 
         {/* PRICING SECTION */}
         <div className="relative z-20 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 -mt-12 sm:-mt-16 flex justify-start">
-          <div className="bg-white p-8 sm:p-12 rounded-none text-left lg:w-7/12">
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-black mb-4">
-              Simple & Transparent Pricing
-            </h3>
-            <p className="text-lg sm:text-xl text-gray-600 font-medium leading-relaxed mr-auto max-w-2xl">
-              Pay only <span className="text-[#16a34a] font-bold">1.50%</span> per transaction and enjoy fast, secure, and reliable payments.
+          <div className="text-left lg:w-7/12">
+            <HeroHeadingCard
+              className="max-w-none sm:max-w-none"
+              label="Payments"
+              title={
+                <>
+                  Simple & Transparent
+                  <br />
+                  Pricing
+                </>
+              }
+            />
+            <p className="mt-6 max-w-2xl px-6 text-lg font-medium leading-relaxed text-gray-600 sm:px-8 sm:text-xl">
+              Pay only <span className="font-bold text-[#16a34a]">1.50%</span> per transaction and enjoy fast, secure, and reliable payments.
             </p>
-            <div className="flex justify-start gap-1.5 mt-8">
+            <div className="mt-8 flex justify-start gap-1.5 px-6 sm:px-8">
               {[...Array(4)].map((_, i) => (
                 <div key={i} className="h-1.5 w-1.5 rounded-full bg-[#22c55e]" />
               ))}

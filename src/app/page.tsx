@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import HeroHeadingCard from "@/components/HeroHeadingCard";
+import WhyTriteCarouselAccent from "@/components/WhyTriteCarouselAccent";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 import {
@@ -18,7 +20,17 @@ import {
   ChevronRight,
   ArrowUpRight,
   Building2,
-  Coins
+  Coins,
+  Wallet,
+  Code2,
+  BarChart3,
+  Globe,
+  ArrowLeftRight,
+  Plug,
+  CreditCard,
+  ArrowDownToLine,
+  Activity,
+  type LucideIcon,
 } from "lucide-react";
 
 const builtForItems = [
@@ -32,24 +44,70 @@ const builtForItems = [
   { name: "NGOs & International remittance platforms", image: "/images/tri-2.jpg" }
 ];
 
+const howItWorksSteps = [
+  {
+    title: "Integrate",
+    text: "Integrate Trite via API or hosted checkout.",
+    icon: Code2,
+    iconSecondary: Plug,
+  },
+  {
+    title: "Accept",
+    text: "Accept payments via mobile money, fiat or stablecoins.",
+    icon: Wallet,
+    iconSecondary: CreditCard,
+  },
+  {
+    title: "Receive",
+    text: "Receive payments in local currency or digital assets.",
+    icon: Coins,
+    iconSecondary: ArrowDownToLine,
+  },
+  {
+    title: "Monitor",
+    text: "Monitor performance in real-time via dashboard analytics.",
+    icon: BarChart3,
+    iconSecondary: Activity,
+  },
+];
+
+function HowItWorksIcon({
+  icon: Primary,
+  iconSecondary: Secondary,
+}: {
+  icon: LucideIcon;
+  iconSecondary: LucideIcon;
+}) {
+  return (
+    <div className="relative mb-6 h-14 w-[4.5rem]" aria-hidden>
+      <div className="absolute bottom-0 left-0 flex h-11 w-11 items-center justify-center rounded-xl bg-[#bbf7d0]">
+        <Secondary className="h-5 w-5 text-[#22c55e]" strokeWidth={1.75} />
+      </div>
+      <div className="absolute top-0 right-0 flex h-11 w-11 items-center justify-center rounded-xl bg-[#22c55e] shadow-sm">
+        <Primary className="h-5 w-5 text-white" strokeWidth={2} />
+      </div>
+    </div>
+  );
+}
+
 const whyTriteItems = [
   {
     title: "Built for Africa",
-    content: "Africa’s payment ecosystem is fragmented. Trite simplifies complexity by integrating local payment rails and digital asset infrastructure into a single secure layer."
+    content: "Africa’s payment ecosystem is fragmented. Trite simplifies complexity by integrating local payment rails and digital asset infrastructure into a single secure layer.",
   },
   {
     title: "Security First",
     content: "Our high-security compliance standard includes AI-powered fraud detection and real-time monitoring.",
-    subPoints: ["PCI-aligned architecture", "AML & KYC automation"]
+    subPoints: ["PCI-aligned architecture", "AML & KYC automation"],
   },
   {
     title: "Compliance-Driven",
-    content: "We operate within regulatory frameworks and embed compliance directly into our systems."
+    content: "We operate within regulatory frameworks and embed compliance directly into our systems.",
   },
   {
     title: "Scalable by Design",
-    content: "From local SMEs to cross-border enterprises, Trite grows with your business."
-  }
+    content: "From local SMEs to cross-border enterprises, Trite grows with your business.",
+  },
 ];
 
 export default function Home() {
@@ -115,7 +173,7 @@ export default function Home() {
                 {/* Hero CTA Buttons */}
                 <div className="flex flex-wrap gap-3 pt-2">
                   <Link
-                    className="inline-flex h-12 items-center justify-center rounded-full bg-[#22c55e] px-8 text-sm font-semibold text-black hover:bg-[#16a34a] shadow transition-all duration-200"
+                    className="inline-flex h-12 items-center justify-center rounded-full bg-[#22c55e] px-8 text-sm font-semibold text-white hover:bg-[#16a34a] shadow transition-all duration-200"
                     href="/get-started"
                   >
                     Get Started
@@ -145,14 +203,17 @@ export default function Home() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {/* Heading Card - Overlaps hero */}
             <div className="relative -mt-32 sm:-mt-40 mb-4 sm:mb-6 flex justify-start">
-              <div className="bg-white p-8 sm:p-12 rounded-none text-left lg:w-5/12">
-                <p className="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-2">
-                  Payment Solutions
-                </p>
-                <h3 className="text-3xl sm:text-4xl font-extrabold text-black tracking-tight">
-                  Unified Payment Gateway
-                </h3>
-              </div>
+              <HeroHeadingCard
+                className="lg:w-5/12"
+                label="Payment Solutions"
+                title={
+                  <>
+                    Unified Payment
+                    <br />
+                    Gateway
+                  </>
+                }
+              />
             </div>
 
             {/* Content - On section background */}
@@ -215,33 +276,33 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Mobile: Grid layout */}
-              <div className="grid grid-cols-2 md:hidden gap-8">
-                {/* Card Payments */}
-                <div className="flex items-center justify-center gap-4">
+              {/* Mobile: 2 → 3 → 2 row layout */}
+              <div className="flex flex-col items-center gap-8 md:hidden">
+                {/* Row 1: Card payments */}
+                <div className="flex items-center justify-center gap-6">
                   <img src="/images/mastercard-logo.png" alt="Mastercard" className="h-10 w-auto object-contain" />
                   <img src="/images/visa-logo.png" alt="Visa" className="h-10 w-auto object-contain" />
                 </div>
 
-                {/* Mobile Money */}
-                <div className="flex items-center justify-center gap-3">
-                  <img src="/images/Telecel-logo.png" alt="Telecel" className="h-10 w-auto object-contain" />
-                  <img src="/images/mtn-logo.png" alt="MTN" className="h-10 w-auto object-contain" />
-                  <img src="/images/AirtelTigo-logo.png" alt="AT Money" className="h-10 w-auto object-contain" />
+                {/* Row 2: Mobile money */}
+                <div className="flex items-center justify-center gap-5">
+                  <img src="/images/Telecel-logo.png" alt="Telecel" className="h-11 w-auto object-contain" />
+                  <img src="/images/mtn-logo.png" alt="MTN" className="h-11 w-auto object-contain" />
+                  <img src="/images/AirtelTigo-logo.png" alt="AT Money" className="h-11 w-auto object-contain" />
                 </div>
 
-                {/* Stablecoins */}
-                <div className="flex flex-col items-center gap-1">
-                  <img src="/images/stablecoin-logo1.png" alt="Stablecoins" className="h-12 w-auto object-contain" />
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Stablecoins</span>
-                </div>
-
-                {/* Bank Transfers */}
-                <div className="flex flex-col items-center gap-1">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100">
-                    <Building2 className="h-6 w-6 text-orange-500" />
+                {/* Row 3: Stablecoins & bank transfers */}
+                <div className="flex items-center justify-center gap-10">
+                  <div className="flex flex-col items-center gap-1">
+                    <img src="/images/stablecoin-logo1.png" alt="Stablecoins" className="h-12 w-auto object-contain" />
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Stablecoins</span>
                   </div>
-                  <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Bank Transfers</span>
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100">
+                      <Building2 className="h-6 w-6 text-orange-500" />
+                    </div>
+                    <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Bank Transfers</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -318,7 +379,16 @@ export default function Home() {
           {/* Subtle gradient accent */}
           <div className="absolute top-10 right-0 -z-10 h-[400px] w-[300px] bg-[#22c55e]/5 blur-[100px] pointer-events-none" />
 
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {/* Bottom Background SVG - MOVED BEHIND CARDS */}
+          <div className="absolute bottom-0 left-0 w-full h-auto z-0 pointer-events-none opacity-[0.15]">
+            <img 
+              src="/images/payment&settlement.svg" 
+              alt="" 
+              className="w-full h-auto object-bottom"
+            />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="space-y-6 max-w-3xl pt-8 sm:pt-12">
               <div className="space-y-2">
                 <p className="text-sm font-semibold uppercase tracking-wider text-gray-500">
@@ -470,7 +540,7 @@ export default function Home() {
             <div className="mt-16 flex justify-center">
               <Link
                 href="/payments"
-                className="px-8 py-4 font-semibold bg-[#22c55e] text-black hover:bg-[#16a34a] rounded-full transition-all flex items-center gap-2 shadow-[0_10px_25px_-5px_rgba(34,197,94,0.3)] hover:scale-[1.02]"
+                className="px-8 py-4 font-semibold bg-[#22c55e] text-white hover:bg-[#16a34a] rounded-full transition-all flex items-center gap-2 shadow-[0_10px_25px_-5px_rgba(34,197,94,0.3)] hover:scale-[1.02]"
               >
                 Learn More About Payments <ArrowRight className="h-4 w-4" />
               </Link>
@@ -499,7 +569,7 @@ export default function Home() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
 
               {/* Left Column: Image with Glass Card Overlay */}
-              <div className="lg:col-span-6 xl:col-span-7 relative rounded-[2rem] overflow-hidden group min-h-[500px] lg:min-h-[580px] shadow-lg">
+              <div className="lg:col-span-6 xl:col-span-7 relative rounded-2xl overflow-hidden group min-h-[500px] lg:min-h-[580px] shadow-lg">
                 <Image
                   src="/images/market-women.jpg"
                   alt="Market Women"
@@ -520,7 +590,7 @@ export default function Home() {
               </div>
 
               {/* Right Column: Soft Container with 3 Cards arranged vertically */}
-              <div className="lg:col-span-6 xl:col-span-5 relative rounded-[2rem] p-6 sm:p-8 flex flex-col gap-6 justify-center overflow-hidden">
+              <div className="lg:col-span-6 xl:col-span-5 relative rounded-2xl p-6 sm:p-8 flex flex-col gap-6 justify-center overflow-hidden">
                 {/* Background Image with Overlay */}
                 <div className="absolute inset-0 z-0">
                   <Image
@@ -534,35 +604,40 @@ export default function Home() {
                 {/* Black Overlay to make the image less visible */}
                 <div className="absolute inset-0 bg-black/70 z-[1]" />
 
-                {/* Card 1 */}
-                <div className="relative z-10 bg-white rounded-2xl p-6 transition-transform duration-300 hover:scale-105">
-                  <h3 className="font-bold text-black text-lg mb-2">
-                    Global Digital Infrastructure
-                  </h3>
-                  <p className="text-sm text-gray-500 font-medium leading-relaxed">
-                    Supporting global settlements by bridging stablecoins and traditional fiat assets.
-                  </p>
-                </div>
-
-                {/* Card 2 */}
-                <div className="relative z-10 bg-white rounded-2xl p-6 transition-transform duration-300 hover:scale-105">
-                  <h3 className="font-bold text-black text-lg mb-2">
-                    Traditional Banking Integrations
-                  </h3>
-                  <p className="text-sm text-gray-500 font-medium leading-relaxed">
-                    Direct compatibility with local bank accounts, mobile wallets, and USSD systems.
-                  </p>
-                </div>
-
-                {/* Card 3 */}
-                <div className="relative z-10 bg-white rounded-2xl p-6 transition-transform duration-300 hover:scale-105">
-                  <h3 className="font-bold text-black text-lg mb-2">
-                    Cross-Border Remittances
-                  </h3>
-                  <p className="text-sm text-gray-500 font-medium leading-relaxed">
-                    Empowering merchants to transfer funds across regional borders instantly.
-                  </p>
-                </div>
+                {[
+                  {
+                    icon: Globe,
+                    title: "Global Digital Infrastructure",
+                    desc: "Supporting global settlements by bridging stablecoins and traditional fiat assets.",
+                  },
+                  {
+                    icon: Building2,
+                    title: "Traditional Banking Integrations",
+                    desc: "Direct compatibility with local bank accounts, mobile wallets, and USSD systems.",
+                  },
+                  {
+                    icon: ArrowLeftRight,
+                    title: "Cross-Border Remittances",
+                    desc: "Empowering merchants to transfer funds across regional borders instantly.",
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.title}
+                    className="relative z-10 rounded-2xl bg-white p-6 transition-transform duration-300 hover:scale-105"
+                  >
+                    <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#4ade80] to-[#22c55e] text-white shadow-sm">
+                      <item.icon className="h-5 w-5" strokeWidth={2} />
+                    </div>
+                    <div className="border-l-2 border-[#635bff] pl-3">
+                      <h3 className="text-base font-bold leading-snug text-[#0a2540] sm:text-[17px]">
+                        {item.title}
+                      </h3>
+                    </div>
+                    <p className="mt-3 text-sm leading-[1.65] text-[#425466] sm:text-[15px]">
+                      {item.desc}
+                    </p>
+                  </div>
+                ))}
               </div>
 
             </div>
@@ -571,7 +646,7 @@ export default function Home() {
             <div className="mt-16 flex justify-center">
               <Link
                 href="/markets"
-                className="px-8 py-4 font-semibold bg-black text-white hover:bg-black/90 rounded-full transition-all flex items-center gap-2 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.15)] hover:scale-[1.02]"
+                className="px-8 py-4 font-semibold bg-[#22c55e] text-white hover:bg-[#16a34a] rounded-full transition-all flex items-center gap-2 shadow-[0_10px_25px_-5px_rgba(34,197,94,0.3)] hover:scale-[1.02]"
               >
                 Learn More About Markets <ArrowRight className="h-4 w-4" />
               </Link>
@@ -580,94 +655,101 @@ export default function Home() {
         </section>
 
         {/* SECTION 4: BUSINESSES */}
-        <section
-          id="businesses"
-          className="relative overflow-hidden bg-gradient-to-b from-white via-white to-[#e7e7e7]/50 pt-4 pb-16 sm:pt-6 sm:pb-20 lg:pt-8 lg:pb-24"
-        >
-          {/* Decorative spiral — full bleed so left arcs are not clipped */}
+        <section id="businesses" className="relative overflow-hidden bg-white">
+          {/* Decorative spiral — background */}
           <div
             className="pointer-events-none absolute inset-0 z-0 hidden overflow-visible md:block"
             aria-hidden
           >
-            <div
-              className="absolute top-1/2 left-[65%] aspect-square h-[90%] w-[90%] min-h-[500px] min-w-[500px] -translate-x-1/2 -translate-y-1/2 bg-[url('/images/spiral.svg')] bg-contain bg-center bg-no-repeat opacity-90 lg:left-[70%] lg:min-h-[650px] lg:min-w-[650px]"
-            />
+            <div className="absolute top-1/2 right-0 aspect-square h-[50%] w-[50%] min-h-[280px] min-w-[280px] translate-x-1/2 -translate-y-1/2 bg-[url('/images/spiral.svg')] bg-contain bg-center bg-no-repeat opacity-90 lg:min-h-[360px] lg:min-w-[360px]" />
           </div>
-          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mt-12 grid grid-cols-1 items-start gap-10 lg:mt-16 lg:grid-cols-12 lg:gap-12">
-              {/* Copy — standalone */}
-              <div className="lg:col-span-6">
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-4">
-                  BUSINESSES
-                </h2>
-                <h3 className="max-w-xl text-2xl font-extrabold leading-[1.15] tracking-tight text-[#0c1e43] sm:text-3xl lg:text-[2.35rem]">
-                  Business Solutions - Powering Modern Commerce with Trite.
-                </h3>
 
-                <p className="mt-6 max-w-xl text-sm leading-[1.85] text-gray-500 sm:text-[15px] font-normal">
-                  Trite is more than a payment gateway - it is a complete financial operations platform designed for modern business growth. Through advanced stablecoin integration, fiat payment support, API connectivity, merchant tools, and financial automation features, businesses can streamline transactions while expanding into global markets.
-                </p>
-
-                <div className="mt-8 space-y-5 pt-8">
-                  <div className="space-y-1.5">
-                    <div className="text-base font-bold text-[#0c1e43]">Business Wallet Infrastructure</div>
-                    <p className="text-sm leading-relaxed text-gray-500 font-normal">
-                      Secure multi-currency custody and stablecoin asset management.
-                    </p>
-                  </div>
-                  <div className="space-y-1.5">
-                    <div className="text-base font-bold text-[#0c1e43]">API & Developer Solutions</div>
-                    <p className="text-sm leading-relaxed text-gray-500 font-normal">
-                      Flexible endpoints to deploy checkout layers and bulk payout workflows.
-                    </p>
-                  </div>
-                  <div className="space-y-1.5">
-                    <div className="text-base font-bold text-[#0c1e43]">Advanced Reporting & Analytics</div>
-                    <p className="text-sm leading-relaxed text-gray-500 font-normal">
-                      Gain real-time visibility into transactions and settlement analytics.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-10 flex flex-wrap gap-3">
-                  <Link
-                    className="inline-flex h-12 items-center justify-center rounded-full bg-[#22c55e] px-6 text-sm font-semibold text-black shadow-sm transition-all duration-200 hover:bg-[#16a34a]"
-                    href="/contact-sales"
-                  >
-                    Request a Demo
-                  </Link>
-                  <Link
-                    href="/businesses"
-                    className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-black/15 bg-white px-6 text-sm font-semibold text-black transition-all duration-200 hover:bg-gray-50"
-                  >
-                    Learn More About Business Solutions <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </div>
+          {/* Hero banner — heading & CTAs overlaid on image */}
+          <div className="relative z-10 mx-auto max-w-7xl px-4 pt-10 sm:px-6 sm:pt-12 lg:px-8 lg:pt-14">
+            <div className="relative min-h-[320px] overflow-hidden rounded-2xl sm:min-h-[400px] lg:min-h-[440px]">
+              <Image
+                src="/images/StockSnap.jpg"
+                alt="Business professionals collaborating"
+                fill
+                priority
+                sizes="(max-width: 1280px) 100vw, 1280px"
+                className="object-cover object-center"
+              />
+              <div
+                className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/10"
+                aria-hidden
+              />
+              <div className="relative z-10 flex h-full min-h-[320px] flex-col justify-center px-6 py-14 sm:min-h-[400px] sm:px-10 sm:py-16 lg:min-h-[440px] lg:px-12">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
+                Businesses
+              </p>
+              <h3 className="max-w-2xl text-3xl font-bold leading-[1.15] tracking-tight text-white sm:text-4xl lg:text-5xl">
+                Business Solutions — Powering Modern Commerce with Trite.
+              </h3>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link
+                  className="inline-flex h-11 items-center justify-center rounded-md bg-white px-5 text-sm font-semibold text-[#0c1e43] shadow-sm transition-all duration-200 hover:bg-white/90"
+                  href="/contact-sales"
+                >
+                  Request a Demo
+                </Link>
+                <Link
+                  href="/businesses"
+                  className="inline-flex h-11 items-center justify-center gap-1.5 rounded-md border border-white/40 bg-white/10 px-5 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-200 hover:bg-white/20"
+                >
+                  Learn More <ChevronRight className="h-4 w-4" />
+                </Link>
               </div>
+            </div>
+            </div>
+          </div>
 
-              {/* Image — Staggered Pair (No Overlap) */}
-                <div className="relative lg:col-span-6 lg:ml-auto h-[400px] sm:h-[550px] lg:h-[650px] w-full max-w-[48rem] mt-12 lg:mt-0 flex items-center justify-between gap-4 sm:gap-8">
-                 {/* First Image - Shifted Up */}
-                 <div className="relative w-1/2 h-[85%] sm:h-[90%] overflow-hidden rounded-2xl sm:rounded-3xl shadow-lg -translate-y-4 sm:-translate-y-8 lg:-translate-y-12">
-                   <Image
-                     src="/images/traders.jpg"
-                     alt="Business traders"
-                     fill
-                     sizes="(max-width: 1024px) 45vw, 25vw"
-                     className="object-cover"
-                   />
-                 </div>
-                 {/* Second Image - Shifted Down */}
-                 <div className="relative w-1/2 h-[85%] sm:h-[90%] overflow-hidden rounded-2xl sm:rounded-3xl shadow-xl translate-y-4 sm:translate-y-8 lg:translate-y-12">
-                   <Image
-                     src="/images/business-1.jpg"
-                     alt="Businessman working on laptop"
-                     fill
-                     sizes="(max-width: 1024px) 45vw, 25vw"
-                     className="object-cover"
-                   />
-                 </div>
-               </div>
+          {/* Body — intro paragraph + feature columns */}
+          <div className="relative z-10 mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
+            <p className="max-w-3xl text-base leading-[1.75] text-[#425466] sm:text-lg">
+              Trite is more than a payment gateway — it is a complete financial operations platform designed for modern business growth. Through advanced stablecoin integration, fiat payment support, API connectivity, merchant tools, and financial automation features, businesses can streamline transactions while expanding into global markets.
+            </p>
+
+            <div className="mt-14 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-0">
+              {[
+                {
+                  icon: Wallet,
+                  title: "Business Wallet Infrastructure",
+                  desc: "Secure multi-currency custody and stablecoin asset management.",
+                },
+                {
+                  icon: Code2,
+                  title: "API & Developer Solutions",
+                  desc: "Flexible endpoints to deploy checkout layers and bulk payout workflows.",
+                },
+                {
+                  icon: BarChart3,
+                  title: "Advanced Reporting & Analytics",
+                  desc: "Gain real-time visibility into transactions and settlement analytics.",
+                },
+              ].map((item, i) => (
+                <div
+                  key={item.title}
+                  className={cn(
+                    "px-0 md:px-8",
+                    i < 2 && "md:border-r md:border-dashed md:border-gray-200",
+                    i === 0 && "md:pl-0",
+                    i === 2 && "md:pr-0"
+                  )}
+                >
+                  <div className="mb-5 flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#4ade80] to-[#22c55e] text-white shadow-sm">
+                    <item.icon className="h-5 w-5" strokeWidth={2} />
+                  </div>
+                  <div className="border-l-2 border-[#635bff] pl-3">
+                    <h4 className="text-base font-bold leading-snug text-[#0a2540] sm:text-[17px]">
+                      {item.title}
+                    </h4>
+                  </div>
+                  <p className="mt-3 text-sm leading-[1.65] text-[#425466] sm:text-[15px]">
+                    {item.desc}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -861,7 +943,7 @@ export default function Home() {
             <div className="mt-20 flex justify-center">
               <Link
                 href="/products"
-                className="inline-flex items-center justify-center px-10 py-5 font-bold bg-[#22c55e] text-black hover:bg-[#16a34a] rounded-full transition-all gap-2 shadow-xl hover:shadow-2xl"
+                className="inline-flex items-center justify-center px-10 py-5 font-bold bg-[#22c55e] text-white hover:bg-[#16a34a] rounded-full transition-all gap-2 shadow-xl hover:shadow-2xl"
               >
                 Explore Product Suite <ArrowRight className="h-5 w-5" />
               </Link>
@@ -887,15 +969,15 @@ export default function Home() {
                   </p>
                 </div>
 
-                <div className="flex flex-col space-y-8">
-                  {/* Custom Indicators - Styled as Segmented Control */}
-                  <div className="inline-flex items-center p-1.5 bg-white border border-gray-100 rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.03)] w-fit max-w-full overflow-x-auto no-scrollbar order-2 lg:order-1 mt-8 lg:mt-0">
+                <div className="flex flex-col space-y-5">
+                  {/* Tab navigation */}
+                  <div className="grid w-full max-w-full grid-cols-2 gap-1 rounded-2xl border border-gray-200 bg-white p-1 sm:inline-flex sm:w-fit sm:items-center sm:overflow-x-auto sm:rounded-full sm:p-1.5 no-scrollbar">
                     {whyTriteItems.map((item, idx) => (
                       <button
                         key={idx}
                         onClick={() => setWhyTriteIndex(idx)}
                         className={cn(
-                          "px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 whitespace-nowrap min-w-[120px]",
+                          "w-full rounded-full px-2 py-1.5 text-center text-[10px] font-bold leading-tight transition-all duration-300 sm:w-auto sm:min-w-[120px] sm:whitespace-nowrap sm:px-6 sm:py-2.5 sm:text-sm",
                           whyTriteIndex === idx
                             ? "bg-[#0c1e43] text-white shadow-sm"
                             : "text-[#22c55e] hover:text-[#16a34a]"
@@ -906,57 +988,67 @@ export default function Home() {
                     ))}
                   </div>
 
-                  {/* Interactive Card/Slide */}
-                  <div className="w-full relative order-1 lg:order-2">
-                    <div className="bg-white rounded-none p-8 sm:p-10 min-h-[260px] flex flex-col justify-center relative overflow-hidden shadow-[0_15px_40px_-10px_rgba(0,0,0,0.05)]">
-                      
-                      <div className="relative h-full flex flex-col justify-center w-full">
+                  {/* Carousel card */}
+                  <div className="relative w-full">
+                    <div className="relative min-h-[200px] overflow-hidden border border-gray-200 bg-[#f6f9fc] sm:min-h-[220px]">
+                      <div className="relative h-full min-h-[200px] sm:min-h-[220px]">
                         {whyTriteItems.map((item, idx) => (
                           <motion.div
                             key={idx}
-                            initial={{ opacity: 0, y: 15, scale: 0.98 }}
+                            initial={{ opacity: 0, y: 12 }}
                             animate={{
                               opacity: whyTriteIndex === idx ? 1 : 0,
-                              y: whyTriteIndex === idx ? 0 : -15,
-                              scale: whyTriteIndex === idx ? 1 : 0.98,
-                              pointerEvents: whyTriteIndex === idx ? "auto" : "none"
+                              y: whyTriteIndex === idx ? 0 : 12,
+                              pointerEvents: whyTriteIndex === idx ? "auto" : "none",
                             }}
-                            transition={{ 
-                              duration: 0.5, 
-                              ease: [0.23, 1, 0.32, 1] 
+                            transition={{
+                              duration: 0.45,
+                              ease: [0.23, 1, 0.32, 1],
                             }}
                             className={cn(
-                              "space-y-4",
-                              whyTriteIndex === idx ? "relative" : "absolute inset-0 flex flex-col justify-center"
+                              "flex h-full min-h-[200px] flex-col justify-center sm:min-h-[220px]",
+                              whyTriteIndex === idx
+                                ? "relative"
+                                : "absolute inset-0"
                             )}
                           >
-                            <div className="text-xl sm:text-2xl font-extrabold text-[#0c1e43] flex items-center gap-3">
-                              <span className="h-2 w-2 rounded-full bg-[#22c55e]" />
-                              {item.title}
+                            {/* Text — left side */}
+                            <div className="relative z-10 flex flex-col justify-center px-6 py-5 pr-[38%] sm:px-8 sm:py-6 sm:pr-[42%]">
+                              <div className="mb-3 flex items-center gap-2.5">
+                                <span className="h-2 w-2 shrink-0 rounded-full bg-white/90" />
+                                <h4 className="text-lg font-extrabold text-white sm:text-xl">
+                                  {item.title}
+                                </h4>
+                              </div>
+                              <p className="text-sm leading-relaxed text-white/90 sm:text-base">
+                                {item.content}
+                              </p>
+                              {item.subPoints && (
+                                <ul className="mt-4 space-y-1.5 pl-4 text-sm font-semibold text-white/90">
+                                  {item.subPoints.map((sub, sIdx) => (
+                                    <li key={sIdx} className="flex items-center gap-2">
+                                      <span className="h-1 w-1 shrink-0 rounded-full bg-white/80" />
+                                      {sub}
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
                             </div>
-                            <p className="text-base sm:text-lg text-gray-600 leading-relaxed font-medium">
-                              {item.content}
-                            </p>
-                            {item.subPoints && (
-                              <ul className="text-sm text-gray-800 font-bold space-y-2 pl-6 list-disc">
-                                {item.subPoints.map((sub, sIdx) => (
-                                  <li key={sIdx}>{sub}</li>
-                                ))}
-                              </ul>
-                            )}
+
+                            <WhyTriteCarouselAccent />
                           </motion.div>
                         ))}
                       </div>
 
-                      {/* Progress Bar (Moving Line) */}
-                      <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-50">
+                      {/* Auto-advance progress bar */}
+                      <div className="absolute bottom-0 left-0 z-20 h-[3px] w-full bg-gray-200/60">
                         <motion.div
-                            initial={{ width: "0%" }}
-                            animate={{ width: "100%" }}
-                            transition={{ duration: 5, ease: "linear" }}
-                            key={whyTriteIndex}
-                            className="h-full bg-gradient-to-r from-[#22c55e] to-[#92bd30]"
-                          />
+                          key={whyTriteIndex}
+                          initial={{ width: "0%" }}
+                          animate={{ width: "100%" }}
+                          transition={{ duration: 5, ease: "linear" }}
+                          className="h-full bg-gradient-to-r from-[#22c55e] to-[#86efac]"
+                        />
                       </div>
                     </div>
                   </div>
@@ -979,86 +1071,37 @@ export default function Home() {
 
         {/* SECTION 7: HOW TRITE WORKS & ABOUT */}
         <section
-          className="relative z-10 bg-white pt-10 sm:pt-14 md:pt-20 pb-20 sm:pb-28 md:py-36 overflow-hidden"
+          className="relative z-10 overflow-hidden bg-[#f6f9fc] pt-10 sm:pt-14 md:pt-20 pb-20 sm:pb-28 md:py-36"
         >
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {/* How Trite Works */}
-            <div className="space-y-20">
-              <div className="text-center max-w-3xl mx-auto space-y-4">
-                <h3 className="text-3xl font-extrabold text-black tracking-tight sm:text-4xl lg:text-5xl">
+            <div className="space-y-14 sm:space-y-16">
+              <div className="mx-auto max-w-3xl space-y-4 text-center">
+                <h3 className="text-3xl font-extrabold tracking-tight text-[#0a2540] sm:text-4xl lg:text-5xl">
                   How Trite Works
                 </h3>
-                <p className="text-lg text-gray-500 font-medium">
+                <p className="text-lg font-medium text-[#425466]">
                   Our integration process is designed for speed and reliability, allowing you to start accepting payments across multiple channels in just four simple steps.
                 </p>
               </div>
 
-              <div className="relative">
-                <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-4 relative z-10">
-                  {[
-                    {
-                      step: "1",
-                      title: "Integrate",
-                      text: "Integrate Trite via API or hosted checkout."
-                    },
-                    {
-                      step: "2",
-                      title: "Accept",
-                      text: "Accept payments via mobile money, fiat or stablecoins."
-                    },
-                    {
-                      step: "3",
-                      title: "Receive",
-                      text: "Receive payments in local currency or digital assets."
-                    },
-                    {
-                      step: "4",
-                      title: "Monitor",
-                      text: "Monitor performance in real-time via dashboard analytics."
-                    }
-                  ].map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="flex flex-col items-center text-center space-y-8 group relative"
-                    >
-                      {/* Number Circle */}
-                      <div className="relative">
-                        <div className="h-20 w-20 rounded-full bg-[#22c55e] flex items-center justify-center text-white text-3xl font-bold shadow-xl shadow-green-200/50 transition-all duration-300 group-hover:scale-110 group-hover:bg-[#16a34a]">
-                          {item.step}
-                        </div>
-
-                        {/* Connecting Line - Desktop (Horizontal) */}
-                        {idx < 3 && (
-                          <div className="hidden lg:block absolute top-10 left-20 w-[calc(100vw/4-80px)] xl:w-[220px] h-0.5 pointer-events-none">
-                            <svg className="w-full h-full" preserveAspectRatio="none">
-                              <line x1="0" y1="1" x2="50%" y2="1" stroke="#e5e7eb" strokeWidth="2" />
-                              <line x1="50%" y1="1" x2="100%" y2="1" stroke="#e5e7eb" strokeWidth="2" strokeDasharray="8, 6" />
-                            </svg>
-                          </div>
-                        )}
-
-                        {/* Connecting Line - Mobile (Vertical) */}
-                        {idx < 3 && (
-                          <div className="absolute left-1/2 top-20 w-0.5 h-12 -translate-x-1/2 lg:hidden pointer-events-none">
-                            <svg className="w-full h-full" preserveAspectRatio="none">
-                              <line x1="1" y1="0" x2="1" y2="50%" stroke="#e5e7eb" strokeWidth="2" />
-                              <line x1="1" y1="50%" x2="1" y2="100%" stroke="#e5e7eb" strokeWidth="2" strokeDasharray="8, 6" />
-                            </svg>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="space-y-3">
-                        <h4 className="text-2xl font-bold text-[#22c55e]">
-                          {item.title}
-                        </h4>
-                        <p className="text-base text-gray-500 font-medium leading-relaxed max-w-[240px]">
-                          {item.text}
-                        </p>
-                      </div>
+              <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+                {howItWorksSteps.map((item) => (
+                  <div key={item.title} className="flex flex-col items-center text-center sm:items-start sm:text-left">
+                    <HowItWorksIcon
+                      icon={item.icon}
+                      iconSecondary={item.iconSecondary}
+                    />
+                    <div className="border-b-2 border-[#22c55e] pb-1 w-fit mx-auto sm:border-b-0 sm:border-l-2 sm:pb-0 sm:pl-3 sm:mx-0 sm:w-auto">
+                      <h4 className="text-lg font-bold text-[#0a2540]">
+                        {item.title}
+                      </h4>
                     </div>
-                  ))}
-                </div>
+                    <p className="mt-3 text-sm leading-relaxed text-[#425466] sm:text-base">
+                      {item.text}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -1146,7 +1189,7 @@ export default function Home() {
 
                 <div className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center gap-4 sm:gap-5">
                   <Link
-                    className="inline-flex h-14 items-center justify-center rounded-full bg-[#22c55e] px-10 text-base font-bold text-black hover:bg-[#16a34a] shadow-lg hover:shadow-[#22c55e]/20 transition-all duration-300 hover:scale-105"
+                    className="inline-flex h-14 items-center justify-center rounded-full bg-[#22c55e] px-10 text-base font-bold text-white hover:bg-[#16a34a] shadow-lg hover:shadow-[#22c55e]/20 transition-all duration-300 hover:scale-105"
                     href="/get-started"
                   >
                     Start Accepting Payments

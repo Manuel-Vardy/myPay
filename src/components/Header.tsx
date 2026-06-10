@@ -235,7 +235,7 @@ export default function Header({
               </Link>
               <Link 
                 href="/get-started" 
-                className="px-5 py-2 text-sm font-semibold bg-[#22c55e] text-black hover:bg-[#16a34a] rounded-full transition-all shadow-sm hover:shadow"
+                className="px-5 py-2 text-sm font-semibold bg-[#22c55e] text-white hover:bg-[#16a34a] rounded-full transition-all shadow-sm hover:shadow"
               >
                 Get Started
               </Link>
@@ -290,7 +290,7 @@ export default function Header({
                 <Link
                   href="/get-started"
                   onClick={() => setIsMenuOpen(false)}
-                  className="flex w-full justify-center items-center px-4 py-3 text-sm font-semibold bg-[#22c55e] text-black rounded-xl hover:bg-[#16a34a]"
+                  className="flex w-full justify-center items-center px-4 py-3 text-sm font-semibold bg-[#22c55e] text-white rounded-xl hover:bg-[#16a34a]"
                 >
                   Get Started
                 </Link>

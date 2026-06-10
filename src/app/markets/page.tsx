@@ -5,6 +5,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import HeroHeadingCard from "@/components/HeroHeadingCard";
 import { 
   Globe2,
   TrendingUp,
@@ -58,17 +59,19 @@ export default function MarketsPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Overlapping Heading Card */}
           <div className="relative -mt-16 sm:-mt-20 mb-24 z-20">
-            <div className="inline-block bg-white px-8 pt-10 pb-16 sm:px-12 sm:pt-12 sm:pb-20">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400 mb-2">
-                MARKETS
-              </p>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-black tracking-tight mb-4 leading-tight">
-                Deep Dive into Markets
-              </h2>
-              <p className="text-lg text-gray-500 font-medium max-w-xl leading-relaxed">
-                Expanding traditional and digital transaction borders
-              </p>
-            </div>
+            <HeroHeadingCard
+              label="Markets"
+              title={
+                <>
+                  Deep Dive into
+                  <br />
+                  Markets
+                </>
+              }
+            />
+            <p className="mt-6 max-w-xl px-6 text-lg font-medium leading-relaxed text-gray-500 sm:px-8">
+              Expanding traditional and digital transaction borders
+            </p>
           </div>
 
           {/* a. Global Digital Payments - Text Left, Globe Right */}
@@ -94,8 +97,13 @@ export default function MarketsPage() {
         </div>
 
         {/* b. Traditional Cash & Banking - Full Width Section */}
-        <section className="bg-[#fdfcf6] py-24 sm:py-32 overflow-hidden">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <section className="relative bg-[#fdfcf6] py-24 sm:py-32 overflow-hidden">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 z-0 pointer-events-none">
+            <div className="absolute inset-0 bg-[url('/images/dalmatian-spots.svg')] bg-repeat bg-[length:600px_600px]" />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {/* Mobile-only heading */}
             <div className="lg:hidden mb-2 text-center">
                <h3 className="text-2xl font-extrabold text-black leading-tight">Traditional Cash & Banking</h3>

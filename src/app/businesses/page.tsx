@@ -6,6 +6,7 @@ import { useRef, useState, useEffect } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import HeroHeadingCard from "@/components/HeroHeadingCard";
 import { cn } from "@/lib/utils";
 import { 
   Smartphone, 
@@ -273,7 +274,7 @@ export default function BusinessesPage() {
               {/* CTA Buttons - Homepage Style */}
               <div className="flex flex-wrap gap-2 sm:gap-4 pt-1 sm:pt-4">
                 <Link
-                  className="px-5 py-2.5 sm:px-8 sm:py-4 text-xs sm:text-base font-semibold bg-[#22c55e] text-black hover:bg-[#16a34a] rounded-full transition-all flex items-center gap-2 shadow-[0_10px_25px_-5px_rgba(34,197,94,0.3)] hover:scale-[1.02]"
+                  className="px-5 py-2.5 sm:px-8 sm:py-4 text-xs sm:text-base font-semibold bg-[#22c55e] text-white hover:bg-[#16a34a] rounded-full transition-all flex items-center gap-2 shadow-[0_10px_25px_-5px_rgba(34,197,94,0.3)] hover:scale-[1.02]"
                   href="/contact-sales"
                 >
                   Request a Demo <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -293,17 +294,19 @@ export default function BusinessesPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Overlapping Header Card */}
           <div className="relative -mt-16 sm:-mt-20 mb-16 z-20">
-            <div className="inline-block bg-white px-8 pt-10 pb-16 sm:px-12 sm:pt-12 sm:pb-20">
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
-                Business Solutions
-              </p>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-black tracking-tight">
-                Comprehensive Business Features
-              </h2>
-              <p className="text-base text-gray-500 font-medium mt-2">
-                Operational support tailored for scale and global liquidity
-              </p>
-            </div>
+            <HeroHeadingCard
+              label="Business Solutions"
+              title={
+                <>
+                  Comprehensive  <br />Business
+                  
+                  Features
+                </>
+              }
+            />
+            <p className="mt-6 max-w-xl px-6 text-base font-medium text-gray-500 sm:px-8">
+              Operational support tailored for scale and global liquidity
+            </p>
           </div>
 
           <div 

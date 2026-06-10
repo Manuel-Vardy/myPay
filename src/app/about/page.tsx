@@ -11,61 +11,78 @@ import {
 import { useState } from "react";
 import Image from "next/image";
 
-const leadership = [
+const leadershipMembers = [
   {
-    name: "Digna Pyne",
-    role: "Chief Technical Officer",
-    bio: "Digna leads our technical vision, ensuring our infrastructure is robust, scalable, and built for the future of African payments.",
+    name: "Digna Nana Boadi",
+    role: "Advisory Council",
+    bio: "Digna provides strategic guidance and institutional oversight, ensuring Trite's mission aligns with global financial standards.",
     image: "/leadership-images/digna.jpeg",
     objectPosition: "top"
   },
   {
-    name: "Kofi Boakye",
-    role: "Chief Operation Officer",
-    bio: "Kofi oversees the daily operations of Trite, focusing on efficiency and delivering a seamless experience for our partners.",
+    name: "Fred Parker",
+    role: "General Manager",
+    bio: "Fred oversees platform-wide operations, focusing on high-velocity global settlements and regional scalability.",
     image: "/leadership-images/man2.jpg",
     objectPosition: "top"
   },
   {
-    name: "Kwame Astuam",
-    role: "Lead Engineer",
-    bio: "Kwame drives our engineering excellence, building high-performance systems that power millions of transactions.",
+    name: "Yaw Ababio Junior",
+    role: "Legal Advisor",
+    bio: "Yaw ensures regulatory compliance across African markets, navigating complex legal frameworks for digital assets.",
     image: "/leadership-images/kwame.jpeg",
     objectPosition: "top"
   },
   {
-    name: "Christiana Agyei-Boateng",
-    role: "Head of System Administrator",
-    bio: "Christiana ensures our systems are always secure, available, and performing at their peak for all our users.",
+    name: "Quarme Shadrack",
+    role: "Staff Representative at the Leadership Board",
+    bio: "Quarme serves as a bridge between operational staff and executive leadership, fostering a culture of excellence.",
     image: "/leadership-images/madam.jpg",
-    objectPosition: "top"
-  },
-  {
-    name: "Manuel Vardy",
-    role: "Brand & User Experience",
-    bio: "Manuel shapes how the world sees and interacts with Trite, focusing on intuitive design and professional branding.",
-    image: "/leadership-images/manuel-vardy.jpeg",
-    objectPosition: "top"
-  },
-  {
-    name: "Salome Yartey",
-    role: "Head of Support Team",
-    bio: "Salome leads our commitment to merchant success, ensuring every inquiry is handled with speed and expertise.",
-    image: "/leadership-images/salomey.jpg",
-    objectPosition: "top"
-  },
-  {
-    name: "Ella Amonoo",
-    role: "Head of Business",
-    bio: "Ella drives our business growth strategies, forging key partnerships that expand the Trite ecosystem across the continent.",
-    image: "/leadership-images/ella.jpg",
     objectPosition: "top"
   },
   {
     name: "Isaac Asamoah",
     role: "Chief Executive Officer",
-    bio: "Isaac leads the overall development and execution of Trite's long-term strategy and mission to unify African payments.",
+    bio: "Isaac leads the overall strategy and execution of Trite's mission to bridge traditional banking with digital assets.",
     image: "/leadership-images/isaac.jpg",
+    objectPosition: "top"
+  }
+];
+
+const teamMembers = [
+  {
+    name: "Kwame Twum",
+    role: "Chief Technology Officer",
+    bio: "Kwame drives the technical vision, building the high-fidelity stablecoin infrastructure that powers Trite.",
+    image: "/leadership-images/kwame.jpeg",
+    objectPosition: "top"
+  },
+  {
+    name: "Quarme Shadrack",
+    role: "Project Manager",
+    bio: "Quarme manages the delivery of core features, ensuring seamless integration of mobile money and card networks.",
+    image: "/leadership-images/man2.jpg",
+    objectPosition: "top"
+  },
+  {
+    name: "Baah Kusi",
+    role: "Lead Engineer, Stablecoin",
+    bio: "Baah specializes in blockchain architecture, optimizing the integrated stablecoin layer for global liquidity.",
+    image: "/leadership-images/ella.jpg",
+    objectPosition: "top"
+  },
+  {
+    name: "Emmanuel Vardy",
+    role: "Brand and User Experience",
+    bio: "Emmanuel shapes the professional branding and intuitive interfaces of the Trite institutional portal.",
+    image: "/leadership-images/manuel-vardy.jpeg",
+    objectPosition: "top"
+  },
+  {
+    name: "Jeniffer Narh",
+    role: "Head of Marketing and Sales",
+    bio: "Jeniffer leads business growth strategies, expanding Trite's reach across the African continent and beyond.",
+    image: "/leadership-images/salomey.jpg",
     objectPosition: "top"
   }
 ];
@@ -82,13 +99,13 @@ export default function AboutPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
+    <div className="flex min-h-screen flex-col bg-[#f2f2f2]">
       <Header transparent={true} darkLogo={true} />
 
       <main className="flex-grow pt-24 sm:pt-28">
         
         {/* ABOUT US SECTION - FROM HOMEPAGE */}
-        <section id="about-us" className="relative z-10 bg-white py-20 sm:py-24 overflow-hidden">
+        <section id="about-us" className="relative z-10 py-20 sm:py-24 overflow-hidden">
           {/* Decorative spiral - Left side background */}
           <div
             className="pointer-events-none absolute inset-0 z-0 hidden md:block"
@@ -130,19 +147,25 @@ export default function AboutPage() {
         </section>
 
         {/* LEADERSHIP SECTION */}
-        <section id="leadership" className="py-24 sm:py-32 bg-[#fdfcf6]">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <section id="leadership" className="relative py-24 sm:py-32 bg-[#fdfcf6] overflow-hidden">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 z-0 pointer-events-none">
+            <div className="absolute inset-0 bg-[url('/images/dalmatian-spots.svg')] bg-repeat bg-[length:600px_600px]" />
+          </div>
+          
+          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            {/* Leadership Subsection */}
             <div className="text-center mb-20">
-              <h2 className="text-3xl sm:text-5xl font-extrabold text-black tracking-tight">Leadership</h2>
+              <h2 className="text-3xl sm:text-5xl font-extrabold text-black tracking-tight mb-4">Leadership</h2>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
-              {leadership.map((member, idx) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-16 mb-32">
+              {leadershipMembers.map((member, idx) => (
                 <div key={idx} className="text-center group">
                   <div className="relative mb-6 inline-block">
                     {/* Circular Dashed Border */}
-                    <div className="absolute -inset-4 border-2 border-dashed border-yellow-400 rounded-full opacity-40 group-hover:opacity-100 transition-opacity" />
-                    <div className="relative h-64 w-64 rounded-full overflow-hidden bg-gray-100">
+                    <div className="absolute -inset-3 border-2 border-dashed border-yellow-400 rounded-full opacity-40 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative h-48 w-48 xl:h-52 xl:w-52 rounded-full overflow-hidden bg-gray-100 mx-auto">
                       <Image
                         src={member.image}
                         alt={member.name}
@@ -152,9 +175,39 @@ export default function AboutPage() {
                       />
                     </div>
                   </div>
-                  <h3 className="text-xl font-bold text-black mb-1">{member.name}</h3>
-                  <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">{member.role}</p>
-                  <p className="text-sm text-gray-500 leading-relaxed font-medium px-4">
+                  <h3 className="text-lg font-bold text-black mb-1">{member.name}</h3>
+                  <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-4 leading-tight">{member.role}</p>
+                  <p className="text-xs text-gray-500 leading-relaxed font-medium px-2">
+                    {member.bio}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* The Team Subsection */}
+            <div className="text-center mb-20">
+              <h2 className="text-3xl sm:text-5xl font-extrabold text-black tracking-tight mb-4">The Team</h2>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-16">
+              {teamMembers.map((member, idx) => (
+                <div key={idx} className="text-center group">
+                  <div className="relative mb-6 inline-block">
+                    {/* Circular Dashed Border */}
+                    <div className="absolute -inset-3 border-2 border-dashed border-yellow-400 rounded-full opacity-40 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative h-48 w-48 xl:h-52 xl:w-52 rounded-full overflow-hidden bg-gray-100 mx-auto">
+                      <Image
+                        src={member.image}
+                        alt={member.name}
+                        fill
+                        className="object-cover transition-all duration-500"
+                        style={{ objectPosition: member.objectPosition || "center" }}
+                      />
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-bold text-black mb-1">{member.name}</h3>
+                  <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-4 leading-tight">{member.role}</p>
+                  <p className="text-xs text-gray-500 leading-relaxed font-medium px-2">
                     {member.bio}
                   </p>
                 </div>
@@ -164,11 +217,11 @@ export default function AboutPage() {
         </section>
 
         {/* CONTACT US SECTION - COPIED FROM CONTACT PAGE */}
-        <section id="contact-us" className="py-24 sm:py-32 bg-gray-50/50">
+        <section id="contact-us" className="py-24 sm:py-32 bg-[#f0fdf4]">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mb-16">
               <h2 className="text-3xl font-bold text-black mb-2">Get in touch</h2>
-              <p className="text-gray-500 font-medium">
+              <p className="text-gray-600 font-medium">
                 Have questions or need support? We're here to help you scale your business.
               </p>
             </div>
@@ -176,7 +229,7 @@ export default function AboutPage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24">
               <div className="lg:col-span-7">
                 {formState === "success" ? (
-                  <div className="bg-white rounded-3xl p-8 sm:p-12 text-center flex flex-col items-center justify-center min-h-[400px] border border-black/[0.03]">
+                  <div className="bg-white rounded-3xl p-8 sm:p-12 text-center flex flex-col items-center justify-center min-h-[400px] border border-black/[0.03] shadow-xl">
                     <div className="h-20 w-20 bg-[#22c55e]/10 rounded-full flex items-center justify-center mb-6">
                       <CheckCircle2 className="h-10 w-10 text-[#22c55e]" />
                     </div>
@@ -200,7 +253,7 @@ export default function AboutPage() {
                           required
                           type="text"
                           id="first-name"
-                          className="w-full bg-white border border-black/[0.08] rounded-[20px] px-6 py-3 text-black font-medium focus:outline-none focus:border-black/20 transition-all"
+                          className="w-full bg-white border border-black/[0.08] rounded-[20px] px-6 py-3 text-black font-medium focus:outline-none focus:ring-2 focus:ring-[#22c55e]/20 transition-all"
                           placeholder="Kwame"
                         />
                       </div>
@@ -210,7 +263,7 @@ export default function AboutPage() {
                           required
                           type="text"
                           id="last-name"
-                          className="w-full bg-white border border-black/[0.08] rounded-[20px] px-6 py-3 text-black font-medium focus:outline-none focus:border-black/20 transition-all"
+                          className="w-full bg-white border border-black/[0.08] rounded-[20px] px-6 py-3 text-black font-medium focus:outline-none focus:ring-2 focus:ring-[#22c55e]/20 transition-all"
                           placeholder="Boateng"
                         />
                       </div>
@@ -221,7 +274,7 @@ export default function AboutPage() {
                         required
                         type="email"
                         id="email"
-                        className="w-full bg-white border border-black/[0.08] rounded-[20px] px-6 py-3 text-black font-medium focus:outline-none focus:border-black/20 transition-all"
+                        className="w-full bg-white border border-black/[0.08] rounded-[20px] px-6 py-3 text-black font-medium focus:outline-none focus:ring-2 focus:ring-[#22c55e]/20 transition-all"
                         placeholder="kwameboateng@company.com"
                       />
                     </div>
@@ -231,16 +284,21 @@ export default function AboutPage() {
                         required
                         id="message"
                         rows={5}
-                        className="w-full bg-white border border-black/[0.08] rounded-[20px] px-6 py-3 text-black font-medium focus:outline-none focus:border-black/20 transition-all resize-none"
+                        className="w-full bg-white border border-black/[0.08] rounded-[20px] px-6 py-3 text-black font-medium focus:outline-none focus:ring-2 focus:ring-[#22c55e]/20 transition-all resize-none"
                         placeholder="How can we help you?"
                       ></textarea>
                     </div>
                     <button
                       disabled={formState === "submitting"}
                       type="submit"
-                      className="w-full sm:w-auto px-8 py-3.5 bg-[#22c55e] text-black rounded-full font-semibold text-base hover:bg-[#16a34a] transition-all flex items-center justify-center gap-3 disabled:opacity-70"
+                      className="w-full sm:w-auto px-10 py-4 bg-[#22c55e] text-white rounded-full font-bold text-base hover:bg-[#16a34a] transition-all flex items-center justify-center gap-3 disabled:opacity-70 shadow-lg"
                     >
-                      {formState === "submitting" ? "Sending..." : "Send Message"}
+                      {formState === "submitting" ? (
+                        <>
+                          <div className="h-5 w-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                          Sending...
+                        </>
+                      ) : "Send Message"}
                     </button>
                   </form>
                 )}
@@ -256,7 +314,7 @@ export default function AboutPage() {
                       </div>
                       <div>
                         <p className="text-xs font-medium uppercase tracking-wider text-gray-400 mb-1">Email us</p>
-                        <p className="text-lg font-medium text-black">support@trite.com</p>
+                        <p className="text-lg font-bold text-black">support@trite.com</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-5">
@@ -265,7 +323,7 @@ export default function AboutPage() {
                       </div>
                       <div>
                         <p className="text-xs font-medium uppercase tracking-wider text-gray-400 mb-1">Call us</p>
-                        <p className="text-lg font-medium text-black">+233 (0) 50 123 4567</p>
+                        <p className="text-lg font-bold text-black">+233 (0) 50 123 4567</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-5">
@@ -274,7 +332,7 @@ export default function AboutPage() {
                       </div>
                       <div>
                         <p className="text-xs font-medium uppercase tracking-wider text-gray-400 mb-1">Visit us</p>
-                        <p className="text-lg font-medium text-black">
+                        <p className="text-lg font-bold text-black">
                           Ahodwo-Daban, Dei-Kwarteng Street,<br />
                           Near Hill-Top (AK-606-2396)
                         </p>
@@ -284,7 +342,7 @@ export default function AboutPage() {
                 </div>
 
                 {/* CONNECT SECTION - SOCIAL MEDIA */}
-                <div id="connect" className="space-y-8 pt-8 border-t border-black/[0.08]">
+                <div id="connect" className="space-y-8 pt-8 border-t border-black/10">
                   <h3 className="text-2xl font-semibold text-black">Connect with us</h3>
                   <div className="flex flex-wrap gap-4">
                     {[
@@ -294,7 +352,7 @@ export default function AboutPage() {
                             <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z" />
                           </svg>
                         ),
-                        href: "#",
+                        href: "https://www.facebook.com/share/1E1xqWNV6o/?mibextid=wwXIfr",
                         label: "Facebook"
                       },
                       {
@@ -303,7 +361,7 @@ export default function AboutPage() {
                             <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                           </svg>
                         ),
-                        href: "#",
+                        href: "https://x.com/trite_pay?s=11",
                         label: "X"
                       },
                       {
@@ -330,14 +388,16 @@ export default function AboutPage() {
                             <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
                           </svg>
                         ),
-                        href: "#",
+                        href: "https://www.instagram.com/tritepay?igsh=MWNiOHAzMzJ0M3dheQ%3D%3D&utm_source=qr",
                         label: "Instagram"
                       }
                     ].map((social, idx) => (
                       <a
                         key={idx}
                         href={social.href}
-                        className="h-12 w-12 bg-black text-white rounded-full flex items-center justify-center hover:bg-[#22c55e] hover:text-black transition-all duration-300 shadow-lg"
+                        target={social.href !== "#" ? "_blank" : undefined}
+                        rel={social.href !== "#" ? "noopener noreferrer" : undefined}
+                        className="h-12 w-12 bg-black text-white rounded-full flex items-center justify-center hover:bg-[#22c55e] hover:text-white transition-all duration-300 shadow-lg"
                         aria-label={social.label}
                       >
                         {social.icon}
