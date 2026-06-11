@@ -13,24 +13,32 @@ import Image from "next/image";
 
 const leadershipMembers = [
   {
+    name: "Digna Nana Boadi",
+    role: "Advisory Council",
+    bio: "Digna provides strategic guidance and institutional oversight, ensuring Trite's mission aligns with global financial standards.",
+    image: "/leadership-images/digna.jpeg",
+    objectPosition: "center top",
+    imageTransform: "scale(1.15) translate(6%, 6%)"
+  },
+  {
     name: "Fred Parker",
     role: "General Manager",
     bio: "Fred oversees platform-wide operations, focusing on high-velocity global settlements and regional scalability.",
-    image: "/leadership-images/man2.jpg",
+    image: "/leadership-images/fred-parker.jpeg",
     objectPosition: "top"
   },
   {
     name: "Yaw Ababio Junior",
     role: "Legal Advisor",
     bio: "Yaw ensures regulatory compliance across African markets, navigating complex legal frameworks for digital assets.",
-    image: "/leadership-images/kwame.jpeg",
+    image: "/leadership-images/ababio.jpeg",
     objectPosition: "top"
   },
   {
     name: "Quarme Shadrack",
     role: "Staff Representative at the Leadership Board",
     bio: "Quarme serves as a bridge between operational staff and executive leadership, fostering a culture of excellence.",
-    image: "/leadership-images/madam.jpg",
+    image: "/leadership-images/man2.jpg",
     objectPosition: "top"
   },
   {
@@ -61,11 +69,11 @@ const teamMembers = [
     name: "Baah Kusi",
     role: "Lead Engineer, Stablecoin",
     bio: "Baah specializes in blockchain architecture, optimizing the integrated stablecoin layer for global liquidity.",
-    image: "/leadership-images/ella.jpg",
+    image: "/leadership-images/baah.jpeg",
     objectPosition: "top"
   },
   {
-    name: "Emmanuel Vardy",
+    name: "Emmanuel Owusu",
     role: "Brand and User Experience",
     bio: "Emmanuel shapes the professional branding and intuitive interfaces of the Trite institutional portal.",
     image: "/leadership-images/manuel-vardy.jpeg",
@@ -75,8 +83,9 @@ const teamMembers = [
     name: "Jeniffer Narh",
     role: "Head of Marketing and Sales",
     bio: "Jeniffer leads business growth strategies, expanding Trite's reach across the African continent and beyond.",
-    image: "/leadership-images/salomey.jpg",
-    objectPosition: "top"
+    image: "/leadership-images/jennifer.jpeg",
+    objectPosition: "top",
+    imageTransform: "scale(1.15) translate(-6%, 5%)"
   }
 ];
 
@@ -152,7 +161,7 @@ export default function AboutPage() {
               <h2 className="text-3xl sm:text-5xl font-extrabold text-black tracking-tight mb-4">Leadership</h2>
             </div>
 
-            <div className="mx-auto mb-32 grid max-w-6xl grid-cols-1 gap-x-8 gap-y-16 sm:grid-cols-2 lg:grid-cols-4 justify-items-center">
+            <div className="mx-auto mb-32 grid max-w-full grid-cols-1 gap-x-8 gap-y-16 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 justify-items-center">
               {leadershipMembers.map((member, idx) => (
                 <div key={idx} className="group w-full max-w-[260px] text-center">
                   <div className="relative mb-6 inline-block">
@@ -164,7 +173,10 @@ export default function AboutPage() {
                         alt={member.name}
                         fill
                         className="object-cover transition-all duration-500"
-                        style={{ objectPosition: member.objectPosition || "center" }}
+                        style={{ 
+                          objectPosition: member.objectPosition || "center",
+                          transform: (member as any).imageTransform || "none"
+                        }}
                       />
                     </div>
                   </div>
@@ -194,7 +206,10 @@ export default function AboutPage() {
                         alt={member.name}
                         fill
                         className="object-cover transition-all duration-500"
-                        style={{ objectPosition: member.objectPosition || "center" }}
+                        style={{ 
+                          objectPosition: member.objectPosition || "center",
+                          transform: (member as any).imageTransform || "none"
+                        }}
                       />
                     </div>
                   </div>
