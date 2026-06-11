@@ -291,7 +291,8 @@ export default function BusinessesPage() {
         </section>
 
         {/* 6 BUSINESS SUB-SECTIONS - Redesigned */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <section className="relative bg-white pt-10 pb-4 rounded-t-[24px] sm:rounded-t-[32px] md:rounded-t-[40px] -mt-6 sm:-mt-8 md:-mt-10 z-10">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Overlapping Header Card */}
           <div className="relative -mt-16 sm:-mt-20 mb-16 z-20">
             <HeroHeadingCard
@@ -324,6 +325,7 @@ export default function BusinessesPage() {
             ))}
           </div>
         </div>
+      </section>
 
         {/* ENTERPRISE SECURITY & COMPLIANCE - Redesigned */}
         <section className="relative mt-8 pb-24 pt-16 overflow-hidden bg-white">

@@ -60,29 +60,31 @@ export default function PaymentsPage() {
         </section>
 
         {/* PRICING SECTION */}
-        <div className="relative z-20 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 -mt-12 sm:-mt-16 flex justify-start">
-          <div className="text-left lg:w-7/12">
-            <HeroHeadingCard
-              className="max-w-none sm:max-w-none"
-              label="Payments"
-              title={
-                <>
-                  Simple & Transparent
-                  <br />
-                  Pricing
-                </>
-              }
-            />
-            <p className="mt-6 max-w-2xl px-6 text-lg font-medium leading-relaxed text-gray-600 sm:px-8 sm:text-xl">
-              Pay only <span className="font-bold text-[#16a34a]">1.50%</span> per transaction and enjoy fast, secure, and reliable payments.
-            </p>
-            <div className="mt-8 flex justify-start gap-1.5 px-6 sm:px-8">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-1.5 w-1.5 rounded-full bg-[#22c55e]" />
-              ))}
+        <section className="relative bg-white pt-10 pb-4 rounded-t-[24px] sm:rounded-t-[32px] md:rounded-t-[40px] -mt-6 sm:-mt-8 md:-mt-10 z-10">
+          <div className="relative z-20 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 -mt-20 sm:-mt-24 flex justify-start">
+            <div className="text-left lg:w-7/12">
+              <HeroHeadingCard
+                className="max-w-none sm:max-w-none"
+                label="Payments"
+                title={
+                  <>
+                    Simple & Transparent
+                    <br />
+                    Pricing
+                  </>
+                }
+              />
+              <p className="mt-6 max-w-2xl px-6 text-lg font-medium leading-relaxed text-gray-600 sm:px-8 sm:text-xl">
+                Pay only <span className="font-bold text-[#16a34a]">1.50%</span> per transaction and enjoy fast, secure, and reliable payments.
+              </p>
+              <div className="mt-8 flex justify-start gap-1.5 px-6 sm:px-8">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="h-1.5 w-1.5 rounded-full bg-[#22c55e]" />
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* GRID OF THE 7 MAIN PAYMENT RAILS */}
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-32">

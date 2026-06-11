@@ -56,7 +56,8 @@ export default function MarketsPage() {
 
 
         {/* MARKET LISTINGS REDESIGN */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <section className="relative bg-white pt-10 pb-4 rounded-t-[24px] sm:rounded-t-[32px] md:rounded-t-[40px] -mt-6 sm:-mt-8 md:-mt-10 z-10">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Overlapping Heading Card */}
           <div className="relative -mt-16 sm:-mt-20 mb-24 z-20">
             <HeroHeadingCard
@@ -95,6 +96,7 @@ export default function MarketsPage() {
             </div>
           </div>
         </div>
+      </section>
 
         {/* b. Traditional Cash & Banking - Full Width Section */}
         <section className="relative bg-[#fdfcf6] py-24 sm:py-32 overflow-hidden">

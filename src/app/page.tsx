@@ -199,10 +199,10 @@ export default function Home() {
         </section>
 
         {/* Unified Payment Gateway Section */}
-        <section className="relative bg-white pt-16 pb-4 sm:pt-20 sm:pb-6">
+        <section className="relative bg-white pt-16 pb-4 sm:pt-20 sm:pb-6 rounded-t-[24px] sm:rounded-t-[32px] md:rounded-t-[40px] -mt-6 sm:-mt-8 md:-mt-10 z-10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {/* Heading Card - Overlaps hero */}
-            <div className="relative -mt-32 sm:-mt-40 mb-4 sm:mb-6 flex justify-start">
+            <div className="relative -mt-28 sm:-mt-32 mb-4 sm:mb-6 flex justify-start">
               <HeroHeadingCard
                 className="lg:w-5/12"
                 label="Payment Solutions"
@@ -413,6 +413,14 @@ export default function Home() {
               <div className="space-y-8 lg:space-y-10">
                 {/* Card 1: Mobile Money & USSD */}
                 <div className="relative overflow-hidden bg-white rounded-3xl p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
+                  {/* Top-left corner curve gradient */}
+                  <div 
+                    className="absolute top-0 left-0 w-24 h-24 sm:w-28 sm:h-28 pointer-events-none z-0 transition-all duration-500 ease-out group-hover:scale-110 origin-top-left" 
+                    style={{
+                      background: 'radial-gradient(circle at 0% 0%, #22c55e 0%, #22c55e 30%, #4ade80 30%, #4ade80 55%, #86efac 55%, #86efac 75%, transparent 75%)',
+                      borderBottomRightRadius: '100%',
+                    }}
+                  />
                   <div className="max-w-[55%] relative z-10 flex flex-col justify-between h-full">
                     <div>
                       <h3 className="text-xl sm:text-2xl font-bold text-[#0c1e43] mb-4 tracking-tight">Mobile Money & USSD</h3>
@@ -444,6 +452,14 @@ export default function Home() {
 
                 {/* Card 3: Stablecoin Gateway */}
                 <div className="relative overflow-hidden bg-white rounded-3xl p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
+                  {/* Top-left corner curve gradient */}
+                  <div 
+                    className="absolute top-0 left-0 w-24 h-24 sm:w-28 sm:h-28 pointer-events-none z-0 transition-all duration-500 ease-out group-hover:scale-110 origin-top-left" 
+                    style={{
+                      background: 'radial-gradient(circle at 0% 0%, #22c55e 0%, #22c55e 30%, #4ade80 30%, #4ade80 55%, #86efac 55%, #86efac 75%, transparent 75%)',
+                      borderBottomRightRadius: '100%',
+                    }}
+                  />
                   <div className="max-w-[55%] relative z-10 flex flex-col justify-between h-full">
                     <div>
                       <h3 className="text-xl sm:text-2xl font-bold text-[#0c1e43] mb-4 tracking-tight">Stablecoin Gateway</h3>
@@ -478,6 +494,14 @@ export default function Home() {
               <div className="space-y-8 lg:space-y-10 md:-mt-24 lg:-mt-32">
                 {/* Card 2: Card Collections */}
                 <div className="relative overflow-hidden bg-white rounded-3xl p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
+                  {/* Top-left corner curve gradient */}
+                  <div 
+                    className="absolute top-0 left-0 w-24 h-24 sm:w-28 sm:h-28 pointer-events-none z-0 transition-all duration-500 ease-out group-hover:scale-110 origin-top-left" 
+                    style={{
+                      background: 'radial-gradient(circle at 0% 0%, #22c55e 0%, #22c55e 30%, #4ade80 30%, #4ade80 55%, #86efac 55%, #86efac 75%, transparent 75%)',
+                      borderBottomRightRadius: '100%',
+                    }}
+                  />
                   <div className="max-w-[55%] relative z-10 flex flex-col justify-between h-full">
                     <div>
                       <h3 className="text-xl sm:text-2xl font-bold text-[#0c1e43] mb-4 tracking-tight">Card Collections</h3>
@@ -507,6 +531,14 @@ export default function Home() {
 
                 {/* Card 4: Bank Settlements */}
                 <div className="relative overflow-hidden bg-white rounded-3xl p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
+                  {/* Top-left corner curve gradient */}
+                  <div 
+                    className="absolute top-0 left-0 w-24 h-24 sm:w-28 sm:h-28 pointer-events-none z-0 transition-all duration-500 ease-out group-hover:scale-110 origin-top-left" 
+                    style={{
+                      background: 'radial-gradient(circle at 0% 0%, #22c55e 0%, #22c55e 30%, #4ade80 30%, #4ade80 55%, #86efac 55%, #86efac 75%, transparent 75%)',
+                      borderBottomRightRadius: '100%',
+                    }}
+                  />
                   <div className="max-w-[55%] relative z-10 flex flex-col justify-between h-full">
                     <div>
                       <h3 className="text-xl sm:text-2xl font-bold text-[#0c1e43] mb-4 tracking-tight">Bank Settlements</h3>
@@ -628,7 +660,7 @@ export default function Home() {
                     <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#4ade80] to-[#22c55e] text-white shadow-sm">
                       <item.icon className="h-5 w-5" strokeWidth={2} />
                     </div>
-                    <div className="border-l-2 border-[#635bff] pl-3">
+                    <div className="border-l-2 border-[#22c55e] pl-3">
                       <h3 className="text-base font-bold leading-snug text-[#0a2540] sm:text-[17px]">
                         {item.title}
                       </h3>
@@ -654,8 +686,24 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Curved Divider */}
+        <div className="relative -mt-1">
+          <svg 
+            className="w-full h-12 sm:h-16" 
+            viewBox="0 0 1200 120" 
+            xmlns="http://www.w3.org/2000/svg"
+            preserveAspectRatio="none"
+          >
+            <path 
+              d="M0,0 C300,80 900,80 1200,0 L1200,120 L0,120 Z" 
+              fill="#e7e7e7" 
+              fillOpacity="0.5"
+            />
+          </svg>
+        </div>
+
         {/* SECTION 4: BUSINESSES */}
-        <section id="businesses" className="relative overflow-hidden bg-white">
+        <section id="businesses" className="relative overflow-hidden bg-[#e7e7e7]/50">
           {/* Decorative spiral — background */}
           <div
             className="pointer-events-none absolute inset-0 z-0 hidden overflow-visible md:block"
@@ -688,7 +736,7 @@ export default function Home() {
               </h3>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
-                  className="inline-flex h-11 items-center justify-center rounded-md bg-white px-5 text-sm font-semibold text-[#0c1e43] shadow-sm transition-all duration-200 hover:bg-white/90"
+                  className="inline-flex h-11 items-center justify-center rounded-md bg-[#22c55e] px-5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-[#16a34a]"
                   href="/contact-sales"
                 >
                   Request a Demo
@@ -706,7 +754,7 @@ export default function Home() {
 
           {/* Body — intro paragraph + feature columns */}
           <div className="relative z-10 mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
-            <p className="max-w-3xl text-base leading-[1.75] text-[#425466] sm:text-lg">
+            <p className="max-w-3xl mx-auto text-center text-base leading-[1.75] text-[#425466] sm:text-lg">
               Trite is more than a payment gateway — it is a complete financial operations platform designed for modern business growth. Through advanced stablecoin integration, fiat payment support, API connectivity, merchant tools, and financial automation features, businesses can streamline transactions while expanding into global markets.
             </p>
 
@@ -740,7 +788,7 @@ export default function Home() {
                   <div className="mb-5 flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#4ade80] to-[#22c55e] text-white shadow-sm">
                     <item.icon className="h-5 w-5" strokeWidth={2} />
                   </div>
-                  <div className="border-l-2 border-[#635bff] pl-3">
+                  <div className="border-l-2 border-[#22c55e] pl-3">
                     <h4 className="text-base font-bold leading-snug text-[#0a2540] sm:text-[17px]">
                       {item.title}
                     </h4>
@@ -757,7 +805,7 @@ export default function Home() {
         {/* SECTION 5: PRODUCTS */}
         <section
           id="products"
-          className="relative z-10 bg-white pt-20 sm:pt-28 md:pt-36 pb-10 sm:pb-16 md:pb-20 overflow-hidden"
+          className="relative z-10 bg-white pt-20 sm:pt-28 md:pt-36 pb-16 sm:pb-24 md:pb-32 overflow-hidden"
         >
           {/* SVG Background */}
           <div className="absolute top-0 left-0 w-full h-full z-0 pointer-events-none">
@@ -789,22 +837,23 @@ export default function Home() {
           </div>
 
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            {/* Top Row: Heading/Image/Button on Left, Paragraph on Right */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center mb-12">
+            
+            {/* Top Row: Heading and Image on Left, Paragraph on Right */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center mb-16 sm:mb-24">
               
-              {/* Left Column: Heading, Image and Button */}
-              <div className="lg:col-span-5 space-y-8">
-                <div className="space-y-4">
+              {/* Left Column: Heading & Image */}
+              <div className="lg:col-span-5 space-y-6">
+                <div className="space-y-3">
                   <p className="text-sm font-semibold uppercase tracking-wider text-gray-500">
                     PRODUCTS
                   </p>
-                  <h2 className="text-3xl font-extrabold tracking-tight text-black sm:text-4xl lg:text-5xl leading-tight">
-                    Our Suite of Payment Products
+                  <h2 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-black leading-tight">
+                    Our Suite of <br className="hidden sm:inline" /> Payment Products
                   </h2>
                 </div>
 
-                {/* Image */}
-                <div className="max-w-md">
+                {/* Image happy.png */}
+                <div className="max-w-md pt-4">
                   <img
                     src="/images/happy.png"
                     alt="Happy customer"
@@ -813,137 +862,137 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Right Column: Paragraph Description */}
+              {/* Right Column: Paragraph Text */}
               <div className="lg:col-span-7">
-                <p className="text-lg sm:text-xl text-gray-600 leading-relaxed font-medium">
+                <p className="text-base sm:text-lg leading-relaxed text-gray-600 font-medium">
                   Trite provides a comprehensive suite of payment solutions designed to empower businesses with seamless, secure, and scalable payment infrastructure across Africa and beyond. Our products are built to handle the complexities of modern commerce, from stablecoin settlements to traditional banking rails.
                 </p>
               </div>
+              
             </div>
-
-            {/* Bottom Row: Product Cards Grid - Staggered Layout */}
-            <div className="max-w-6xl mx-auto">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 items-start">
-                {/* Left Column Cards - Offset with margin-top */}
-                <div className="space-y-12 sm:mt-20">
-                  {[
-                    {
-                      title: "Trite Gateway",
-                      desc: "Complete online payment solution for web & mobile businesses.",
-                      rail: "01",
-                      blockColor: "bg-[#2563eb]",
-                      image: "/images/gateway.png",
-                      layout: "left",
-                      imgPos: "-bottom-6"
-                    },
-                    {
-                      title: "Trite Merchant Dashboard",
-                      desc: "Advanced reporting, reconciliation, settlement tracking, and business insights.",
-                      rail: "03",
-                      blockColor: "bg-[#affc41]",
-                      image: "/images/mockup7.png",
-                      layout: "right",
-                      imgPos: "bottom-4",
-                      imgSide: "left-6"
-                    }
-                  ].map((prod, idx) => (
-                    <div
-                      key={idx}
-                      className="relative aspect-[1.1/1] sm:aspect-[1.3/1] overflow-hidden shadow-lg transition-all duration-500 hover:scale-[1.02] bg-white rounded-xl"
-                    >
-                      {/* Secondary Color Block - Vibrant Base */}
-                      <div className={`absolute bottom-0 w-full h-[30%] sm:h-[35%] z-0 ${prod.blockColor}`} />
-                      
-                      {/* Content Overlay - Top White Part */}
-                      <div className="relative z-20 p-5 sm:p-7 h-full flex flex-col justify-between">
-                        <div className={`w-[85%] sm:w-[60%] ${prod.layout === 'right' ? 'ml-auto text-right' : ''}`}>
-                          <h3 className="text-xl sm:text-2xl font-black leading-tight mb-2 text-black">
-                            {prod.title}
-                          </h3>
-                          <p className="text-sm sm:text-lg font-medium leading-relaxed text-gray-600">
-                            {prod.desc}
-                          </p>
-                        </div>
-                        
-                        {/* White accent line on the vibrant block */}
-                        <div className={`h-1.5 w-14 bg-white/40 ${prod.layout === 'left' ? 'mb-2' : 'ml-auto mb-2'}`} />
-                      </div>
-
-                      {/* Product Image - Pushed to corners */}
-                      <div className={`absolute ${prod.imgPos} w-[50%] sm:w-[55%] h-[70%] sm:h-[80%] z-10 ${prod.layout === 'left' ? '-right-4' : (prod.imgSide || '-left-4')}`}>
-                        <img
-                          src={prod.image}
-                          alt={prod.title}
-                          className={`w-full h-full object-contain drop-shadow-2xl transition-transform duration-700 hover:scale-105 ${prod.layout === 'left' ? 'object-right-bottom' : 'object-left-bottom'}`}
-                        />
-                      </div>
+            {/* Layout Grid: 4 Cards Surrounding Center Student Image */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center max-w-7xl mx-auto">
+              
+              {/* Left Column: Cards 1 & 3 (Trite Gateway & Trite Merchant Dashboard) */}
+              <div className="lg:col-span-4 flex flex-col gap-12 sm:gap-16 order-2 lg:order-1">
+                
+                {/* Product 1: Trite Gateway */}
+                <div className="flex flex-col lg:items-end items-start text-left lg:text-right group cursor-pointer transition-all duration-300">
+                  <div className="flex items-center gap-4 lg:flex-row-reverse flex-row">
+                    {/* Reduced Image Icon Container */}
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white flex items-center justify-center border border-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.04)] p-2 overflow-hidden transition-all duration-300 group-hover:border-[#22c55e] group-hover:shadow-[0_8px_20px_rgba(34,197,94,0.15)] group-hover:scale-110 shrink-0">
+                      <img
+                        src="/images/gateway.png"
+                        alt="Trite Gateway Icon"
+                        className="max-w-full max-h-full object-contain translate-y-2 transition-transform duration-300"
+                      />
                     </div>
-                  ))}
+                    <h3 className="text-xl sm:text-2xl font-bold text-[#0c1e43] tracking-tight group-hover:text-[#22c55e] transition-colors">
+                      Trite Gateway
+                    </h3>
+                  </div>
+                  <p className="mt-3 text-sm sm:text-base text-gray-500 font-medium leading-relaxed lg:text-right text-left">
+                    Complete online payment solution for web & mobile businesses.
+                  </p>
                 </div>
 
-                {/* Right Column Cards */}
-                <div className="space-y-12">
-                  {[
-                    {
-                      title: "Trite Stable-Pay",
-                      desc: "Stablecoin acceptance with automatic fiat conversion and settlement.",
-                      rail: "02",
-                      blockColor: "bg-[#10b981]",
-                      image: "/images/stablecoin-logo.png",
-                      layout: "left",
-                      imgPos: "bottom-4"
-                    },
-                    {
-                      title: "Trite API",
-                      desc: "Developer-first RESTful APIs with comprehensive documentation.",
-                      rail: "04",
-                      blockColor: "bg-[#334155]",
-                      image: "/images/trite-api.png",
-                      layout: "left",
-                      imgPos: "-bottom-6"
-                    }
-                  ].map((prod, idx) => (
-                    <div
-                      key={idx}
-                      className="relative aspect-[1.1/1] sm:aspect-[1.3/1] overflow-hidden shadow-lg transition-all duration-500 hover:scale-[1.02] bg-white rounded-xl"
-                    >
-                      {/* Secondary Color Block - Vibrant Base */}
-                      <div className={`absolute bottom-0 w-full h-[30%] sm:h-[35%] z-0 ${prod.blockColor}`} />
-                      
-                      {/* Content Overlay - Top White Part */}
-                      <div className="relative z-20 p-5 sm:p-7 h-full flex flex-col justify-between">
-                        <div className={`w-[85%] sm:w-[60%] ${prod.layout === 'right' ? 'ml-auto text-right' : ''}`}>
-                          <h3 className="text-xl sm:text-2xl font-black leading-tight mb-2 text-black">
-                            {prod.title}
-                          </h3>
-                          <p className="text-sm sm:text-lg font-medium leading-relaxed text-gray-600">
-                            {prod.desc}
-                          </p>
-                        </div>
-                        
-                        {/* White accent line on the vibrant block */}
-                        <div className={`h-1.5 w-14 bg-white/40 ${prod.layout === 'left' ? 'mb-2' : 'ml-auto mb-2'}`} />
-                      </div>
-
-                      {/* Product Image - Pushed to corners */}
-                      <div className={`absolute ${prod.imgPos} w-[50%] sm:w-[55%] h-[70%] sm:h-[80%] z-10 ${prod.layout === 'left' ? '-right-4' : '-left-4'}`}>
-                        <img
-                          src={prod.image}
-                          alt={prod.title}
-                          className={`w-full h-full object-contain drop-shadow-2xl transition-transform duration-700 hover:scale-105 ${prod.layout === 'left' ? 'object-right-bottom' : 'object-left-bottom'}`}
-                        />
-                      </div>
+                {/* Product 3: Trite Merchant Dashboard */}
+                <div className="flex flex-col lg:items-end items-start text-left lg:text-right group cursor-pointer transition-all duration-300">
+                  <div className="flex items-center gap-4 lg:flex-row-reverse flex-row">
+                    {/* Reduced Image Icon Container */}
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white flex items-center justify-center border border-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.04)] p-2 overflow-hidden transition-all duration-300 group-hover:border-[#22c55e] group-hover:shadow-[0_8px_20px_rgba(34,197,94,0.15)] group-hover:scale-110 shrink-0">
+                      <img
+                        src="/images/mockup7.png"
+                        alt="Trite Merchant Dashboard Icon"
+                        className="max-w-full max-h-full object-contain transition-transform duration-300"
+                      />
                     </div>
-                  ))}
+                    <h3 className="text-xl sm:text-2xl font-bold text-[#0c1e43] tracking-tight group-hover:text-[#22c55e] transition-colors">
+                      Trite Merchant Dashboard
+                    </h3>
+                  </div>
+                  <p className="mt-3 text-sm sm:text-base text-gray-500 font-medium leading-relaxed lg:text-right text-left">
+                    Advanced reporting, reconciliation, settlement tracking, and business insights.
+                  </p>
+                </div>
+
+              </div>
+
+              {/* Center Column: Middle Student Showcase */}
+              <div className="lg:col-span-4 flex items-center justify-center order-1 lg:order-2">
+                <div className="relative flex items-center justify-center py-8 lg:py-0">
+                  {/* Decorative Outer Rings */}
+                  <div className="absolute w-[370px] h-[370px] sm:w-[440px] sm:h-[440px] rounded-full border border-dashed border-[#22c55e]/30 pointer-events-none animate-spin" style={{ animationDuration: '40s' }} />
+                  <div className="absolute w-[330px] h-[330px] sm:w-[395px] sm:h-[395px] rounded-full border border-dashed border-slate-200 pointer-events-none" />
+                  <div className="absolute w-[290px] h-[290px] sm:w-[350px] sm:h-[350px] rounded-full bg-gradient-to-tr from-[#22c55e]/5 to-transparent pointer-events-none blur-xl" />
+                  
+                  {/* Student Image Showcase */}
+                  <div className="relative w-[260px] h-[260px] sm:w-[310px] sm:h-[310px] rounded-full overflow-hidden border-[6px] border-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] bg-[#22c55e]/5 transition-transform duration-500 hover:scale-[1.03] group">
+                    <Image
+                      src="/images/student.jpg"
+                      alt="Student"
+                      fill
+                      className="object-cover object-center scale-100 group-hover:scale-105 transition-all duration-700 ease-out"
+                      priority
+                    />
+                    {/* Elegant green tint border overlay */}
+                    <div className="absolute inset-0 border border-black/5 rounded-full pointer-events-none" />
+                  </div>
                 </div>
               </div>
+
+              {/* Right Column: Cards 2 & 4 (Trite Stable-Pay & Trite API) */}
+              <div className="lg:col-span-4 flex flex-col gap-12 sm:gap-16 order-3">
+                
+                {/* Product 2: Trite Stable-Pay */}
+                <div className="flex flex-col items-start text-left group cursor-pointer transition-all duration-300">
+                  <div className="flex items-center gap-4 flex-row">
+                    {/* Reduced Image Icon Container */}
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white flex items-center justify-center border border-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.04)] p-2 overflow-hidden transition-all duration-300 group-hover:border-[#22c55e] group-hover:shadow-[0_8px_20px_rgba(34,197,94,0.15)] group-hover:scale-110 shrink-0">
+                      <img
+                        src="/images/stablecoin-logo.png"
+                        alt="Trite Stable-Pay Icon"
+                        className="max-w-full max-h-full object-contain transition-transform duration-300"
+                      />
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-bold text-[#0c1e43] tracking-tight group-hover:text-[#22c55e] transition-colors">
+                      Trite Stable-Pay
+                    </h3>
+                  </div>
+                  <p className="mt-3 text-sm sm:text-base text-gray-500 font-medium leading-relaxed text-left">
+                    Stablecoin acceptance with automatic fiat conversion and settlement.
+                  </p>
+                </div>
+
+                {/* Product 4: Trite API */}
+                <div className="flex flex-col items-start text-left group cursor-pointer transition-all duration-300">
+                  <div className="flex items-center gap-4 flex-row">
+                    {/* Reduced Image Icon Container */}
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white flex items-center justify-center border border-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.04)] p-2 overflow-hidden transition-all duration-300 group-hover:border-[#22c55e] group-hover:shadow-[0_8px_20px_rgba(34,197,94,0.15)] group-hover:scale-110 shrink-0">
+                      <img
+                        src="/images/trite-api.png"
+                        alt="Trite API Icon"
+                        className="max-w-full max-h-full object-contain translate-y-2 transition-transform duration-300"
+                      />
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-bold text-[#0c1e43] tracking-tight group-hover:text-[#22c55e] transition-colors">
+                      Trite API
+                    </h3>
+                  </div>
+                  <p className="mt-3 text-sm sm:text-base text-gray-500 font-medium leading-relaxed text-left">
+                    Developer-first RESTful APIs with comprehensive documentation.
+                  </p>
+                </div>
+
+              </div>
+
             </div>
 
             {/* CTA Button - Now under the cards */}
             <div className="mt-20 flex justify-center">
               <Link
                 href="/products"
-                className="inline-flex items-center justify-center px-10 py-5 font-bold bg-[#22c55e] text-white hover:bg-[#16a34a] rounded-full transition-all gap-2 shadow-xl hover:shadow-2xl"
+                className="inline-flex items-center justify-center px-10 py-5 font-bold bg-[#22c55e] text-white hover:bg-[#16a34a] rounded-full transition-all gap-2 shadow-xl hover:shadow-2xl hover:scale-[1.02]"
               >
                 Explore Product Suite <ArrowRight className="h-5 w-5" />
               </Link>

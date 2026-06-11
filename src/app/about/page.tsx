@@ -38,7 +38,7 @@ const leadershipMembers = [
     name: "Quarme Shadrack",
     role: "Staff Representative at the Leadership Board",
     bio: "Quarme serves as a bridge between operational staff and executive leadership, fostering a culture of excellence.",
-    image: "/leadership-images/man2.jpg",
+    image: "/leadership-images/shadrack.jpeg",
     objectPosition: "top"
   },
   {
@@ -55,14 +55,14 @@ const teamMembers = [
     name: "Kwame Twum",
     role: "Chief Technology Officer",
     bio: "Kwame drives the technical vision, building the high-fidelity stablecoin infrastructure that powers Trite.",
-    image: "/leadership-images/kwame.jpeg",
+    image: "/leadership-images/twum.jpg",
     objectPosition: "top"
   },
   {
     name: "Quarme Shadrack",
     role: "Project Manager",
     bio: "Quarme manages the delivery of core features, ensuring seamless integration of mobile money and card networks.",
-    image: "/leadership-images/man2.jpg",
+    image: "/leadership-images/shadrack.jpeg",
     objectPosition: "top"
   },
   {
