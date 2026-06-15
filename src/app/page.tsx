@@ -441,13 +441,11 @@ export default function Home() {
                   <div className="absolute -right-6 -bottom-10 w-64 h-64 rounded-full border-2 border-dashed border-violet-400/30 pointer-events-none transition-transform duration-1000 group-hover:rotate-45 group-hover:scale-105 z-0" />
                   <div className="absolute -right-2 -bottom-6 w-48 h-48 rounded-full border border-violet-300/40 pointer-events-none transition-transform duration-700 group-hover:scale-110 z-0" />
 
-                  <div className="absolute -bottom-10 min-[390px]:-bottom-8 sm:-bottom-8 -right-4 w-[50%] h-[70%] sm:h-[78%] pointer-events-none select-none overflow-hidden flex items-end justify-end z-10">
-                    <img
-                      src="/images/man-momo.png"
-                      alt="Mobile Money & USSD"
-                      className="w-full h-full object-contain object-bottom object-right"
-                    />
-                  </div>
+                  <img
+                    src="/images/man-momo.png"
+                    alt="Mobile Money & USSD"
+                    className="absolute -bottom-4 sm:-bottom-8 -right-4 sm:-right-6 w-[55%] sm:w-[50%] h-auto max-h-[85%] object-contain object-bottom pointer-events-none select-none z-10"
+                  />
                 </div>
 
                 {/* Card 3: Stablecoin Gateway */}
@@ -480,13 +478,11 @@ export default function Home() {
                   <div className="absolute -right-6 -bottom-10 w-64 h-64 rounded-full border-2 border-dashed border-yellow-400/30 pointer-events-none transition-transform duration-1000 group-hover:rotate-45 group-hover:scale-105 z-0" />
                   <div className="absolute -right-2 -bottom-6 w-48 h-48 rounded-full border border-yellow-300/40 pointer-events-none transition-transform duration-700 group-hover:scale-110 z-0" />
 
-                  <div className="absolute -bottom-10 sm:-bottom-8 -right-4 w-[50%] h-[70%] sm:h-[78%] pointer-events-none select-none overflow-hidden flex items-end justify-end z-10">
-                    <img
-                      src="/images/stablecoin.png"
-                      alt="Stablecoin Gateway"
-                      className="w-full h-full object-contain object-bottom object-right"
-                    />
-                  </div>
+                  <img
+                    src="/images/stablecoin.png"
+                    alt="Stablecoin Gateway"
+                    className="absolute -bottom-4 sm:-bottom-8 -right-4 sm:-right-6 w-[55%] sm:w-[50%] h-auto max-h-[85%] object-contain object-bottom pointer-events-none select-none z-10"
+                  />
                 </div>
               </div>
 

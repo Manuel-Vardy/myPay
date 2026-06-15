@@ -469,112 +469,140 @@ export default function BusinessesPage() {
         </section>
 
         {/* WHY CHOOSE TRITE PSP - Staggered Layout like reference */}
-         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-12 pb-32">
-          <div className="pt-12 border-t border-black/[0.06] space-y-16">
-            <div className="text-center max-w-3xl mx-auto">
-              <h3 className="text-3xl font-extrabold text-black tracking-tight sm:text-5xl">
-                Why Businesses Choose Trite PSP
-              </h3>
-              <p className="text-lg text-gray-500 font-medium mt-4">
-                The standard for high-velocity global settlements and institutional liquidity.
-              </p>
+        <section className="relative overflow-hidden mt-12 pb-32">
+          {/* Background Video (Desktop only) */}
+          <div className="hidden md:flex absolute inset-0 z-0 pointer-events-none items-center justify-center overflow-hidden">
+            <div className="w-[55%] max-w-[600px] aspect-video rounded-full overflow-hidden opacity-15 blur-[12px]">
+              <video
+                src="/trite-video.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover"
+              />
             </div>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* Column 1 */}
-              <div className="space-y-8 md:mt-16">
-                {[
-                  {
-                    title: "Unified Financial Ecosystem",
-                    desc: "One platform supporting both stablecoins and traditional payment systems.",
-                    icon: <Check className="h-4 w-4" />
-                  },
-                  {
-                    title: "Reduced Costs",
-                    desc: "Lower payment processing and cross-border transaction fees.",
-                    icon: <Check className="h-4 w-4" />
-                  }
-                ].map((item, idx) => (
-                  <div 
-                    key={idx} 
-                    className="rounded-2xl bg-[#f2f2f2] p-10 space-y-6 min-h-[320px] flex flex-col justify-start transition-transform hover:scale-[1.02]"
-                  >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm">
-                      <div className="text-[#22c55e]">{item.icon}</div>
-                    </div>
-                    <div className="space-y-3">
-                      <h4 className="font-black text-black text-xl leading-tight">{item.title}</h4>
-                      <p className="text-sm text-gray-500 leading-relaxed font-medium">{item.desc}</p>
-                    </div>
-                  </div>
-                ))}
+          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="pt-12 border-t border-black/[0.06] space-y-16">
+              <div className="text-center max-w-3xl mx-auto">
+                <h3 className="text-3xl font-extrabold text-black tracking-tight sm:text-5xl">
+                  Why Businesses Choose Trite PSP
+                </h3>
+                <p className="text-lg text-gray-500 font-medium mt-4">
+                  The standard for high-velocity global settlements and institutional liquidity.
+                </p>
               </div>
 
-              {/* Column 2 */}
-              <div className="space-y-8">
-                {[
-                  {
-                    title: "Faster Global Transactions",
-                    desc: "Real-time transaction processing with reduced delays.",
-                    icon: <Check className="h-4 w-4" />
-                  },
-                  {
-                    title: "Developer-Friendly APIs",
-                    desc: "Flexible integration tools for custom business solutions.",
-                    icon: <Check className="h-4 w-4" />
-                  },
-                  {
-                    title: "Future-Ready Technology",
-                    desc: "Built to support blockchain innovation and evolving financial ecosystems.",
-                    icon: <Check className="h-4 w-4" />
-                  }
-                ].map((item, idx) => (
-                  <div 
-                    key={idx} 
-                    className="rounded-2xl bg-[#f2f2f2] p-10 space-y-6 min-h-[280px] flex flex-col justify-start transition-transform hover:scale-[1.02]"
-                  >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm">
-                      <div className="text-[#22c55e]">{item.icon}</div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {/* Column 1 */}
+                <div className="space-y-8 md:mt-16">
+                  {[
+                    {
+                      title: "Unified Financial Ecosystem",
+                      desc: "One platform supporting both stablecoins and traditional payment systems.",
+                      icon: <Check className="h-4 w-4" />
+                    },
+                    {
+                      title: "Reduced Costs",
+                      desc: "Lower payment processing and cross-border transaction fees.",
+                      icon: <Check className="h-4 w-4" />
+                    }
+                  ].map((item, idx) => (
+                    <div 
+                      key={idx} 
+                      className="rounded-2xl bg-[#f2f2f2] p-10 space-y-6 min-h-[320px] flex flex-col justify-start transition-transform hover:scale-[1.02]"
+                    >
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm">
+                        <div className="text-[#22c55e]">{item.icon}</div>
+                      </div>
+                      <div className="space-y-3">
+                        <h4 className="font-black text-black text-xl leading-tight">{item.title}</h4>
+                        <p className="text-sm text-gray-500 leading-relaxed font-medium">{item.desc}</p>
+                      </div>
                     </div>
-                    <div className="space-y-3">
-                      <h4 className="font-black text-black text-xl leading-tight">{item.title}</h4>
-                      <p className="text-sm text-gray-500 leading-relaxed font-medium">{item.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
 
-              {/* Column 3 */}
-              <div className="space-y-8 md:mt-8">
-                {[
-                  {
-                    title: "Scalable Infrastructure",
-                    desc: "Designed for businesses with growing operational demands.",
-                    icon: <Check className="h-4 w-4" />
-                  },
-                  {
-                    title: "Enhanced Security",
-                    desc: "Enterprise-grade protection and compliance systems.",
-                    icon: <Check className="h-4 w-4" />
-                  }
-                ].map((item, idx) => (
-                  <div 
-                    key={idx} 
-                    className="rounded-2xl bg-[#f2f2f2] p-10 space-y-6 min-h-[350px] flex flex-col justify-start transition-transform hover:scale-[1.02]"
-                  >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm">
-                      <div className="text-[#22c55e]">{item.icon}</div>
+                {/* Column 2 */}
+                <div className="space-y-8">
+                  {[
+                    {
+                      title: "Faster Global Transactions",
+                      desc: "Real-time transaction processing with reduced delays.",
+                      icon: <Check className="h-4 w-4" />
+                    },
+                    {
+                      title: "Developer-Friendly APIs",
+                      desc: "Flexible integration tools for custom business solutions.",
+                      icon: <Check className="h-4 w-4" />
+                    },
+                    {
+                      title: "Future-Ready Technology",
+                      desc: "Built to support blockchain innovation and evolving financial ecosystems.",
+                      icon: <Check className="h-4 w-4" />
+                    }
+                  ].map((item, idx) => (
+                    <div 
+                      key={idx} 
+                      className="rounded-2xl bg-[#f2f2f2] p-10 space-y-6 min-h-[280px] flex flex-col justify-start transition-transform hover:scale-[1.02]"
+                    >
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm">
+                        <div className="text-[#22c55e]">{item.icon}</div>
+                      </div>
+                      <div className="space-y-3">
+                        <h4 className="font-black text-black text-xl leading-tight">{item.title}</h4>
+                        <p className="text-sm text-gray-500 leading-relaxed font-medium">{item.desc}</p>
+                      </div>
                     </div>
-                    <div className="space-y-3">
-                      <h4 className="font-black text-black text-xl leading-tight">{item.title}</h4>
-                      <p className="text-sm text-gray-500 leading-relaxed font-medium">{item.desc}</p>
+                  ))}
+                </div>
+
+                {/* Column 3 */}
+                <div className="space-y-8 md:mt-8">
+                  {[
+                    {
+                      title: "Scalable Infrastructure",
+                      desc: "Designed for businesses with growing operational demands.",
+                      icon: <Check className="h-4 w-4" />
+                    },
+                    {
+                      title: "Enhanced Security",
+                      desc: "Enterprise-grade protection and compliance systems.",
+                      icon: <Check className="h-4 w-4" />
+                    }
+                  ].map((item, idx) => (
+                    <div 
+                      key={idx} 
+                      className="rounded-2xl bg-[#f2f2f2] p-10 space-y-6 min-h-[350px] flex flex-col justify-start transition-transform hover:scale-[1.02]"
+                    >
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm">
+                        <div className="text-[#22c55e]">{item.icon}</div>
+                      </div>
+                      <div className="space-y-3">
+                        <h4 className="font-black text-black text-xl leading-tight">{item.title}</h4>
+                        <p className="text-sm text-gray-500 leading-relaxed font-medium">{item.desc}</p>
+                      </div>
                     </div>
+                  ))}
+
+                  {/* Mobile video block at the bottom (no circle) */}
+                  <div className="md:hidden relative w-full aspect-video rounded-2xl overflow-hidden mt-8 pointer-events-none">
+                    <video
+                      src="/trite-video.mp4"
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="w-full h-full object-cover opacity-25 blur-[4px]"
+                    />
                   </div>
-                ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
       </main>
 

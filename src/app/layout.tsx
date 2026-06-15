@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
+import LoadingOverlay from "@/components/LoadingOverlay";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -24,6 +25,7 @@ export default function RootLayout({
       className={`${montserrat.variable} h-full antialiased`}
     >
       <body suppressHydrationWarning className="min-h-full flex flex-col bg-white text-[color:var(--trite-ink)] font-montserrat">
+        <LoadingOverlay />
         {children}
       </body>
     </html>
