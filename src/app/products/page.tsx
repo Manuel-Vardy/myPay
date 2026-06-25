@@ -157,7 +157,7 @@ export default function ProductsPage() {
                 {/* Image happy.png */}
                 <div className="max-w-md pt-4">
                   <img
-                    src="/images/happy.png"
+                    src="/images/happy-1.png"
                     alt="Happy customer"
                     className="w-full h-auto object-contain"
                   />
@@ -165,7 +165,7 @@ export default function ProductsPage() {
               </div>
 
               {/* Right Column: Paragraph Text */}
-              <div className="lg:col-span-7">
+              <div className="lg:col-span-7 lg:self-end lg:pb-36">
                 <p className="text-base sm:text-lg leading-relaxed text-gray-600 font-medium">
                   Trite provides a comprehensive suite of payment solutions designed to empower businesses with seamless, secure, and scalable payment infrastructure across Africa and beyond. Our products are built to handle the complexities of modern commerce, from stablecoin settlements to traditional banking rails.
                 </p>
@@ -449,55 +449,7 @@ export default function ProductsPage() {
           </div>
         </section>
 
-        {/* ABOUT TRITE */}
-        <section
-          id="about"
-          className="relative z-10 bg-[#fdfcf6] py-24 sm:py-32 overflow-hidden"
-        >
-          {/* Decorative spiral - Left side background */}
-          <div
-            className="pointer-events-none absolute inset-0 z-0 hidden md:block"
-            aria-hidden
-          >
-            <div
-              className="absolute top-1/2 -left-[20%] aspect-square h-[80%] w-[80%] -translate-y-1/2 bg-[url('/images/spiral.svg')] bg-contain bg-center bg-no-repeat opacity-60 mix-blend-multiply"
-            />
-          </div>
 
-          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
-              {/* Left Column */}
-              <div className="lg:col-span-5 space-y-8">
-                <div className="space-y-4">
-                  <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
-                    About Us
-                  </h2>
-                  <h3 className="text-4xl sm:text-5xl font-extrabold text-[#0c1e43] tracking-tight leading-[1.1]">
-                    Building Africa’s Payment Infrastructure Layer
-                  </h3>
-                </div>
-                <p className="text-lg sm:text-xl text-slate-600 leading-relaxed font-medium">
-                  Trite was founded to solve a fundamental problem: Africa’s payment systems are fragmented, expensive and not built for digital scale.
-                </p>
-              </div>
-
-              {/* Right Column */}
-              <div className="lg:col-span-7 space-y-10 text-slate-600">
-                <p className="text-lg sm:text-xl leading-relaxed">
-                  We are building a unified financial infrastructure that connects traditional payments and digital assets - securely and compliantly. Our mission is to empower businesses across Africa with frictionless, borderless payment solutions.
-                </p>
-                <div className="space-y-8">
-                  <p className="text-lg sm:text-xl leading-relaxed">
-                    Trite is a next-generation Payment Service Provider (PSP) designed to bridge traditional finance and digital assets. We enable businesses to accept mobile money, cards, bank transfers, and stablecoins - all through a single unified platform.
-                  </p>
-                  <p className="text-lg sm:text-xl leading-relaxed">
-                    Whether you’re a startup, enterprise, marketplace, or fintech, Trite provides secure, compliant, and scalable payment infrastructure across Africa. We are the infrastructure layer for modern African commerce.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* READY TO SCALE YOUR PAYMENTS? */}
         <section className="relative bg-white py-20 sm:py-28 md:py-36">

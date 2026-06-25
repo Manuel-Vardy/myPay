@@ -341,7 +341,7 @@ export default function AdminTransactionsPage() {
           <p className="text-xs font-medium text-white/60 uppercase tracking-wide">Architect Insights</p>
           <h3 className="mt-3 text-xl font-semibold">Anomaly detection is operating at 99.8% precision.</h3>
           <div className="mt-4 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
-            <button className="rounded-xl bg-[color:var(--trite-lime)] px-5 py-2.5 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-[color:var(--trite-lime-strong)]">
+            <button className="rounded-xl bg-[color:var(--trite-lime)] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[color:var(--trite-lime-strong)]">
               Review Security Audit
             </button>
             <span className="text-xs text-white/60">Latest scan: 6 minutes ago</span>

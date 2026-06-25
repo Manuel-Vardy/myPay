@@ -120,7 +120,7 @@ export default function GetStartedPage() {
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider" htmlFor="firstName">First name</label>
                 <input
-                  className="flex h-11 w-full rounded-xl border border-black/[0.08] bg-gray-50/50 px-4 py-2 text-sm font-medium transition-all focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/5 outline-none placeholder:text-gray-400"
+                  className="flex h-11 w-full rounded-xl border border-black/15 bg-gray-50/50 px-4 py-2 text-sm font-medium text-black transition-all focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/5 outline-none placeholder:text-gray-500"
                   id="firstName"
                   name="firstName"
                   value={formData.firstName}
@@ -132,7 +132,7 @@ export default function GetStartedPage() {
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider" htmlFor="lastName">Last name</label>
                 <input
-                  className="flex h-11 w-full rounded-xl border border-black/[0.08] bg-gray-50/50 px-4 py-2 text-sm font-medium transition-all focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/5 outline-none placeholder:text-gray-400"
+                  className="flex h-11 w-full rounded-xl border border-black/15 bg-gray-50/50 px-4 py-2 text-sm font-medium text-black transition-all focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/5 outline-none placeholder:text-gray-500"
                   id="lastName"
                   name="lastName"
                   value={formData.lastName}
@@ -147,7 +147,7 @@ export default function GetStartedPage() {
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider" htmlFor="businessName">Business name</label>
                 <input
-                  className="flex h-11 w-full rounded-xl border border-black/[0.08] bg-gray-50/50 px-4 py-2 text-sm font-medium transition-all focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/5 outline-none placeholder:text-gray-400"
+                  className="flex h-11 w-full rounded-xl border border-black/15 bg-gray-50/50 px-4 py-2 text-sm font-medium text-black transition-all focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/5 outline-none placeholder:text-gray-500"
                   id="businessName"
                   name="businessName"
                   value={formData.businessName}
@@ -160,7 +160,7 @@ export default function GetStartedPage() {
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider" htmlFor="legalEntity">Legal entity</label>
                 <input
-                  className="flex h-11 w-full rounded-xl border border-black/[0.08] bg-gray-50/50 px-4 py-2 text-sm font-medium transition-all focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/5 outline-none placeholder:text-gray-400"
+                  className="flex h-11 w-full rounded-xl border border-black/15 bg-gray-50/50 px-4 py-2 text-sm font-medium text-black transition-all focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/5 outline-none placeholder:text-gray-500"
                   id="legalEntity"
                   name="legalEntity"
                   value={formData.legalEntity}
@@ -174,7 +174,7 @@ export default function GetStartedPage() {
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider" htmlFor="email">Business email</label>
               <input
-                className="flex h-11 w-full rounded-xl border border-black/[0.08] bg-gray-50/50 px-4 py-2 text-sm font-medium transition-all focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/5 outline-none placeholder:text-gray-400"
+                className="flex h-11 w-full rounded-xl border border-black/15 bg-gray-50/50 px-4 py-2 text-sm font-medium text-black transition-all focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/5 outline-none placeholder:text-gray-500"
                 id="email"
                 name="email"
                 type="email"
@@ -189,7 +189,7 @@ export default function GetStartedPage() {
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider" htmlFor="password">Password</label>
                 <input
-                  className="flex h-11 w-full rounded-xl border border-black/[0.08] bg-gray-50/50 px-4 py-2 text-sm font-medium transition-all focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/5 outline-none placeholder:text-gray-400"
+                  className="flex h-11 w-full rounded-xl border border-black/15 bg-gray-50/50 px-4 py-2 text-sm font-medium text-black transition-all focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/5 outline-none placeholder:text-gray-500"
                   id="password"
                   name="password"
                   type="password"
@@ -202,7 +202,7 @@ export default function GetStartedPage() {
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider" htmlFor="confirmPassword">Confirm Password</label>
                 <input
-                  className="flex h-11 w-full rounded-xl border border-black/[0.08] bg-gray-50/50 px-4 py-2 text-sm font-medium transition-all focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/5 outline-none placeholder:text-gray-400"
+                  className="flex h-11 w-full rounded-xl border border-black/15 bg-gray-50/50 px-4 py-2 text-sm font-medium text-black transition-all focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/5 outline-none placeholder:text-gray-500"
                   id="confirmPassword"
                   name="confirmPassword"
                   type="password"

@@ -33,6 +33,30 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+// Animation hook for scroll-based reveals
+const useScrollAnimation = () => {
+  const [elements, setElements] = useState<Set<Element>>(new Set());
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-fade-in-up');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    const animateElements = document.querySelectorAll('.animate-on-scroll');
+    animateElements.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, []);
+};
+
 const builtForItems = [
   { name: "E-commerce platforms", image: "/images/e-commerce.jpg" },
   { name: "Marketplaces", image: "/images/market.jpg" },
@@ -130,7 +154,83 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
+  // Initialize scroll animations
+  useScrollAnimation();
+
   return (
+    <>
+      {/* CSS Animation Styles */}
+      <style jsx global>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(40px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @keyframes fadeInLeft {
+          from {
+            opacity: 0;
+            transform: translateX(-40px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        @keyframes fadeInRight {
+          from {
+            opacity: 0;
+            transform: translateX(40px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        @keyframes scaleIn {
+          from {
+            opacity: 0;
+            transform: scale(0.9);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        .animate-fade-in-up {
+          animation: fadeInUp 0.8s ease-out forwards;
+        }
+        
+        .animate-fade-in-left {
+          animation: fadeInLeft 0.8s ease-out forwards;
+        }
+        
+        .animate-fade-in-right {
+          animation: fadeInRight 0.8s ease-out forwards;
+        }
+        
+        .animate-scale-in {
+          animation: scaleIn 0.8s ease-out forwards;
+        }
+
+        .animate-on-scroll {
+          opacity: 0;
+        }
+
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
+      `}</style>
+
     <div className="min-h-screen bg-white text-black selection:bg-[#92bd30]/30 selection:text-black">
 
       <Header transparent={true} />
@@ -159,19 +259,19 @@ export default function Home() {
 
               {/* Hero Texts */}
               <div className="space-y-6">
-                <div>
+                <div className="animate-on-scroll stagger-1">
                   <h1 className="text-3xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl sm:font-extrabold leading-[1.1] sm:leading-[1.08]">
                     Powering the Future of Payments in Africa
                   </h1>
                   <div className="mt-6 h-px w-full max-w-2xl bg-white/20"></div>
                 </div>
 
-                <p className="max-w-2xl text-base sm:text-xl leading-relaxed text-white/80 sm:text-white/90">
+                <p className="animate-on-scroll stagger-2 max-w-2xl text-base sm:text-xl leading-relaxed text-white/80 sm:text-white/90">
                   Seamless bank, mobile money, and stablecoin payments - built for businesses and institutions scaling across Ghana and the continent – pay and get paid with Trite!
                 </p>
 
                 {/* Hero CTA Buttons */}
-                <div className="flex flex-wrap gap-3 pt-2">
+                <div className="animate-on-scroll stagger-3 flex flex-wrap gap-3 pt-2">
                   <Link
                     className="inline-flex h-12 items-center justify-center rounded-full bg-[#22c55e] px-8 text-sm font-semibold text-white hover:bg-[#16a34a] shadow transition-all duration-200"
                     href="/get-started"
@@ -218,14 +318,14 @@ export default function Home() {
 
             {/* Content - On section background */}
             <div className="max-w-6xl mx-auto">
-              <div className="flex flex-col items-center justify-center gap-6 mb-12">
+              <div className="animate-on-scroll flex flex-col items-center justify-center gap-6 mb-12">
                 <p className="text-lg sm:text-xl text-gray-600 font-medium text-center">
                   Trite enables you, your business and anyone to receive payments through;
                 </p>
               </div>
 
               {/* Desktop: Single row layout */}
-              <div className="hidden md:flex items-center justify-center gap-6 lg:gap-10">
+              <div className="animate-on-scroll stagger-2 hidden md:flex items-center justify-center gap-6 lg:gap-10">
                 {/* Card Payments */}
                 <img
                   src="/images/mastercard-logo.png"
@@ -277,22 +377,22 @@ export default function Home() {
               </div>
 
               {/* Mobile: 2 → 3 → 2 row layout */}
-              <div className="flex flex-col items-center gap-8 md:hidden">
+              <div className="animate-on-scroll stagger-2 flex flex-col items-center gap-8 md:hidden">
                 {/* Row 1: Card payments */}
-                <div className="flex items-center justify-center gap-6">
+                <div className="animate-on-scroll stagger-1 flex items-center justify-center gap-6">
                   <img src="/images/mastercard-logo.png" alt="Mastercard" className="h-10 w-auto object-contain" />
                   <img src="/images/visa-logo.png" alt="Visa" className="h-10 w-auto object-contain" />
                 </div>
 
                 {/* Row 2: Mobile money */}
-                <div className="flex items-center justify-center gap-5">
+                <div className="animate-on-scroll stagger-2 flex items-center justify-center gap-5">
                   <img src="/images/Telecel-logo.png" alt="Telecel" className="h-11 w-auto object-contain" />
                   <img src="/images/mtn-logo.png" alt="MTN" className="h-11 w-auto object-contain" />
                   <img src="/images/AirtelTigo-logo.png" alt="AT Money" className="h-11 w-auto object-contain" />
                 </div>
 
                 {/* Row 3: Stablecoins & bank transfers */}
-                <div className="flex items-center justify-center gap-10">
+                <div className="animate-on-scroll stagger-3 flex items-center justify-center gap-10">
                   <div className="flex flex-col items-center gap-1">
                     <img src="/images/stablecoin-logo1.png" alt="Stablecoins" className="h-12 w-auto object-contain" />
                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Stablecoins</span>
@@ -336,22 +436,22 @@ export default function Home() {
 
               {/* Right Side - Overlapping White Card */}
               <div className="w-full lg:w-[54%] lg:-ml-24 mt-8 lg:mt-24 bg-white p-8 sm:p-12 lg:p-16 z-20 relative rounded-xl">
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-4">
+                <p className="animate-on-scroll text-xs font-semibold uppercase tracking-wider text-gray-400 mb-4">
                   Built For
                 </p>
 
-                <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold tracking-tight text-black leading-tight">
+                <h2 className="animate-on-scroll stagger-1 text-2xl sm:text-3xl lg:text-[34px] font-extrabold tracking-tight text-black leading-tight">
                   Designed specifically to power financial flows and digital growth for:
                 </h2>
 
                 {/* Horizontal line under the title */}
-                <div className="h-[2px] w-24 bg-black mt-6 mb-8" />
+                <div className="animate-on-scroll stagger-2 h-[2px] w-24 bg-black mt-6 mb-8" />
 
                 <div className="space-y-4">
                   {builtForItems.map((item, idx) => (
                     <div
                       key={idx}
-                      className="flex items-start gap-4 group py-0.5 cursor-pointer"
+                      className={`animate-on-scroll stagger-${Math.min(idx + 3, 4)} flex items-start gap-4 group py-0.5 cursor-pointer`}
                       onMouseEnter={() => setBuiltForIndex(idx)}
                     >
                       <span className={`text-lg sm:text-xl font-medium transition-colors duration-300 min-w-[40px] sm:min-w-[48px] ${idx === builtForIndex ? "text-[#22c55e]" : "text-gray-300 group-hover:text-[#22c55e]"
@@ -374,7 +474,7 @@ export default function Home() {
         {/* SECTION 2: PAYMENTS & SETTLEMENT */}
         <section
           id="payments"
-          className="relative bg-gradient-to-t from-[#22c55e]/12 via-[#22c55e]/2 to-[#f8fafc] pt-4 pb-4 sm:pt-6 sm:pb-6 md:pb-8"
+          className="relative bg-gradient-to-t from-[#22c55e]/12 via-[#22c55e]/2 to-white pt-4 pb-4 sm:pt-6 sm:pb-6 md:pb-8"
         >
           {/* Subtle gradient accent */}
           <div className="absolute top-10 right-0 -z-10 h-[400px] w-[300px] bg-[#22c55e]/5 blur-[100px] pointer-events-none" />
@@ -412,7 +512,7 @@ export default function Home() {
               {/* Left Column (Cards 1 and 3) */}
               <div className="space-y-8 lg:space-y-10">
                 {/* Card 1: Mobile Money & USSD */}
-                <div className="relative overflow-hidden bg-white rounded-3xl p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
+                <div className="animate-on-scroll stagger-1 relative overflow-hidden bg-white rounded-3xl p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
                   {/* Top-left corner curve gradient */}
                   <div 
                     className="absolute top-0 left-0 w-24 h-24 sm:w-28 sm:h-28 pointer-events-none z-0 transition-all duration-500 ease-out group-hover:scale-110 origin-top-left" 
@@ -449,7 +549,7 @@ export default function Home() {
                 </div>
 
                 {/* Card 3: Stablecoin Gateway */}
-                <div className="relative overflow-hidden bg-white rounded-3xl p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
+                <div className="animate-on-scroll stagger-3 relative overflow-hidden bg-white rounded-3xl p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
                   {/* Top-left corner curve gradient */}
                   <div 
                     className="absolute top-0 left-0 w-24 h-24 sm:w-28 sm:h-28 pointer-events-none z-0 transition-all duration-500 ease-out group-hover:scale-110 origin-top-left" 
@@ -489,7 +589,7 @@ export default function Home() {
               {/* Right Column (Cards 2 and 4 - Staggered higher on desktop) */}
               <div className="space-y-8 lg:space-y-10 md:-mt-24 lg:-mt-32">
                 {/* Card 2: Card Collections */}
-                <div className="relative overflow-hidden bg-white rounded-3xl p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
+                <div className="animate-on-scroll stagger-2 relative overflow-hidden bg-white rounded-3xl p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
                   {/* Top-left corner curve gradient */}
                   <div 
                     className="absolute top-0 left-0 w-24 h-24 sm:w-28 sm:h-28 pointer-events-none z-0 transition-all duration-500 ease-out group-hover:scale-110 origin-top-left" 
@@ -526,7 +626,7 @@ export default function Home() {
                 </div>
 
                 {/* Card 4: Bank Settlements */}
-                <div className="relative overflow-hidden bg-white rounded-3xl p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
+                <div className="animate-on-scroll stagger-4 relative overflow-hidden bg-white rounded-3xl p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] min-h-[380px] sm:min-h-[440px] flex flex-col justify-between group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
                   {/* Top-left corner curve gradient */}
                   <div 
                     className="absolute top-0 left-0 w-24 h-24 sm:w-28 sm:h-28 pointer-events-none z-0 transition-all duration-500 ease-out group-hover:scale-110 origin-top-left" 
@@ -585,10 +685,10 @@ export default function Home() {
 
             {/* Centered Heading */}
             <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
-              <p className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+              <p className="animate-on-scroll text-sm font-semibold uppercase tracking-wider text-gray-500">
                 Markets
               </p>
-              <h2 className="text-3xl font-bold tracking-tight text-black sm:text-4xl lg:text-5xl leading-tight">
+              <h2 className="animate-on-scroll stagger-1 text-3xl font-bold tracking-tight text-black sm:text-4xl lg:text-5xl leading-tight">
                 Expanding the Future of Payments with Trite
               </h2>
             </div>
@@ -597,7 +697,7 @@ export default function Home() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
 
               {/* Left Column: Image with Glass Card Overlay */}
-              <div className="lg:col-span-6 xl:col-span-7 relative rounded-2xl overflow-hidden group min-h-[500px] lg:min-h-[580px] shadow-lg">
+              <div className="animate-on-scroll stagger-2 lg:col-span-6 xl:col-span-7 relative rounded-2xl overflow-hidden group min-h-[500px] lg:min-h-[580px] shadow-lg">
                 <Image
                   src="/images/market-women.jpg"
                   alt="Market Women"
@@ -618,7 +718,7 @@ export default function Home() {
               </div>
 
               {/* Right Column: Soft Container with 3 Cards arranged vertically */}
-              <div className="lg:col-span-6 xl:col-span-5 relative rounded-2xl p-6 sm:p-8 flex flex-col gap-6 justify-center overflow-hidden">
+              <div className="animate-on-scroll stagger-3 lg:col-span-6 xl:col-span-5 relative rounded-2xl p-6 sm:p-8 flex flex-col gap-6 justify-center overflow-hidden">
                 {/* Background Image with Overlay */}
                 <div className="absolute inset-0 z-0">
                   <Image
@@ -648,10 +748,10 @@ export default function Home() {
                     title: "Cross-Border Remittances",
                     desc: "Empowering merchants to transfer funds across regional borders instantly.",
                   },
-                ].map((item) => (
+                ].map((item, index) => (
                   <div
                     key={item.title}
-                    className="relative z-10 rounded-2xl bg-white p-6 transition-transform duration-300 hover:scale-105"
+                    className={`animate-on-scroll stagger-${index + 1} relative z-10 rounded-2xl bg-white p-6 transition-transform duration-300 hover:scale-105`}
                   >
                     <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#4ade80] to-[#22c55e] text-white shadow-sm">
                       <item.icon className="h-5 w-5" strokeWidth={2} />
@@ -671,7 +771,7 @@ export default function Home() {
             </div>
 
             {/* CTA Button */}
-            <div className="mt-16 flex justify-center">
+            <div className="animate-on-scroll stagger-4 mt-16 flex justify-center">
               <Link
                 href="/markets"
                 className="px-8 py-4 font-semibold bg-[#22c55e] text-white hover:bg-[#16a34a] rounded-full transition-all flex items-center gap-2 shadow-[0_10px_25px_-5px_rgba(34,197,94,0.3)] hover:scale-[1.02]"
@@ -750,48 +850,69 @@ export default function Home() {
 
           {/* Body — intro paragraph + feature columns */}
           <div className="relative z-10 mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
-            <p className="max-w-3xl mx-auto text-center text-base leading-[1.75] text-[#425466] sm:text-lg">
-              Trite is more than a payment gateway — it is a complete financial operations platform designed for modern business growth. Through advanced stablecoin integration, fiat payment support, API connectivity, merchant tools, and financial automation features, businesses can streamline transactions while expanding into global markets.
-            </p>
+            <div className="max-w-4xl text-left pl-4">
+              <h3 className="text-2xl sm:text-3xl font-bold text-black mb-6 leading-tight">
+                Trite is more than a payment gateway
+              </h3>
+              <p className="text-base leading-[1.75] text-[#425466] sm:text-lg">
+                it is a complete financial operations platform designed for modern business growth. Through advanced stablecoin integration, fiat payment support, API connectivity, merchant tools, and financial automation features, businesses can streamline transactions while expanding into global markets.
+              </p>
+            </div>
 
-            <div className="mt-14 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-0">
+            <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-6">
               {[
                 {
-                  icon: Wallet,
+                  image: "/images/brand-building.jpg",
                   title: "Business Wallet Infrastructure",
                   desc: "Secure multi-currency custody and stablecoin asset management.",
                 },
                 {
-                  icon: Code2,
+                  image: "/images/ladyy.jpg",
                   title: "API & Developer Solutions",
                   desc: "Flexible endpoints to deploy checkout layers and bulk payout workflows.",
                 },
                 {
-                  icon: BarChart3,
+                  image: "/images/business-report.jpg",
                   title: "Advanced Reporting & Analytics",
                   desc: "Gain real-time visibility into transactions and settlement analytics.",
                 },
-              ].map((item, i) => (
+              ].map((item, index) => (
                 <div
                   key={item.title}
-                  className={cn(
-                    "px-0 md:px-8",
-                    i < 2 && "md:border-r md:border-dashed md:border-gray-200",
-                    i === 0 && "md:pl-0",
-                    i === 2 && "md:pr-0"
-                  )}
+                  className={`group animate-on-scroll stagger-${index + 1} relative overflow-hidden rounded-3xl h-80 transition-all duration-300 hover:shadow-2xl hover:shadow-black/20`}
                 >
-                  <div className="mb-5 flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#4ade80] to-[#22c55e] text-white shadow-sm">
-                    <item.icon className="h-5 w-5" strokeWidth={2} />
-                  </div>
-                  <div className="border-l-2 border-[#22c55e] pl-3">
-                    <h4 className="text-base font-bold leading-snug text-[#0a2540] sm:text-[17px]">
+                  {/* Background Image */}
+                  <Image 
+                    src={item.image} 
+                    alt={item.title} 
+                    fill
+                    className="object-cover"
+                  />
+                  {/* Dark Overlay */}
+                  <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-colors duration-300"></div>
+                  
+                  {/* Content */}
+                  <div className="relative z-10 h-full flex flex-col justify-between p-6 sm:p-8 text-white">
+                    <h4 className="text-xl sm:text-2xl font-bold leading-snug">
                       {item.title}
                     </h4>
+                    
+                    <div>
+                      <p className="text-white/90 text-sm sm:text-base leading-relaxed mb-4">
+                        {item.desc}
+                      </p>
+                      
+                      <Link 
+                        href="/businesses" 
+                        className="inline-flex items-center text-sm font-semibold text-white group-hover:translate-x-2 transition-transform duration-300"
+                      >
+                        Learn More 
+                        <svg className="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </Link>
+                    </div>
                   </div>
-                  <p className="mt-3 text-sm leading-[1.65] text-[#425466] sm:text-[15px]">
-                    {item.desc}
-                  </p>
                 </div>
               ))}
             </div>
@@ -851,7 +972,7 @@ export default function Home() {
                 {/* Image happy.png */}
                 <div className="max-w-md pt-4">
                   <img
-                    src="/images/happy.png"
+                    src="/images/happy-1.png"
                     alt="Happy customer"
                     className="w-full h-auto object-contain"
                   />
@@ -859,8 +980,8 @@ export default function Home() {
               </div>
 
               {/* Right Column: Paragraph Text */}
-              <div className="lg:col-span-7">
-                <p className="text-base sm:text-lg leading-relaxed text-gray-600 font-medium">
+              <div className="lg:col-span-7 lg:self-end lg:pb-16">
+                <p className="pt-4 text-base sm:text-lg leading-relaxed text-gray-600 font-medium">
                   Trite provides a comprehensive suite of payment solutions designed to empower businesses with seamless, secure, and scalable payment infrastructure across Africa and beyond. Our products are built to handle the complexities of modern commerce, from stablecoin settlements to traditional banking rails.
                 </p>
               </div>
@@ -873,7 +994,7 @@ export default function Home() {
               <div className="lg:col-span-4 flex flex-col gap-12 sm:gap-16 order-2 lg:order-1">
                 
                 {/* Product 1: Trite Gateway */}
-                <div className="flex flex-col lg:items-end items-start text-left lg:text-right group cursor-pointer transition-all duration-300">
+                <div className="animate-on-scroll stagger-1 flex flex-col lg:items-end items-start text-left lg:text-right group cursor-pointer transition-all duration-300">
                   <div className="flex items-center gap-4 lg:flex-row-reverse flex-row">
                     {/* Reduced Image Icon Container */}
                     <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white flex items-center justify-center border border-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.04)] p-2 overflow-hidden transition-all duration-300 group-hover:border-[#22c55e] group-hover:shadow-[0_8px_20px_rgba(34,197,94,0.15)] group-hover:scale-110 shrink-0">
@@ -883,7 +1004,7 @@ export default function Home() {
                         className="max-w-full max-h-full object-contain translate-y-2 transition-transform duration-300"
                       />
                     </div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-[#0c1e43] tracking-tight group-hover:text-[#22c55e] transition-colors">
+                    <h3 className="text-xl sm:text-2xl font-bold text-black tracking-tight transition-colors">
                       Trite Gateway
                     </h3>
                   </div>
@@ -893,7 +1014,7 @@ export default function Home() {
                 </div>
 
                 {/* Product 3: Trite Merchant Dashboard */}
-                <div className="flex flex-col lg:items-end items-start text-left lg:text-right group cursor-pointer transition-all duration-300">
+                <div className="animate-on-scroll stagger-3 flex flex-col lg:items-end items-start text-left lg:text-right group cursor-pointer transition-all duration-300">
                   <div className="flex items-center gap-4 lg:flex-row-reverse flex-row">
                     {/* Reduced Image Icon Container */}
                     <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white flex items-center justify-center border border-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.04)] p-2 overflow-hidden transition-all duration-300 group-hover:border-[#22c55e] group-hover:shadow-[0_8px_20px_rgba(34,197,94,0.15)] group-hover:scale-110 shrink-0">
@@ -903,7 +1024,7 @@ export default function Home() {
                         className="max-w-full max-h-full object-contain transition-transform duration-300"
                       />
                     </div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-[#0c1e43] tracking-tight group-hover:text-[#22c55e] transition-colors">
+                    <h3 className="text-xl sm:text-2xl font-bold text-black tracking-tight transition-colors">
                       Trite Merchant Dashboard
                     </h3>
                   </div>
@@ -915,15 +1036,13 @@ export default function Home() {
               </div>
 
               {/* Center Column: Middle Student Showcase */}
-              <div className="lg:col-span-4 flex items-center justify-center order-1 lg:order-2">
+              <div className="animate-on-scroll animate-scale-in lg:col-span-4 flex items-center justify-center order-1 lg:order-2">
                 <div className="relative flex items-center justify-center py-8 lg:py-0">
-                  {/* Decorative Outer Rings */}
-                  <div className="absolute w-[370px] h-[370px] sm:w-[440px] sm:h-[440px] rounded-full border border-dashed border-[#22c55e]/30 pointer-events-none animate-spin" style={{ animationDuration: '40s' }} />
-                  <div className="absolute w-[330px] h-[330px] sm:w-[395px] sm:h-[395px] rounded-full border border-dashed border-slate-200 pointer-events-none" />
-                  <div className="absolute w-[290px] h-[290px] sm:w-[350px] sm:h-[350px] rounded-full bg-gradient-to-tr from-[#22c55e]/5 to-transparent pointer-events-none blur-xl" />
+                  {/* Background gradient glow only */}
+                  <div className="absolute w-[350px] h-[350px] sm:w-[400px] sm:h-[400px] rounded-full bg-gradient-to-tr from-[#22c55e]/5 to-transparent pointer-events-none blur-xl" />
                   
-                  {/* Student Image Showcase */}
-                  <div className="relative w-[260px] h-[260px] sm:w-[310px] sm:h-[310px] rounded-full overflow-hidden border-[6px] border-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] bg-[#22c55e]/5 transition-transform duration-500 hover:scale-[1.03] group">
+                  {/* Student Image Showcase - Expanded */}
+                  <div className="relative w-[300px] h-[300px] sm:w-[360px] sm:h-[360px] rounded-full overflow-hidden border-[6px] border-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] bg-[#22c55e]/5 transition-transform duration-500 hover:scale-[1.03] group">
                     <Image
                       src="/images/student.jpg"
                       alt="Student"
@@ -941,7 +1060,7 @@ export default function Home() {
               <div className="lg:col-span-4 flex flex-col gap-12 sm:gap-16 order-3">
                 
                 {/* Product 2: Trite Stable-Pay */}
-                <div className="flex flex-col items-start text-left group cursor-pointer transition-all duration-300">
+                <div className="animate-on-scroll stagger-2 flex flex-col items-start text-left group cursor-pointer transition-all duration-300">
                   <div className="flex items-center gap-4 flex-row">
                     {/* Reduced Image Icon Container */}
                     <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white flex items-center justify-center border border-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.04)] p-2 overflow-hidden transition-all duration-300 group-hover:border-[#22c55e] group-hover:shadow-[0_8px_20px_rgba(34,197,94,0.15)] group-hover:scale-110 shrink-0">
@@ -951,7 +1070,7 @@ export default function Home() {
                         className="max-w-full max-h-full object-contain transition-transform duration-300"
                       />
                     </div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-[#0c1e43] tracking-tight group-hover:text-[#22c55e] transition-colors">
+                    <h3 className="text-xl sm:text-2xl font-bold text-black tracking-tight transition-colors">
                       Trite Stable-Pay
                     </h3>
                   </div>
@@ -961,7 +1080,7 @@ export default function Home() {
                 </div>
 
                 {/* Product 4: Trite API */}
-                <div className="flex flex-col items-start text-left group cursor-pointer transition-all duration-300">
+                <div className="animate-on-scroll stagger-4 flex flex-col items-start text-left group cursor-pointer transition-all duration-300">
                   <div className="flex items-center gap-4 flex-row">
                     {/* Reduced Image Icon Container */}
                     <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white flex items-center justify-center border border-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.04)] p-2 overflow-hidden transition-all duration-300 group-hover:border-[#22c55e] group-hover:shadow-[0_8px_20px_rgba(34,197,94,0.15)] group-hover:scale-110 shrink-0">
@@ -971,7 +1090,7 @@ export default function Home() {
                         className="max-w-full max-h-full object-contain translate-y-2 transition-transform duration-300"
                       />
                     </div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-[#0c1e43] tracking-tight group-hover:text-[#22c55e] transition-colors">
+                    <h3 className="text-xl sm:text-2xl font-bold text-black tracking-tight transition-colors">
                       Trite API
                     </h3>
                   </div>
@@ -1263,5 +1382,6 @@ export default function Home() {
       <Footer />
 
     </div>
+    </>
   );
 }

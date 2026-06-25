@@ -106,10 +106,10 @@ export default function AdminKycPage() {
           <p className="mt-1 text-[10px] font-bold text-blue-600 uppercase tracking-tight">+12% vs Yesterday</p>
         </div>
 
-        <div className="rounded-2xl border border-black/5 bg-[color:var(--trite-lime)] p-5">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[color:var(--trite-ink)]/70">Approved Today</p>
-          <p className="mt-2 text-2xl font-bold text-[color:var(--trite-ink)]">{approvedCount}</p>
-          <p className="mt-1 text-[10px] font-bold text-[color:var(--trite-ink)]/70 uppercase tracking-tight">Active Velocity</p>
+        <div className="rounded-2xl border border-black/5 bg-[color:var(--trite-lime)] p-5 text-white">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-white/70">Approved Today</p>
+          <p className="mt-2 text-2xl font-bold text-white">{approvedCount}</p>
+          <p className="mt-1 text-[10px] font-bold text-white/70 uppercase tracking-tight">Active Velocity</p>
         </div>
 
         <div className="rounded-2xl bg-[color:var(--trite-ink)] p-5 text-white">
@@ -190,9 +190,9 @@ export default function AdminKycPage() {
                   <button 
                     onClick={() => handleUpdateStatus(k.id, "APPROVED")}
                     disabled={updatingId === k.id}
-                    className="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--trite-lime)] text-[color:var(--trite-ink)] hover:bg-[color:var(--trite-lime-strong)] disabled:opacity-50 shadow-sm"
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--trite-lime)] text-white hover:bg-[color:var(--trite-lime-strong)] disabled:opacity-50 shadow-sm"
                   >
-                    {updatingId === k.id ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-[color:var(--trite-ink)] border-t-transparent" /> : <CheckIcon className="h-4 w-4" />}
+                    {updatingId === k.id ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <CheckIcon className="h-4 w-4" />}
                   </button>
                   <button 
                     onClick={() => handleUpdateStatus(k.id, "REJECTED")}
@@ -251,9 +251,9 @@ export default function AdminKycPage() {
                       <button 
                         onClick={() => handleUpdateStatus(k.id, "APPROVED")}
                         disabled={updatingId === k.id}
-                        className="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--trite-lime)] text-[color:var(--trite-ink)] hover:bg-[color:var(--trite-lime-strong)] disabled:opacity-50"
+                        className="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--trite-lime)] text-white hover:bg-[color:var(--trite-lime-strong)] disabled:opacity-50"
                       >
-                        {updatingId === k.id ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-[color:var(--trite-ink)] border-t-transparent" /> : <CheckIcon className="h-4 w-4" />}
+                        {updatingId === k.id ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <CheckIcon className="h-4 w-4" />}
                       </button>
                       <button 
                         onClick={() => handleUpdateStatus(k.id, "REJECTED")}
@@ -335,7 +335,7 @@ export default function AdminKycPage() {
                   act.type === "rejected" ? "bg-red-50" : "bg-blue-50"
                 }`}>
                   {act.type === "approved" ? (
-                    <CheckIcon className="h-4 w-4 text-[color:var(--trite-ink)]" />
+                    <CheckIcon className="h-4 w-4 text-white" />
                   ) : act.type === "rejected" ? (
                     <XIcon className="h-4 w-4 text-red-600" />
                   ) : (
@@ -363,7 +363,7 @@ export default function AdminKycPage() {
           <div className="rounded-2xl bg-[color:var(--trite-ink)] p-6 text-white">
             <p className="text-xs font-medium text-white/60 uppercase tracking-wide">Compliance Alert</p>
             <p className="mt-3 text-lg font-semibold">34 users from Greater Accra are reaching their Tier 1 limits. High-priority verification suggested.</p>
-            <button className="mt-4 inline-flex h-10 items-center justify-center rounded-xl bg-[color:var(--trite-lime-strong)] px-4 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-[color:var(--trite-lime)]">
+            <button className="mt-4 inline-flex h-10 items-center justify-center rounded-xl bg-[color:var(--trite-lime-strong)] px-4 text-sm font-semibold text-white hover:bg-[color:var(--trite-lime)]">
               Review High-Priority Queue
             </button>
           </div>

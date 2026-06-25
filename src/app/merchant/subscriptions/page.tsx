@@ -124,7 +124,7 @@ export default function SubscriptionsPage() {
                       }}
                       className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                         isActive
-                          ? "bg-[color:var(--trite-lime)] text-[color:var(--trite-ink)]"
+                          ? "bg-[color:var(--trite-lime)] text-white"
                           : "text-[color:var(--trite-muted)] hover:bg-black/[0.03] hover:text-[color:var(--trite-ink)]"
                       }`}
                     >
@@ -412,7 +412,7 @@ function MenuIcon({ className }: { className?: string }) {
 function VerifiedBadge({ className }: { className?: string }) {
   return (
     <div className={`flex shrink-0 items-center justify-center rounded-full bg-[color:var(--trite-lime-strong)] p-0.5 ${className}`}>
-      <svg className="h-full w-full text-[color:var(--trite-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+      <svg className="h-full w-full text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
         <polyline points="20 6 9 17 4 12" />
       </svg>
     </div>

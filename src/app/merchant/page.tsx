@@ -70,7 +70,7 @@ export default function DashboardPage() {
   const [convertFrom, setConvertFrom] = useState<"USDC" | "USDT">("USDC");
 
   const { data: dashData } = useMerchantFetch<DashboardData>("/api/merchant/dashboard");
-  const { data: txData } = useMerchantFetch<{ data: TxRow[] }>("/api/merchant/transactions", { per_page: "10" });
+  const { data: txData } = useMerchantFetch<{ data: TxRow[] }>("/api/merchant/transactions", { per_page: "5" });
   const { data: settlementData } = useMerchantFetch<{ data: SettlementRow[] }>("/api/merchant/settlements");
 
   const transactions = txData?.data ?? [];
@@ -137,7 +137,7 @@ export default function DashboardPage() {
                 </div>
                 <button 
                   onClick={() => router.push("/merchant/settlements")}
-                  className="mt-4 inline-flex h-9 items-center justify-center rounded-lg bg-[color:var(--trite-lime-strong)] px-4 text-xs font-semibold text-[color:var(--trite-ink)] hover:bg-[color:var(--trite-lime)]"
+                  className="mt-4 inline-flex h-9 items-center justify-center rounded-lg bg-[color:var(--trite-lime)] px-4 text-xs font-semibold text-white hover:bg-[color:var(--trite-lime-strong)]"
                 >
                   Manage Settlements
                 </button>
@@ -275,9 +275,6 @@ export default function DashboardPage() {
               <h2 className="text-lg font-semibold text-[color:var(--trite-ink)]">
                 Recent Transactions
               </h2>
-              <button className="text-sm font-medium text-blue-600 hover:underline">
-                View All
-              </button>
             </div>
             <div className="overflow-x-auto">
             <table className="w-full min-w-[600px]">
@@ -356,7 +353,7 @@ export default function DashboardPage() {
                       <span
                         className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
                           tx.status === "SUCCESS"
-                            ? "bg-[color:var(--trite-lime)]/20 text-[color:var(--trite-ink)]"
+                            ? "bg-[color:var(--trite-lime)] text-white"
                             : tx.status === "PROCESSING" || tx.status === "PENDING"
                             ? "bg-yellow-100 text-yellow-700"
                             : "bg-red-100 text-red-700"
@@ -373,6 +370,15 @@ export default function DashboardPage() {
                   })}
               </tbody>
             </table>
+            </div>
+            <div className="mt-5 flex justify-center border-t border-black/5 pt-5">
+              <Link
+                href="/merchant/transactions"
+                className="flex items-center gap-2 rounded-xl border border-black/10 px-6 py-2.5 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-black/[0.03] transition-colors"
+              >
+                View All Transactions
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><polyline points="9 18 15 12 9 6" /></svg>
+              </Link>
             </div>
           </div>
 
@@ -439,7 +445,7 @@ export default function DashboardPage() {
             <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--trite-lime)]">
-                  <KeyIcon className="h-5 w-5 text-[color:var(--trite-ink)]" />
+                  <KeyIcon className="h-5 w-5 text-white" />
                 </div>
                 <div>
                   <div className="text-xs uppercase tracking-wide text-[color:var(--trite-muted)]">

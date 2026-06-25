@@ -180,7 +180,7 @@ export default function AdminLoginPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm text-gray-900 outline-none transition-all placeholder:text-black/30 focus:border-[color:var(--trite-lime-strong)]"
+                    className="mt-1.5 block h-12 w-full rounded-xl border border-black/20 bg-white px-4 text-sm text-gray-900 outline-none transition-all placeholder:text-gray-500 focus:border-[color:var(--trite-lime-strong)]"
                   />
                 </div>
 
@@ -200,7 +200,7 @@ export default function AdminLoginPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="mt-1.5 block h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm text-gray-900 outline-none transition-all placeholder:text-black/30 focus:border-[color:var(--trite-lime-strong)]"
+                    className="mt-1.5 block h-12 w-full rounded-xl border border-black/20 bg-white px-4 text-sm text-gray-900 outline-none transition-all placeholder:text-gray-500 focus:border-[color:var(--trite-lime-strong)]"
                   />
                 </div>
 
@@ -302,7 +302,7 @@ export default function AdminLoginPage() {
             <div className="mt-8 rounded-2xl border border-black/5 bg-white p-5">
               <div className="flex items-start gap-3">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[color:var(--trite-lime)]">
-                  <Lock className="h-4 w-4 text-[color:var(--trite-ink)]" />
+                  <Lock className="h-4 w-4 text-white" />
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-[color:var(--trite-ink)]">Bank of Ghana Regulated</h3>

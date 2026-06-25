@@ -156,7 +156,7 @@ export default function AdminDashboardPage() {
                     <tr key={tx.id} className="group hover:bg-black/[0.01] transition-colors">
                       <td className="py-4 pr-4">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[color:var(--trite-lime)]/30 font-bold text-[color:var(--trite-ink)]">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[color:var(--trite-lime)] font-bold text-white">
                             {tx.method.slice(0, 2).toUpperCase()}
                           </div>
                           <div>

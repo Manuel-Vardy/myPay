@@ -30,6 +30,19 @@ export default function TransactionsPage() {
   const [currencyFilter, setCurrencyFilter] = useState<"all" | "fiat" | "stablecoin" | "crypto">("all");
   const [dateRange, setDateRange] = useState<"7" | "30" | "90" | "all">("30");
 
+  // Build clean params — exclude empty/default values to match how dashboard fetches
+  const fetchParams = useMemo(() => {
+    const p: Record<string, string> = {
+      page: page.toString(),
+      per_page: "10",
+    };
+    if (query) p.search = query;
+    if (statusFilter !== "all") p.status = statusFilter.toUpperCase();
+    if (currencyFilter !== "all") p.currency = currencyFilter.toUpperCase();
+    if (dateRange !== "all") p.dateRange = dateRange;
+    return p;
+  }, [query, statusFilter, currencyFilter, page, dateRange]);
+
   const { data: fetchRes, loading } = useMerchantFetch<{ 
     data: APITransaction[]; 
     global_stats: {
@@ -43,16 +56,7 @@ export default function TransactionsPage() {
     pagination: { page: number; per_page: number; total: number; total_pages: number };
   }>(
     "/api/merchant/transactions",
-    {
-      search: query || "",
-      status: statusFilter === "all" ? "" : statusFilter.toUpperCase(),
-      currency: currencyFilter === "all" ? "" : currencyFilter.toUpperCase(),
-      page: page.toString(),
-      per_page: "10",
-      ...dateRange != 'all' && {
-        dateRange: dateRange
-      }
-    }
+    fetchParams
   );
 
   const transactions = fetchRes?.data ?? [];
@@ -100,7 +104,7 @@ export default function TransactionsPage() {
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-[color:var(--trite-muted)]">Total Volume</span>
                 <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-                  stats.volume_change_percentage_24h >= 0 ? "bg-[color:var(--trite-lime)] text-[color:var(--trite-ink)]" : "bg-red-100 text-red-600"
+                  stats.volume_change_percentage_24h >= 0 ? "bg-[color:var(--trite-lime)] text-white" : "bg-red-100 text-red-600"
                 }`}>
                   {stats.volume_change_percentage_24h > 0 ? "+" : ""}{stats.volume_change_percentage_24h}%
                 </span>
@@ -114,7 +118,7 @@ export default function TransactionsPage() {
             <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-[color:var(--trite-muted)]">Completed</span>
-                <span className="rounded-full bg-[color:var(--trite-lime)] px-1.5 py-0.5 text-[10px] font-semibold text-[color:var(--trite-ink)]">
+                <span className="rounded-full bg-[color:var(--trite-lime)] px-1.5 py-0.5 text-[10px] font-semibold text-white">
                   {Math.round((stats.completed_count / (pagination.total || 1)) * 100)}%
                 </span>
               </div>
@@ -299,24 +303,32 @@ export default function TransactionsPage() {
                   )})}
                   {transactions.length === 0 && !loading && (
                     <tr>
-                      <td
-                        className="py-10 text-center text-sm text-[color:var(--trite-muted)]"
-                        colSpan={6}
-                      >
-                        No transactions found matching your filters.
+                      <td className="py-16 text-center" colSpan={6}>
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-black/[0.04]">
+                            <svg className="h-6 w-6 text-[color:var(--trite-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                          </div>
+                          <div className="text-sm font-medium text-[color:var(--trite-ink)]">No transactions found</div>
+                          <div className="text-xs text-[color:var(--trite-muted)]">Try adjusting your filters or date range</div>
+                        </div>
                       </td>
                     </tr>
                   )}
-                  {loading && (
-                    <tr>
-                      <td
-                        className="py-10 text-center text-sm text-[color:var(--trite-muted)]"
-                        colSpan={5}
-                      >
-                        Loading...
+                  {loading && Array.from({ length: 6 }).map((_, i) => (
+                    <tr key={i} className="border-b border-black/5">
+                      <td className="py-4"><div className="h-4 w-24 animate-pulse rounded-md bg-black/[0.06]" /></td>
+                      <td className="py-4"><div className="h-4 w-32 animate-pulse rounded-md bg-black/[0.06]" /></td>
+                      <td className="py-4">
+                        <div className="flex items-center gap-2">
+                          <div className="h-8 w-8 animate-pulse rounded-full bg-black/[0.06]" />
+                          <div className="h-4 w-28 animate-pulse rounded-md bg-black/[0.06]" />
+                        </div>
                       </td>
+                      <td className="py-4"><div className="h-4 w-20 animate-pulse rounded-md bg-black/[0.06]" /></td>
+                      <td className="py-4"><div className="h-5 w-16 animate-pulse rounded-full bg-black/[0.06]" /></td>
+                      <td className="py-4 text-right"><div className="ml-auto h-4 w-16 animate-pulse rounded-md bg-black/[0.06]" /></td>
                     </tr>
-                  )}
+                  ))}
                 </tbody>
               </table>
               </div>
@@ -351,18 +363,18 @@ export default function TransactionsPage() {
           <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
             <div className="rounded-2xl bg-[color:var(--trite-lime)] p-6 ring-1 ring-black/5 flex items-start justify-between">
               <div>
-                <div className="text-sm font-medium text-[color:var(--trite-ink)]/70">
+                <div className="text-sm font-medium text-white/80">
                   {dominantMethod ? `${dominantMethod.name.replace("_", " ")} Dominance` : "Dominance Intelligence"}
                 </div>
-                <div className="mt-2 text-2xl font-bold text-[color:var(--trite-ink)]">
+                <div className="mt-2 text-2xl font-bold text-white">
                   {dominantMethod ? `${dominantMethod.percent}% of active transactions` : "Processing Data..."}
                 </div>
-                <p className="mt-2 text-xs leading-5 text-[color:var(--trite-ink)]/70">
+                <p className="mt-2 text-xs leading-5 text-white/80">
                   Preferred payment method aggregated across all completed and requested orders locally.
                 </p>
               </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[color:var(--trite-ink)]/10">
-                <BarChartIcon className="h-5 w-5 text-[color:var(--trite-ink)]" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
+                <BarChartIcon className="h-5 w-5 text-white" />
               </div>
             </div>
             <div className="rounded-2xl bg-gradient-to-br from-[#1a1f2e] to-[#0f1419] p-6 text-white">
@@ -401,7 +413,7 @@ function FilterChip({
 }) {
   const activeStyles = {
     default: "bg-[color:var(--trite-ink)] text-white",
-    success: "bg-[color:var(--trite-lime-strong)] text-[color:var(--trite-ink)]",
+    success: "bg-[color:var(--trite-lime-strong)] text-white",
     danger: "bg-red-500 text-white",
     neutral: "bg-blue-500 text-white",
     warning: "bg-amber-500 text-white",
@@ -421,7 +433,7 @@ function FilterChip({
 
 function StatusBadge({ status }: { status: string }) {
   let color = "bg-gray-100 text-gray-700";
-  if (status === "SUCCESS") color = "bg-[color:var(--trite-lime)]/20 text-[color:var(--trite-ink)]";
+  if (status === "SUCCESS") color = "bg-[color:var(--trite-lime)] text-white";
   else if (status === "PENDING" || status === "PROCESSING") color = "bg-yellow-100 text-yellow-700";
   else if (status === "FAILED") color = "bg-red-50 text-red-600";
 

@@ -70,7 +70,7 @@ export default function AdminSettingsPage() {
               {activeTab === "profile" && (
                 <div className="space-y-6 max-w-2xl">
                   <div className="flex items-center gap-6">
-                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[color:var(--trite-lime)] text-2xl font-bold text-[color:var(--trite-ink)]">
+                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[color:var(--trite-lime)] text-2xl font-bold text-white">
                       AD
                     </div>
                     <div>
@@ -153,7 +153,7 @@ export default function AdminSettingsPage() {
                         <h3 className="text-sm font-semibold text-[color:var(--trite-ink)]">Two-Factor Authentication</h3>
                         <p className="text-sm text-[color:var(--trite-muted)]">Add an extra layer of security to your account.</p>
                       </div>
-                      <button className="rounded-xl bg-[color:var(--trite-lime)] px-4 py-2 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-[color:var(--trite-lime-strong)]">
+                      <button className="rounded-xl bg-[color:var(--trite-lime)] px-4 py-2 text-sm font-semibold text-white hover:bg-[color:var(--trite-lime-strong)]">
                         Enable 2FA
                       </button>
                     </div>

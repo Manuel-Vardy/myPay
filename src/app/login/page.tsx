@@ -101,7 +101,7 @@ export default function LoginPage() {
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider" htmlFor="email">Business email</label>
               <input
-                className="flex h-11 w-full rounded-xl border border-black/[0.08] bg-gray-50/50 px-4 py-2 text-sm font-medium transition-all focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/5 outline-none placeholder:text-gray-400"
+                className="flex h-11 w-full rounded-xl border border-black/15 bg-gray-50/50 px-4 py-2 text-sm font-medium text-black transition-all focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/5 outline-none placeholder:text-gray-500"
                 id="email"
                 name="email"
                 type="email"
@@ -118,7 +118,7 @@ export default function LoginPage() {
                 <a className="text-[10px] font-bold text-black hover:text-[#22c55e] transition-colors" href="#">Forgot password?</a>
               </div>
               <input
-                className="flex h-11 w-full rounded-xl border border-black/[0.08] bg-gray-50/50 px-4 py-2 text-sm font-medium transition-all focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/5 outline-none placeholder:text-gray-400"
+                className="flex h-11 w-full rounded-xl border border-black/15 bg-gray-50/50 px-4 py-2 text-sm font-medium text-black transition-all focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/5 outline-none placeholder:text-gray-500"
                 id="password"
                 name="password"
                 type="password"

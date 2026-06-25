@@ -94,43 +94,40 @@ body {
 
 /* Newton's Cradle Loader styles */
 .newtons-cradle {
-  --uib-size: 78px;
-  --uib-color: var(--trite-lime);
-  --uib-speed: 1.4s;
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  width: calc(var(--uib-size) * 0.51);
-  height: calc(var(--uib-size) * 0.51);
+  width: 40px;
+  height: 40px;
 }
 
 .newtons-cradle__dot {
   position: relative;
   display: flex;
   flex-shrink: 0;
-  align-items: center;
+  align-items: flex-end;
   height: 100%;
   width: 25%;
   transform-origin: center top;
 }
 
 .newtons-cradle__dot::after {
-  content: '';
+  content: "";
   display: block;
   width: 100%;
   height: 25%;
   border-radius: 50%;
-  background-color: var(--uib-color);
+  background-color: #22c55e;
   transition: background-color 0.3s ease;
 }
 
 .newtons-cradle__dot:first-child {
-  animation: swing var(--uib-speed) linear infinite;
+  animation: swing 1.4s linear infinite;
 }
 
 .newtons-cradle__dot:last-child {
-  animation: swing2 var(--uib-speed) linear infinite;
+  animation: swing2 1.4s linear infinite;
 }
 
 @keyframes swing {
@@ -166,3 +163,147 @@ body {
     animation-timing-function: ease-in;
   }
 }
+
+/* --- Input & Textarea High Visibility & Contrast Legibility Rules --- */
+
+/* Target all text-based inputs, textareas, and select elements */
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="file"]),
+textarea,
+select {
+  /* Default typed text must be highly visible dark slate (works on white/light gray backgrounds) */
+  color: #0f172a !important;
+  /* Make borders more visible than the default extremely faint borders */
+  border-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Ensure placeholder text has excellent contrast (slate-500/600 equivalent) and full opacity */
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="file"])::placeholder,
+textarea::placeholder {
+  color: #475569 !important; /* highly visible slate-600 */
+  opacity: 1 !important; /* override browser default opacity to ensure visible contrast */
+}
+
+/* Adjust borders and text when focused for better accessibility */
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="file"]):focus,
+textarea:focus,
+select:focus {
+  border-color: #22c55e !important; /* Trite primary green on focus */
+}
+
+/* 
+  If the input itself has a dark background class, or is within an explicit dark container
+  (like SOC 2 compliance panels, dark dashboards, or dark-themed sections)
+*/
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="file"]),
+.dark textarea,
+.dark select,
+[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="file"]),
+[data-theme="dark"] textarea,
+[data-theme="dark"] select,
+.bg-black input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="file"]),
+.bg-black textarea,
+.bg-black select,
+.bg-slate-900 input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="file"]),
+.bg-slate-900 textarea,
+.bg-slate-900 select,
+.bg-slate-950 input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="file"]),
+.bg-slate-950 textarea,
+.bg-slate-950 select {
+  color: #f8fafc !important; /* light slate text for dark backgrounds */
+  border-color: rgba(255, 255, 255, 0.3) !important; /* visible border on dark backgrounds */
+}
+
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="file"])::placeholder,
+.dark textarea::placeholder,
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: #94a3b8 !important; /* light slate placeholder */
+}
+
+/* Also handle prefers-color-scheme: dark for containers that do not force light backgrounds */
+@media (prefers-color-scheme: dark) {
+  body:not(.bg-white) input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="file"]):not(.bg-white):not(.bg-gray-50):not(.bg-gray-50\/50),
+  body:not(.bg-white) textarea:not(.bg-white):not(.bg-gray-50),
+  body:not(.bg-white) select:not(.bg-white) {
+    color: #f8fafc !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
+  }
+  
+  body:not(.bg-white) input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="file"]):not(.bg-white):not(.bg-gray-50):not(.bg-gray-50\/50)::placeholder,
+  body:not(.bg-white) textarea:not(.bg-white):not(.bg-gray-50)::placeholder {
+    color: #94a3b8 !important;
+  }
+}
+
+/* --- Remove all box shadows from cards and containers in merchant and admin portals and add thin border --- */
+.merchant-portal .shadow-sm,
+.merchant-portal .shadow,
+.merchant-portal .shadow-md,
+.merchant-portal .shadow-lg,
+.merchant-portal .shadow-xl,
+.merchant-portal .shadow-2xl,
+.merchant-portal .shadow-inner,
+.admin-portal .shadow-sm,
+.admin-portal .shadow,
+.admin-portal .shadow-md,
+.admin-portal .shadow-lg,
+.admin-portal .shadow-xl,
+.admin-portal .shadow-2xl,
+.admin-portal .shadow-inner {
+  box-shadow: none !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Ensure border colors adjust to light grey on dark background themes */
+@media (prefers-color-scheme: dark) {
+  body:not(.bg-white) .merchant-portal .shadow-sm,
+  body:not(.bg-white) .merchant-portal .shadow,
+  body:not(.bg-white) .merchant-portal .shadow-md,
+  body:not(.bg-white) .merchant-portal .shadow-lg,
+  body:not(.bg-white) .merchant-portal .shadow-xl,
+  body:not(.bg-white) .merchant-portal .shadow-2xl,
+  body:not(.bg-white) .merchant-portal .shadow-inner,
+  body:not(.bg-white) .admin-portal .shadow-sm,
+  body:not(.bg-white) .admin-portal .shadow,
+  body:not(.bg-white) .admin-portal .shadow-md,
+  body:not(.bg-white) .admin-portal .shadow-lg,
+  body:not(.bg-white) .admin-portal .shadow-xl,
+  body:not(.bg-white) .admin-portal .shadow-2xl,
+  body:not(.bg-white) .admin-portal .shadow-inner {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+  }
+}
+
+.dark .merchant-portal .shadow-sm,
+.dark .merchant-portal .shadow,
+.dark .merchant-portal .shadow-md,
+.dark .merchant-portal .shadow-lg,
+.dark .merchant-portal .shadow-xl,
+.dark .merchant-portal .shadow-2xl,
+.dark .merchant-portal .shadow-inner,
+.dark .admin-portal .shadow-sm,
+.dark .admin-portal .shadow,
+.dark .admin-portal .shadow-md,
+.dark .admin-portal .shadow-lg,
+.dark .admin-portal .shadow-xl,
+.dark .admin-portal .shadow-2xl,
+.dark .admin-portal .shadow-inner,
+[data-theme="dark"] .merchant-portal .shadow-sm,
+[data-theme="dark"] .merchant-portal .shadow,
+[data-theme="dark"] .merchant-portal .shadow-md,
+[data-theme="dark"] .merchant-portal .shadow-lg,
+[data-theme="dark"] .merchant-portal .shadow-xl,
+[data-theme="dark"] .merchant-portal .shadow-2xl,
+[data-theme="dark"] .merchant-portal .shadow-inner,
+[data-theme="dark"] .admin-portal .shadow-sm,
+[data-theme="dark"] .admin-portal .shadow,
+[data-theme="dark"] .admin-portal .shadow-md,
+[data-theme="dark"] .admin-portal .shadow-lg,
+[data-theme="dark"] .admin-portal .shadow-xl,
+[data-theme="dark"] .admin-portal .shadow-2xl,
+[data-theme="dark"] .admin-portal .shadow-inner {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+
+

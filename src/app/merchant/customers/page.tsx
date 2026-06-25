@@ -1,25 +1,27 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useMerchantFetch } from "@/lib/hooks/useMerchantFetch";
 
 
 type CustomerTier = "institutional" | "enterprise" | "standard";
-type VerificationStatus = "verified" | "pending" | "unverified";
 
 type Customer = {
   id: string;
-  name: string;
+  name: string | null;
   email: string;
   tier: CustomerTier;
   status: string;
-  kyc_status: VerificationStatus;
   total_spent: number;
   transaction_count: number;
-  last_transaction: string;
+  last_transaction_at: string | null;
+};
+
+type CustomersResponse = {
+  data: Customer[];
+  acquisition_rate: { percentage: number; this_month: number; last_month: number };
+  portfolio_value: number;
+  pagination: { total: number; total_pages: number; page: number; per_page: number };
 };
 
 const tierLabels: Record<CustomerTier, string> = {
@@ -35,56 +37,49 @@ const tierColors: Record<CustomerTier, string> = {
 };
 
 export default function CustomersPage() {
-  const router = useRouter();
-  const [activeTab, setActiveTab] = useState("customers");
   const [search, setSearch] = useState("");
-  const [tierFilter, setTierFilter] = useState<CustomerTier | "all">("all");
-  const [chartPeriod, setChartPeriod] = useState<"day" | "week" | "month" | "year">("week");
   const [sortBy, setSortBy] = useState("recent");
   const [page, setPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [actionMenuOpen, setActionMenuOpen] = useState<string | null>(null);
 
   // Add Customer modal state
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [addLoading, setAddLoading] = useState(false);
   const [newCustomerName, setNewCustomerName] = useState("");
   const [newCustomerEmail, setNewCustomerEmail] = useState("");
+  const [newCustomerPhone, setNewCustomerPhone] = useState("");
   const [newCustomerTier, setNewCustomerTier] = useState<CustomerTier>("standard");
-  const [newCustomerVolume, setNewCustomerVolume] = useState("");
 
   // Edit form state
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
   const [editVolume, setEditVolume] = useState("");
   const [editTier, setEditTier] = useState<CustomerTier>("standard");
-  const [editVerification, setEditVerification] = useState<VerificationStatus>("pending");
 
-  const { data: customersData } = useMerchantFetch<{ data: Customer[]; pagination: { total: number; total_pages: number } }>(
+  // Key to force refetch after mutations
+  const [fetchKey, setFetchKey] = useState(0);
+
+  const fetchParams = useMemo(() => {
+    const p: Record<string, string> = {
+      page: String(page),
+      sort: sortBy,
+      _k: String(fetchKey),
+    };
+    if (search) p.search = search;
+    return p;
+  }, [page, sortBy, search, fetchKey]);
+
+  const { data: customersData } = useMerchantFetch<CustomersResponse>(
     "/api/merchant/customers",
-    { search, page: String(page) }
+    fetchParams
   );
 
   const customers = customersData?.data ?? [];
   const pagination = customersData?.pagination;
-
-    const filteredCustomers = useMemo(() => {
-        let result = tierFilter === "all" ? customers : customers.filter((c) => c.tier === tierFilter);
-        // Apply search filter
-        if (searchQuery.trim()) {
-            const query = searchQuery.toLowerCase();
-            result = result.filter(
-                (c) =>
-                    c.name.toLowerCase().includes(query) ||
-                    c.email.toLowerCase().includes(query) ||
-                    c.id.toLowerCase().includes(query)
-            );
-        }
-        if (sortBy === "volume") return result.sort((a, b) => b.total_spent - a.total_spent);
-        if (sortBy === "name") return result.sort((a, b) => a.email.localeCompare(b.email));
-        return result;
-    }, [tierFilter, sortBy, searchQuery]);
+  const acquisitionRate = customersData?.acquisition_rate;
+  const portfolioValue = customersData?.portfolio_value ?? 0;
 
   const formatGHS = (amount: number) =>
     new Intl.NumberFormat("en-GH", { style: "currency", currency: "GHS", minimumFractionDigits: 2 }).format(amount);
@@ -148,21 +143,18 @@ export default function CustomersPage() {
                   <th className="pb-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
                     Total Volume
                   </th>
-                  <th className="pb-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
-                    Verification
-                  </th>
                   <th className="pb-3 text-right text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
                     Actions
                   </th>
                 </tr>
               </thead>
               <tbody className="text-sm">
-                {filteredCustomers.map((customer) => (
+                {customers.map((customer) => (
                   <tr key={customer.id} className="border-b border-black/5 last:border-b-0">
                     <td className="py-4">
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-xs font-semibold text-white">
-                          {customer.email.slice(0, 2).toUpperCase()}
+                          {(customer.name || customer.email).slice(0, 2).toUpperCase()}
                         </div>
                         <div>
                           <div className="font-medium text-[color:var(--trite-ink)]">{customer.name || customer.email.split("@")[0]}</div>
@@ -184,19 +176,16 @@ export default function CustomersPage() {
                       <div className="font-semibold text-[color:var(--trite-ink)]">{formatGHS(customer.total_spent)}</div>
                       <div className="text-xs text-[color:var(--trite-muted)]">{customer.transaction_count} txns</div>
                     </td>
-                    <td className="py-4">
-                      <VerificationBadge status={customer.kyc_status} />
-                    </td>
+
                     <td className="py-4 text-right">
                       <div className="flex items-center justify-end gap-2 relative">
                         <button
                           onClick={() => {
                             setEditingCustomer(customer);
-                            setEditName(customer.name);
+                            setEditName(customer.name || "");
                             setEditEmail(customer.email);
                             setEditTier(customer.tier);
                             setEditVolume(customer.total_spent.toString());
-                            setEditVerification(customer.kyc_status);
                             setEditModalOpen(true);
                           }}
                           className="flex h-8 w-8 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]"
@@ -216,11 +205,10 @@ export default function CustomersPage() {
                                 <button
                                   onClick={() => {
                                     setEditingCustomer(customer);
-                                    setEditName(customer.name);
+                                    setEditName(customer.name || "");
                                     setEditEmail(customer.email);
                                     setEditTier(customer.tier);
                                     setEditVolume(customer.total_spent.toString());
-                                    setEditVerification(customer.kyc_status);
                                     setEditModalOpen(true);
                                     setActionMenuOpen(null);
                                   }}
@@ -249,11 +237,11 @@ export default function CustomersPage() {
                     </td>
                   </tr>
                 ))}
-                {filteredCustomers.length === 0 && (
+                {customers.length === 0 && (
                   <tr>
                     <td
                       className="py-10 text-center text-sm text-[color:var(--trite-muted)]"
-                      colSpan={5}
+                      colSpan={4}
                     >
                       No customers found matching your filters.
                     </td>
@@ -265,7 +253,7 @@ export default function CustomersPage() {
 
             <div className="mt-4 flex items-center justify-between">
               <div className="text-xs text-[color:var(--trite-muted)]">
-                Showing {filteredCustomers.length} of {pagination?.total ?? 0} customers
+                Showing {customers.length} of {pagination?.total ?? 0} customers
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -289,38 +277,27 @@ export default function CustomersPage() {
             </div>
           </div>
 
-          <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
             <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center justify-between">
                 <div className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
                   Acquisition Rate
                 </div>
                 <div className="flex h-6 w-6 items-center justify-center rounded bg-[color:var(--trite-lime)]">
-                  <TrendingUpIcon className="h-4 w-4 text-[color:var(--trite-ink)]" />
+                  <TrendingUpIcon className="h-4 w-4 text-white" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-bold text-[color:var(--trite-ink)]">+18.2%</div>
-              <div className="mt-1 text-xs text-[color:var(--trite-muted)]">New customer onboarding vs last month</div>
+              <div className="mt-2 text-2xl font-bold text-[color:var(--trite-ink)]">
+                {acquisitionRate ? `${acquisitionRate.percentage >= 0 ? "+" : ""}${acquisitionRate.percentage}%` : "—"}
+              </div>
+              <div className="mt-1 text-xs text-[color:var(--trite-muted)]">
+                {acquisitionRate ? `${acquisitionRate.this_month} this month · ${acquisitionRate.last_month} last month` : "New customer onboarding vs last month"}
+              </div>
               <div className="mt-3 h-1.5 w-full rounded-full bg-black/[0.04]">
-                <div className="h-1.5 rounded-full bg-[color:var(--trite-lime-strong)]" style={{ width: "65%" }} />
-              </div>
-            </div>
-
-            <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
-              <div className="flex items-center justify-between">
-                <div className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
-                  KYC Compliance
-                </div>
-                <div className="flex h-6 w-6 items-center justify-center rounded bg-blue-100">
-                  <ShieldCheckIcon className="h-4 w-4 text-blue-600" />
-                </div>
-              </div>
-              <div className="mt-2 text-2xl font-bold text-[color:var(--trite-ink)]">94.8%</div>
-              <div className="mt-1 text-xs text-[color:var(--trite-muted)]">Verified institutional profile completion</div>
-              <div className="mt-3 flex gap-1">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className={`h-1.5 flex-1 rounded-full ${i <= 4 ? "bg-[color:var(--trite-lime-strong)]" : "bg-black/[0.08]"}`} />
-                ))}
+                <div
+                  className="h-1.5 rounded-full bg-[color:var(--trite-lime-strong)]"
+                  style={{ width: `${Math.min(100, Math.max(0, (acquisitionRate?.percentage ?? 0) + 50))}%` }}
+                />
               </div>
             </div>
 
@@ -333,7 +310,7 @@ export default function CustomersPage() {
                   <TrendingUpIcon className="h-4 w-4 text-white" />
                 </div>
               </div>
-              <div className="mt-2 text-3xl font-bold">₵48.2M</div>
+              <div className="mt-2 text-3xl font-bold">{formatGHS(portfolioValue)}</div>
               <div className="mt-1 text-xs text-white/60">Total Managed Assets (GHS)</div>
               <div className="mt-4 flex items-center gap-2">
                 <div className="h-8 flex-1 rounded bg-white/10" />
@@ -409,18 +386,7 @@ export default function CustomersPage() {
                 />
               </div>
 
-              <div>
-                <label className="text-sm font-medium text-[color:var(--trite-ink)]">Verification Status</label>
-                <select
-                  value={editVerification}
-                  onChange={(e) => setEditVerification(e.target.value as VerificationStatus)}
-                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-500"
-                >
-                  <option value="verified">Verified</option>
-                  <option value="pending">Pending</option>
-                  <option value="unverified">Unverified</option>
-                </select>
-              </div>
+
             </div>
 
             <div className="mt-6 flex gap-3">
@@ -488,6 +454,17 @@ export default function CustomersPage() {
               </div>
 
               <div>
+                <label className="text-sm font-medium text-[color:var(--trite-ink)]">Phone Number</label>
+                <input
+                  type="tel"
+                  value={newCustomerPhone}
+                  onChange={(e) => setNewCustomerPhone(e.target.value)}
+                  placeholder="e.g., +233 24 123 4567"
+                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div>
                 <label className="text-sm font-medium text-[color:var(--trite-ink)]">Customer Tier</label>
                 <select
                   value={newCustomerTier}
@@ -499,17 +476,6 @@ export default function CustomersPage() {
                   <option value="institutional">Institutional (Tier 1)</option>
                 </select>
               </div>
-
-              <div>
-                <label className="text-sm font-medium text-[color:var(--trite-ink)]">Initial Volume (GHS)</label>
-                <input
-                  type="number"
-                  value={newCustomerVolume}
-                  onChange={(e) => setNewCustomerVolume(e.target.value)}
-                  placeholder="0.00"
-                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-blue-500"
-                />
-              </div>
             </div>
 
             <div className="mt-6 flex gap-3">
@@ -520,20 +486,42 @@ export default function CustomersPage() {
                 Cancel
               </button>
               <button
-                onClick={() => {
-                  if (newCustomerName && newCustomerEmail) {
-                    // Reset form
+                onClick={async () => {
+                  if (!newCustomerEmail) return;
+                  setAddLoading(true);
+                  try {
+                    const res = await fetch("/api/merchant/customers", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        name: newCustomerName || null,
+                        email: newCustomerEmail,
+                        phone: newCustomerPhone || null,
+                        tier: newCustomerTier,
+                      }),
+                    });
+                    if (!res.ok) {
+                      const err = await res.json();
+                      alert(err.error || "Failed to add customer");
+                      return;
+                    }
+                    // Reset form and refetch
                     setNewCustomerName("");
                     setNewCustomerEmail("");
+                    setNewCustomerPhone("");
                     setNewCustomerTier("standard");
-                    setNewCustomerVolume("");
                     setAddModalOpen(false);
+                    setFetchKey((k) => k + 1);
+                  } catch {
+                    alert("Network error — please try again");
+                  } finally {
+                    setAddLoading(false);
                   }
                 }}
-                disabled={!newCustomerName || !newCustomerEmail}
+                disabled={!newCustomerEmail || addLoading}
                 className="flex-1 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Add Customer
+                {addLoading ? "Adding…" : "Add Customer"}
               </button>
             </div>
           </div>
@@ -566,22 +554,7 @@ function TierChip({
   );
 }
 
-function VerificationBadge({ status }: { status: VerificationStatus }) {
-  const config = {
-    verified: { text: "VERIFIED", color: "bg-[color:var(--trite-lime)]/20 text-[color:var(--trite-ink)]", icon: CheckIcon },
-    pending: { text: "PENDING", color: "bg-gray-100 text-gray-600", icon: ClockIcon },
-    unverified: { text: "UNVERIFIED", color: "bg-red-50 text-red-600", icon: XIcon },
-  };
 
-  const { text, color, icon: Icon } = config[status];
-
-  return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold ${color}`}>
-      <Icon className="h-3 w-3" />
-      {text}
-    </span>
-  );
-}
 
 function LayoutGridIcon({ className }: { className?: string }) {
   return (
@@ -735,13 +708,7 @@ function TrendingUpIcon({ className }: { className?: string }) {
   );
 }
 
-function ShieldCheckIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-      <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-    </svg>
-  );
-}
+
 
 function CheckIcon({ className }: { className?: string }) {
   return (

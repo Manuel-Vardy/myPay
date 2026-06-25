@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -18,8 +19,108 @@ import {
 
 const Globe = dynamic(() => import("@/components/Globe"), { ssr: false });
 
+// Animation hook for scroll-based reveals
+const useScrollAnimation = () => {
+  const [elements, setElements] = useState<Set<Element>>(new Set());
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-fade-in-up');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    const animateElements = document.querySelectorAll('.animate-on-scroll');
+    animateElements.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, []);
+};
+
 export default function MarketsPage() {
+  // Initialize scroll animations
+  useScrollAnimation();
+
   return (
+    <>
+      {/* CSS Animation Styles */}
+      <style jsx global>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(40px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @keyframes fadeInLeft {
+          from {
+            opacity: 0;
+            transform: translateX(-40px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        @keyframes fadeInRight {
+          from {
+            opacity: 0;
+            transform: translateX(40px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        @keyframes scaleIn {
+          from {
+            opacity: 0;
+            transform: scale(0.9);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        .animate-fade-in-up {
+          animation: fadeInUp 0.8s ease-out forwards;
+        }
+        
+        .animate-fade-in-left {
+          animation: fadeInLeft 0.8s ease-out forwards;
+        }
+        
+        .animate-fade-in-right {
+          animation: fadeInRight 0.8s ease-out forwards;
+        }
+        
+        .animate-scale-in {
+          animation: scaleIn 0.8s ease-out forwards;
+        }
+
+        .animate-on-scroll {
+          opacity: 0;
+        }
+
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
+      `}</style>
+
     <div className="min-h-screen bg-white text-black selection:bg-[#22c55e]/30 selection:text-black overflow-x-hidden">
       <Header transparent={true} />
 
@@ -77,7 +178,7 @@ export default function MarketsPage() {
 
           {/* a. Global Digital Payments - Text Left, Globe Right */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center mb-32 -mt-8">
-            <div className="lg:col-span-6 space-y-6">
+            <div className="animate-on-scroll stagger-1 lg:col-span-6 space-y-6">
               <h3 className="text-3xl sm:text-4xl font-bold text-black leading-tight">Global Digital Payments</h3>
               <p className="text-sm font-bold text-[#22c55e] uppercase tracking-widest">Infrastructure rails</p>
               <div className="space-y-6">
@@ -89,7 +190,7 @@ export default function MarketsPage() {
                 </p>
               </div>
             </div>
-            <div className="lg:col-span-6 relative h-[500px] sm:h-[700px] flex items-center justify-center">
+            <div className="animate-on-scroll stagger-2 lg:col-span-6 relative h-[500px] sm:h-[700px] flex items-center justify-center">
               <div className="scale-125 sm:scale-150 transform-gpu">
                 <Globe />
               </div>
@@ -112,7 +213,7 @@ export default function MarketsPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 items-center">
-              <div className="lg:col-span-6 relative h-[400px] sm:h-[600px] flex items-center justify-center">
+              <div className="animate-on-scroll stagger-1 lg:col-span-6 relative h-[400px] sm:h-[600px] flex items-center justify-center">
                 <Image 
                   src="/images/ladies-on-cell4.png" 
                   alt="People on cell" 
@@ -120,7 +221,7 @@ export default function MarketsPage() {
                   className="object-contain"
                 />
               </div>
-              <div className="lg:col-span-6 space-y-6">
+              <div className="animate-on-scroll stagger-2 lg:col-span-6 space-y-6">
                 <h3 className="hidden lg:block text-3xl font-bold text-black">Traditional Cash & Banking</h3>
                 <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Financial Rail Integration</p>
                 <p className="text-lg leading-relaxed text-gray-600 font-medium">
@@ -288,25 +389,48 @@ export default function MarketsPage() {
             </div>
 
             {/* e. Cross-Border Remittance */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center">
-              <div className="lg:col-span-8 space-y-6">
-                <h3 className="text-2xl font-bold text-black">Cross-Border Remittance</h3>
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Liquidity settlements</p>
-                <p className="text-lg leading-relaxed text-gray-600 font-medium">
-                  Cross-border payments remain one of the largest and fastest-growing financial sectors. Traditional remittance systems often involve delays, high fees and limited transparency.
-                </p>
-                <p className="text-lg leading-relaxed text-gray-600 font-medium">
-                  Trite PSP solves these challenges through blockchain-enabled settlement systems combined with traditional financial connectivity.
-                </p>
-              </div>
-              <div className="lg:col-span-4 relative h-[300px] sm:h-[400px] flex items-center justify-center">
+            <div className="relative overflow-hidden rounded-[1.5rem] sm:rounded-[2.5rem] min-h-[420px] sm:min-h-[520px] lg:min-h-[580px] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)]">
+              <Image
+                src="/images/young-man-talking.jpg"
+                alt="Cross-Border Remittance"
+                fill
+                sizes="(max-width: 1280px) 100vw, 1280px"
+                className="object-cover object-center"
+              />
+
+              <div
+                className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/10"
+                aria-hidden
+              />
+              <div
+                className="absolute inset-0 bg-gradient-to-t from-[#22c55e]/40 via-[#22c55e]/10 to-transparent"
+                aria-hidden
+              />
+
+              <div className="absolute top-6 left-8 sm:top-10 sm:left-12 lg:top-12 lg:left-14 z-10">
                 <Image
-                  src="/images/mtn-man1.png"
-                  alt="Cross-Border Remittance"
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 30vw"
-                  className="object-contain"
+                  src="/images/Trite-WB.png"
+                  alt="Trite"
+                  width={90}
+                  height={22}
+                  className="h-6 w-auto sm:h-7"
                 />
+              </div>
+
+              <div className="absolute bottom-0 left-0 z-10 flex flex-col justify-end p-6 sm:p-10 lg:p-12 max-w-xl lg:max-w-2xl">
+                <h3 className="text-3xl sm:text-4xl lg:text-5xl xl:text-[3.25rem] font-extrabold leading-[1.08] tracking-tight text-white">
+                  Send Money
+                  <br />
+                  Across Borders
+                  <br />
+                  Instantly
+                </h3>
+                <p className="mt-4 text-sm sm:text-base font-medium text-white/90 leading-relaxed max-w-md">
+                  Get seamless cross-border remittance with Trite — blockchain-enabled settlements with traditional financial connectivity.
+                </p>
+                <p className="mt-3 text-xs sm:text-sm font-bold text-[#86efac] uppercase tracking-widest">
+                  Liquidity settlements
+                </p>
               </div>
             </div>
           </div>
@@ -374,5 +498,6 @@ export default function MarketsPage() {
 
       <Footer />
     </div>
+    </>
   );
 }

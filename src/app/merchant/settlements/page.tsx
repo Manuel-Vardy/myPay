@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMerchantFetch } from "@/lib/hooks/useMerchantFetch";
 import { useRouter } from "next/navigation";
+
+type Bank = { id: string; name: string; short_code: string };
 
 export type APISettlementAccount = {
   id: string;
@@ -56,6 +58,26 @@ export default function SettlementsPage() {
     branch_code: "",
     is_default: false,
   });
+
+  const [banks, setBanks] = useState<Bank[]>([]);
+  useEffect(() => {
+    fetch("/api/public/banks")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.data) {
+          setBanks(d.data);
+          // Pre-select first bank when list loads
+          setForm((prev) =>
+            prev.account_type === "BANK" && !prev.provider_name
+              ? { ...prev, provider_name: d.data[0]?.name ?? "" }
+              : prev
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const MOBILE_NETWORKS = ["MTN", "TELECEL", "AT"] as const;
 
   const { data: fetchRes, loading, error } = useMerchantFetch<{ 
     data: APISettlement[]; 
@@ -203,7 +225,7 @@ export default function SettlementsPage() {
           </div>
           <button 
             onClick={() => setAddModalOpen(true)}
-            className="flex h-9 items-center gap-1.5 self-start rounded-lg bg-[color:var(--trite-lime-strong)] px-4 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-[color:var(--trite-lime)] sm:self-auto"
+            className="flex h-9 items-center gap-1.5 self-start rounded-lg bg-[color:var(--trite-lime)] px-4 text-sm font-semibold text-white hover:bg-[color:var(--trite-lime-strong)] sm:self-auto"
           >
             <PlusIcon className="h-4 w-4" />
             Add Account
@@ -287,9 +309,9 @@ export default function SettlementsPage() {
                   </td>
                   <td className="px-5 py-4">
                     <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-wide uppercase ${
-                      s.status === "COMPLETED" ? "bg-[color:var(--trite-lime)]/20 text-[color:var(--trite-ink)]" : "bg-amber-100 text-amber-700"
+                      s.status === "COMPLETED" ? "bg-[color:var(--trite-lime)] text-white" : "bg-amber-100 text-amber-700"
                     }`}>
-                      <span className={`h-1.5 w-1.5 rounded-full ${s.status === "COMPLETED" ? "bg-[color:var(--trite-lime-strong)]" : "bg-amber-500"}`} />
+                      <span className={`h-1.5 w-1.5 rounded-full ${s.status === "COMPLETED" ? "bg-white" : "bg-amber-500"}`} />
                       {s.status}
                     </span>
                   </td>
@@ -336,14 +358,52 @@ export default function SettlementsPage() {
               <div>
                 <label className="block text-sm font-medium mb-1 text-[color:var(--trite-ink)]">Account Type</label>
                 <div className="grid grid-cols-2 gap-2">
-                  <button type="button" onClick={() => setForm({...form, account_type: "BANK"})} className={`border p-2 rounded-lg text-sm font-medium ${form.account_type === "BANK" ? "border-blue-500 bg-blue-50 text-blue-700" : "border-gray-200 text-gray-600"}`}>Bank Account</button>
-                  <button type="button" onClick={() => setForm({...form, account_type: "MOBILE_WALLET"})} className={`border p-2 rounded-lg text-sm font-medium ${form.account_type === "MOBILE_WALLET" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-600"}`}>Mobile Wallet</button>
+                  <button
+                    type="button"
+                    onClick={() => setForm({ ...form, account_type: "BANK", provider_name: banks[0]?.name ?? "" })}
+                    className={`border p-2 rounded-lg text-sm font-medium ${form.account_type === "BANK" ? "border-blue-500 bg-blue-50 text-blue-700" : "border-gray-200 text-gray-600"}`}
+                  >
+                    Bank Account
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setForm({ ...form, account_type: "MOBILE_WALLET", provider_name: "MTN" })}
+                    className={`border p-2 rounded-lg text-sm font-medium ${form.account_type === "MOBILE_WALLET" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-600"}`}
+                  >
+                    Mobile Wallet
+                  </button>
                 </div>
               </div>
 
+              {/* Provider — select for bank OR hardcoded momo networks */}
               <div>
-                <label className="block text-sm font-medium mb-1 text-[color:var(--trite-ink)]">Provider Name</label>
-                <input required type="text" value={form.provider_name} onChange={(e) => setForm({...form, provider_name: e.target.value})} placeholder={form.account_type === "BANK" ? "e.g. GCB Bank" : "e.g. MTN MoMo"} className="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-[color:var(--trite-lime-strong)]" />
+                <label className="block text-sm font-medium mb-1 text-[color:var(--trite-ink)]">
+                  {form.account_type === "BANK" ? "Bank" : "Network Provider"}
+                </label>
+                {form.account_type === "BANK" ? (
+                  <select
+                    required
+                    value={form.provider_name}
+                    onChange={(e) => setForm({ ...form, provider_name: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-[color:var(--trite-lime-strong)] bg-white"
+                  >
+                    <option value="" disabled>Select a bank...</option>
+                    {banks.map((b) => (
+                      <option key={b.id} value={b.name}>{b.name}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <select
+                    required
+                    value={form.provider_name}
+                    onChange={(e) => setForm({ ...form, provider_name: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-[color:var(--trite-lime-strong)] bg-white"
+                  >
+                    {MOBILE_NETWORKS.map((n) => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               <div>

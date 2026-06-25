@@ -165,7 +165,7 @@ export default function AdminSupportPage() {
                 <p className="mt-1 text-2xl font-semibold text-[color:var(--trite-ink)]">14.2m</p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[color:var(--trite-lime)]">
-                <Zap className="h-6 w-6 text-[color:var(--trite-ink)]" />
+                <Zap className="h-6 w-6 text-white" />
               </div>
             </div>
           </div>

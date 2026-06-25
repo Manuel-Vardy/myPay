@@ -1,6 +1,7 @@
 // GET /api/payments/[sessionId]/status — poll transaction status
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
+import { getMobileMoneyProvider } from "@/lib/payments";
 
 export async function GET(
   request: NextRequest,
@@ -20,6 +21,66 @@ export async function GET(
       );
     }
 
+    // --- Live provider check for in-flight mobile money transactions ---
+    if (
+      transaction.method === "MOBILE_MONEY" &&
+      transaction.status === "PROCESSING"
+    ) {
+      try {
+        const provider = getMobileMoneyProvider();
+        const statusResult = await provider.checkStatus({
+          externalRef: transaction.tx_id_display,
+        });
+
+        // If the provider reports a terminal state, update DB
+        if (statusResult.status !== "PENDING") {
+          const newStatus = statusResult.status; // "SUCCESS" | "FAILED"
+
+          await db.transaction(async (trx) => {
+            await trx("transactions")
+              .where({ id: transaction.id })
+              .update({
+                status: newStatus,
+                metadata: JSON.stringify({
+                  ...JSON.parse(transaction.metadata || "{}"),
+                  provider_status_ref: statusResult.providerRef || null,
+                  provider_third_party_ref: statusResult.thirdPartyRef || null,
+                  status_checked_at: new Date().toISOString(),
+                }),
+                updated_at: new Date(),
+              });
+
+            if (newStatus === "SUCCESS") {
+              // Mark payment session as completed
+              await trx("payment_sessions")
+                .where({ transaction_id: transaction.id })
+                .update({ status: "COMPLETED", updated_at: new Date() });
+
+              // Credit the merchant's available balance
+              await trx("merchants")
+                .where({ id: transaction.merchant_id })
+                .increment("available_balance", Number(transaction.amount));
+            }
+
+            await trx("system_logs").insert({
+              level: "INFO",
+              source: "STATUS_POLL",
+              event_description:
+                `Status poll: tx ${transaction.tx_id_display} → ${newStatus}` +
+                ` | provider_ref=${statusResult.providerRef}`,
+            });
+          });
+
+          // Update the in-memory transaction for the response below
+          transaction.status = newStatus;
+        }
+      } catch (pollError) {
+        // Log but don't fail the request — return current DB status
+        console.warn("Provider status poll error:", pollError);
+      }
+    }
+
+    // --- Build response ---
     const response: Record<string, unknown> = {
       transaction_id: transaction.id,
       tx_id_display: transaction.tx_id_display,

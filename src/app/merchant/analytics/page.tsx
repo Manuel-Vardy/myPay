@@ -78,7 +78,7 @@ export default function AnalyticsPage() {
             <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-[color:var(--trite-muted)]">Total Revenue</span>
-                <span className="rounded-full bg-[color:var(--trite-lime)] px-1.5 py-0.5 text-[10px] font-semibold text-[color:var(--trite-ink)]">
+                <span className="rounded-full bg-[color:var(--trite-lime)] px-1.5 py-0.5 text-[10px] font-semibold text-white">
                   +12.4%
                 </span>
               </div>
@@ -91,7 +91,7 @@ export default function AnalyticsPage() {
             <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-[color:var(--trite-muted)]">Avg. Order Value</span>
-                <span className="rounded-full bg-[color:var(--trite-lime)] px-1.5 py-0.5 text-[10px] font-semibold text-[color:var(--trite-ink)]">
+                <span className="rounded-full bg-[color:var(--trite-lime)] px-1.5 py-0.5 text-[10px] font-semibold text-white">
                   +8%
                 </span>
               </div>
@@ -303,7 +303,7 @@ export default function AnalyticsPage() {
                     <td className="py-4 text-red-600">-{formatGHS(s.fees)}</td>
                     <td className="py-4">
                       <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${
-                        s.status === "COMPLETED" ? "bg-[color:var(--trite-lime)]/20 text-[color:var(--trite-ink)]" : "bg-blue-50 text-blue-600"
+                        s.status === "COMPLETED" ? "bg-[color:var(--trite-lime)] text-white" : "bg-blue-50 text-blue-600"
                       }`}>
                         {s.status === "COMPLETED" && <CheckIcon className="h-3 w-3" />}
                         {s.status === "PENDING" && <ClockIcon className="h-3 w-3" />}
