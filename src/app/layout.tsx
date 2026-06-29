@@ -24,7 +24,7 @@ export default function RootLayout({
       lang="en"
       className={`${montserrat.variable} h-full antialiased`}
     >
-      <body suppressHydrationWarning className="min-h-full flex flex-col bg-white text-[color:var(--trite-ink)] font-montserrat">
+      <body suppressHydrationWarning className="min-h-full flex flex-col bg-black text-[color:var(--trite-ink)] font-montserrat">
         <LoadingOverlay />
         {children}
       </body>

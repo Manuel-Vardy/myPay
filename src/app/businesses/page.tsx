@@ -22,6 +22,30 @@ import {
   Key
 } from "lucide-react";
 
+// Animation hook for scroll-based reveals
+const useScrollAnimation = () => {
+  const [elements, setElements] = useState<Set<Element>>(new Set());
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-fade-in-up');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    const animateElements = document.querySelectorAll('.animate-on-scroll');
+    animateElements.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, []);
+};
+
 const industriesItems = [
   { name: "E-commerce", image: "/images/1066297649356830535.jpg" },
   { name: "Fintech", image: "/images/fintech.jpg" },
@@ -90,21 +114,21 @@ function FeatureCard({ item, idx, total, containerScroll }: { item: any; idx: nu
           top: `${cardTopOffset}px`
         }}
       >
-        <div className="grid grid-cols-1 lg:grid-cols-10 h-[700px] sm:h-auto sm:min-h-[550px] lg:min-h-[650px]">
+        <div className="feat-card-grid grid grid-cols-1 lg:grid-cols-10 h-[700px] sm:h-auto sm:min-h-[550px] lg:min-h-[650px]">
           {/* Left Side: Text - 60% */}
-          <div className={cn("lg:col-span-6 p-6 sm:p-12 lg:p-16 flex flex-col justify-center space-y-6 sm:space-y-8 flex-1", item.bgColor)}>
+          <div className={cn("feat-card-left lg:col-span-6 p-6 sm:p-12 lg:p-16 flex flex-col justify-center space-y-6 sm:space-y-8 flex-1", item.bgColor)}>
             <div className="space-y-4 sm:space-y-6">
-              <div className={cn("flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-2xl shadow-sm", item.iconBg, item.textColor)}>
+              <div className={cn("animate-on-scroll stagger-1 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-2xl shadow-sm", item.iconBg, item.textColor)}>
                 {item.icon}
               </div>
-              <h3 className={cn("text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight", item.textColor)}>{item.title}</h3>
-              <p className={cn("text-sm sm:text-lg leading-relaxed font-medium", item.textColor === "text-white" ? "text-white/80" : "text-gray-600")}>
+              <h3 className={cn("animate-on-scroll stagger-2 feat-card-title text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight", item.textColor)}>{item.title}</h3>
+              <p className={cn("animate-on-scroll stagger-3 feat-card-desc text-sm sm:text-lg leading-relaxed font-medium", item.textColor === "text-white" ? "text-white/80" : "text-gray-600")}>
                 {item.desc}
               </p>
             </div>
 
             {item.points && (
-              <ul className={cn("grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm font-bold", item.textColor)}>
+              <ul className={cn("animate-on-scroll stagger-4 feat-card-points grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm font-bold", item.textColor)}>
                 {item.points.map((point: string) => (
                   <li key={point} className="flex items-center gap-2">
                     <span className={cn("h-1 w-1 sm:h-1.5 sm:w-1.5 rounded-full", item.textColor === "text-white" ? "bg-white/30" : "bg-black/20")} />
@@ -115,14 +139,14 @@ function FeatureCard({ item, idx, total, containerScroll }: { item: any; idx: nu
             )}
 
             {item.footer && (
-              <p className={cn("text-[10px] sm:text-sm leading-relaxed font-medium pt-3 sm:pt-4 border-t", item.textColor === "text-white" ? "text-white/60 border-white/10" : "text-gray-500 border-black/5")}>
+              <p className={cn("animate-on-scroll stagger-5 feat-card-footer text-[10px] sm:text-sm leading-relaxed font-medium pt-3 sm:pt-4 border-t", item.textColor === "text-white" ? "text-white/60 border-white/10" : "text-gray-500 border-black/5")}>
                 {item.footer}
               </p>
             )}
           </div>
 
           {/* Right Side: Full Image - 40% */}
-          <div className="lg:col-span-4 relative h-[320px] sm:h-[300px] lg:h-auto overflow-hidden">
+          <div className="animate-on-scroll stagger-6 feat-card-img lg:col-span-4 relative h-[320px] sm:h-[300px] lg:h-auto overflow-hidden">
             <Image
               src={item.image}
               alt={item.title}
@@ -147,6 +171,9 @@ export default function BusinessesPage() {
     }, 3000);
     return () => clearInterval(timer);
   }, []);
+
+  // Initialize scroll animations
+  useScrollAnimation();
 
   // Scroll active industry item into view on mobile (without affecting page scroll)
   useEffect(() => {
@@ -238,7 +265,130 @@ export default function BusinessesPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white text-black selection:bg-[#22c55e]/30 selection:text-black overflow-x-clip">
+    <>
+      {/* CSS Animation Styles */}
+      <style jsx global>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(40px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @keyframes fadeInLeft {
+          from {
+            opacity: 0;
+            transform: translateX(-40px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        @keyframes fadeInRight {
+          from {
+            opacity: 0;
+            transform: translateX(40px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        @keyframes scaleIn {
+          from {
+            opacity: 0;
+            transform: scale(0.9);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        .animate-fade-in-up {
+          animation: fadeInUp 0.8s ease-out forwards;
+        }
+        
+        .animate-fade-in-left {
+          animation: fadeInLeft 0.8s ease-out forwards;
+        }
+        
+        .animate-fade-in-right {
+          animation: fadeInRight 0.8s ease-out forwards;
+        }
+        
+        .animate-scale-in {
+          animation: scaleIn 0.8s ease-out forwards;
+        }
+
+        .animate-on-scroll {
+          opacity: 0;
+        }
+
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
+        .stagger-5 { animation-delay: 0.5s; }
+        .stagger-6 { animation-delay: 0.6s; }
+        .stagger-7 { animation-delay: 0.7s; }
+        .stagger-8 { animation-delay: 0.8s; }
+
+        /* 125% display scale on laptops — reduce businesses hero text & buttons slightly */
+        @media screen and (min-resolution: 120dpi) and (max-resolution: 144dpi) and (min-width: 1024px) {
+          .biz-hero-heading {
+            font-size: 2.5rem !important;
+            line-height: 1.15 !important;
+          }
+          .biz-hero-subtext {
+            font-size: 0.9rem !important;
+            line-height: 1.6 !important;
+          }
+          .biz-hero-btn-primary {
+            padding: 0.5rem 1.25rem !important;
+            font-size: 0.8rem !important;
+          }
+          .biz-hero-btn-secondary {
+            padding: 0.5rem 1.25rem !important;
+            font-size: 0.8rem !important;
+          }
+          /* Feature cards at 125% zoom */
+          .feat-card-grid {
+            min-height: 480px !important;
+          }
+          .feat-card-left {
+            padding: 2.5rem !important;
+            space-y: 1.25rem !important;
+          }
+          .feat-card-title {
+            font-size: 2rem !important;
+            line-height: 1.2 !important;
+          }
+          .feat-card-desc {
+            font-size: 0.875rem !important;
+            line-height: 1.55 !important;
+          }
+          .feat-card-points {
+            font-size: 0.75rem !important;
+            gap: 0.5rem !important;
+          }
+          .feat-card-footer {
+            font-size: 0.75rem !important;
+            padding-top: 0.75rem !important;
+          }
+          .feat-card-img {
+            min-height: 0 !important;
+          }
+        }
+      `}</style>
+      <div className="min-h-screen bg-white text-black selection:bg-[#22c55e]/30 selection:text-black overflow-x-clip">
       <Header transparent={true} />
 
       <main>
@@ -261,26 +411,28 @@ export default function BusinessesPage() {
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full">
             <div className="max-w-4xl space-y-4 sm:space-y-8 -mt-10 sm:-mt-5">
               <div className="space-y-3 sm:space-y-4">
-                <h1 className="text-2xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl leading-[1.15] sm:leading-[1.1]">
-                  Business Solutions - Powering Modern Commerce with Trite.
-                </h1>
-                <div className="h-px w-full max-w-2xl bg-white/20 mt-3 sm:mt-6"></div>
+                <div className="animate-on-scroll stagger-1">
+                  <h1 className="biz-hero-heading text-2xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl leading-[1.15] sm:leading-[1.1]">
+                    Business Solutions - Powering Modern Commerce with Trite.
+                  </h1>
+                  <div className="h-px w-full max-w-2xl bg-white/20 mt-3 sm:mt-6"></div>
+                </div>
               </div>
               
-              <p className="text-sm sm:text-xl text-white/90 leading-relaxed max-w-2xl">
+              <p className="animate-on-scroll stagger-2 biz-hero-subtext text-sm sm:text-xl text-white/90 leading-relaxed max-w-2xl">
                 Trite is more than a payment gateway - it is a complete financial operations platform designed for modern business growth. Through advanced stablecoin integration, fiat payment support, API connectivity, merchant tools, and financial automation features, businesses can streamline transactions while expanding into global markets.
               </p>
               
               {/* CTA Buttons - Homepage Style */}
-              <div className="flex flex-wrap gap-2 sm:gap-4 pt-1 sm:pt-4">
+              <div className="animate-on-scroll stagger-3 flex flex-wrap gap-2 sm:gap-4 pt-1 sm:pt-4">
                 <Link
-                  className="px-5 py-2.5 sm:px-8 sm:py-4 text-xs sm:text-base font-semibold bg-[#22c55e] text-white hover:bg-[#16a34a] rounded-full transition-all flex items-center gap-2 shadow-[0_10px_25px_-5px_rgba(34,197,94,0.3)] hover:scale-[1.02]"
+                  className="biz-hero-btn-primary px-5 py-2.5 sm:px-8 sm:py-4 text-xs sm:text-base font-semibold bg-[#22c55e] text-white hover:bg-[#16a34a] rounded-full transition-all flex items-center gap-2 shadow-[0_10px_25px_-5px_rgba(34,197,94,0.3)] hover:scale-[1.02]"
                   href="/contact-sales"
                 >
                   Request a Demo <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
                 </Link>
                 <Link
-                  className="px-5 py-2.5 sm:px-8 sm:py-4 text-xs sm:text-base font-semibold bg-white/10 backdrop-blur-md text-white border border-white/20 hover:bg-white/20 rounded-full transition-all flex items-center gap-2 hover:scale-[1.02]"
+                  className="biz-hero-btn-secondary px-5 py-2.5 sm:px-8 sm:py-4 text-xs sm:text-base font-semibold bg-white/10 backdrop-blur-md text-white border border-white/20 hover:bg-white/20 rounded-full transition-all flex items-center gap-2 hover:scale-[1.02]"
                   href="/contact-sales"
                 >
                   Talk to Sales
@@ -291,10 +443,10 @@ export default function BusinessesPage() {
         </section>
 
         {/* 6 BUSINESS SUB-SECTIONS - Redesigned */}
-        <section className="relative bg-white pt-10 pb-4 rounded-t-[24px] sm:rounded-t-[32px] md:rounded-t-[40px] -mt-6 sm:-mt-8 md:-mt-10 z-10">
+        <section className="animate-on-scroll relative bg-white pt-10 pb-4 rounded-t-[24px] sm:rounded-t-[32px] md:rounded-t-[40px] -mt-6 sm:-mt-8 md:-mt-10 z-10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Overlapping Header Card */}
-          <div className="relative -mt-16 sm:-mt-20 mb-16 z-20">
+          <div className="animate-on-scroll stagger-1 relative -mt-16 sm:-mt-20 mb-16 z-20">
             <HeroHeadingCard
               label="Business Solutions"
               title={
@@ -305,7 +457,7 @@ export default function BusinessesPage() {
                 </>
               }
             />
-            <p className="mt-6 max-w-xl px-6 text-base font-medium text-gray-500 sm:px-8">
+            <p className="animate-on-scroll stagger-2 mt-6 max-w-xl px-6 text-base font-medium text-gray-500 sm:px-8">
               Operational support tailored for scale and global liquidity
             </p>
           </div>
@@ -328,7 +480,7 @@ export default function BusinessesPage() {
       </section>
 
         {/* ENTERPRISE SECURITY & COMPLIANCE - Redesigned */}
-        <section className="relative mt-8 pb-24 pt-16 overflow-hidden bg-white">
+        <section className="animate-on-scroll relative mt-8 pb-24 pt-16 overflow-hidden bg-white">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 border-t border-black/[0.06] pt-16">
             <div className="space-y-16">
               <div className="max-w-4xl">
@@ -368,16 +520,16 @@ export default function BusinessesPage() {
         </section>
 
         {/* INDUSTRIES WE SERVE - Redesigned to match Homepage Built For section */}
-        <section className="relative bg-white py-24 sm:py-32 overflow-hidden">
+        <section className="animate-on-scroll relative bg-white py-24 sm:py-32 overflow-hidden">
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col lg:flex-row items-start justify-center">
 
               {/* Mobile View Heading & Horizontal List (Visible only on small screens) */}
-              <div className="lg:hidden w-full mb-8 space-y-6">
+              <div className="animate-on-scroll stagger-1 lg:hidden w-full mb-8 space-y-6">
                 <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
                   Industries We Serve
                 </p>
-                <h2 className="text-2xl font-extrabold tracking-tight text-black leading-tight">
+                <h2 className="animate-on-scroll stagger-2 text-2xl font-extrabold tracking-tight text-black leading-tight">
                   Trite PSP is designed for businesses across multiple sectors:
                 </h2>
                 
@@ -428,17 +580,17 @@ export default function BusinessesPage() {
               </div>
 
               {/* Right Side - Overlapping White Card (Desktop only vertical list) */}
-              <div className="hidden lg:block lg:w-[54%] lg:-ml-24 mt-24 bg-white p-8 sm:p-12 lg:p-16 z-20 relative rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.05)] order-1 lg:order-2">
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-4">
+              <div className="animate-on-scroll stagger-2 hidden lg:block lg:w-[54%] lg:-ml-24 mt-24 bg-white p-8 sm:p-12 lg:p-16 z-20 relative rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.05)] order-1 lg:order-2">
+                <p className="animate-on-scroll stagger-3 text-xs font-semibold uppercase tracking-wider text-gray-400 mb-4">
                   Industries We Serve
                 </p>
 
-                <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold tracking-tight text-black leading-tight">
+                <h2 className="animate-on-scroll stagger-4 text-2xl sm:text-3xl lg:text-[34px] font-extrabold tracking-tight text-black leading-tight">
                   Trite PSP is designed for businesses across multiple sectors including:
                 </h2>
 
                 {/* Horizontal line under the title */}
-                <div className="h-[2px] w-24 bg-[#22c55e] mt-6 mb-8" />
+                <div className="animate-on-scroll stagger-5 h-[2px] w-24 bg-[#22c55e] mt-6 mb-8" />
 
                 <div className="space-y-4">
                   {industriesItems.map((item, idx) => (
@@ -469,7 +621,7 @@ export default function BusinessesPage() {
         </section>
 
         {/* WHY CHOOSE TRITE PSP - Staggered Layout like reference */}
-        <section className="relative overflow-hidden mt-12 pb-32">
+        <section className="animate-on-scroll relative overflow-hidden mt-12 pb-32">
           {/* Background Video (Desktop only) */}
           <div className="hidden md:flex absolute inset-0 z-0 pointer-events-none items-center justify-center overflow-hidden">
             <div className="w-[55%] max-w-[600px] aspect-video rounded-full overflow-hidden opacity-15 blur-[12px]">
@@ -486,7 +638,7 @@ export default function BusinessesPage() {
 
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="pt-12 border-t border-black/[0.06] space-y-16">
-              <div className="text-center max-w-3xl mx-auto">
+              <div className="animate-on-scroll stagger-1 text-center max-w-3xl mx-auto">
                 <h3 className="text-3xl font-extrabold text-black tracking-tight sm:text-5xl">
                   Why Businesses Choose Trite PSP
                 </h3>
@@ -495,9 +647,9 @@ export default function BusinessesPage() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="animate-on-scroll stagger-2 grid grid-cols-1 md:grid-cols-3 gap-8">
                 {/* Column 1 */}
-                <div className="space-y-8 md:mt-16">
+                <div className="animate-on-scroll stagger-3 space-y-8 md:mt-16">
                   {[
                     {
                       title: "Unified Financial Ecosystem",
@@ -526,7 +678,7 @@ export default function BusinessesPage() {
                 </div>
 
                 {/* Column 2 */}
-                <div className="space-y-8">
+                <div className="animate-on-scroll stagger-4 space-y-8">
                   {[
                     {
                       title: "Faster Global Transactions",
@@ -560,7 +712,7 @@ export default function BusinessesPage() {
                 </div>
 
                 {/* Column 3 */}
-                <div className="space-y-8 md:mt-8">
+                <div className="animate-on-scroll stagger-5 space-y-8 md:mt-8">
                   {[
                     {
                       title: "Scalable Infrastructure",
@@ -608,5 +760,6 @@ export default function BusinessesPage() {
 
       <Footer />
     </div>
+    </>
   );
 }

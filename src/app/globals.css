@@ -19,10 +19,13 @@
   --foreground: #000000;
 }
 
+/* Dark mode: only swap the raw background/foreground tokens.
+   Portal-specific tokens (--trite-ink, --trite-muted) are intentionally
+   NOT overridden here — the merchant and admin portals are always light-themed. */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #ffffff;
+    --foreground: #000000;
   }
 }
 
@@ -164,75 +167,62 @@ body {
   }
 }
 
-/* --- Input & Textarea High Visibility & Contrast Legibility Rules --- */
+/* ─── Global Input / Textarea / Select Styles ──────────────────────────────
+   Applies consistently across every page: public, merchant, admin, pay.
+   Matches the reference design: white bg, rounded, light border, black text,
+   clean green border on focus — no glow, no spread, no box-shadow.
+────────────────────────────────────────────────────────────────────────── */
 
-/* Target all text-based inputs, textareas, and select elements */
-input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="file"]),
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"])
+  :not([type="button"]):not([type="reset"]):not([type="file"]):not([type="range"]),
 textarea,
 select {
-  /* Default typed text must be highly visible dark slate (works on white/light gray backgrounds) */
-  color: #0f172a !important;
-  /* Make borders more visible than the default extremely faint borders */
-  border-color: rgba(0, 0, 0, 0.2) !important;
+  /* Structure */
+  background-color: #ffffff !important;
+  border: 1.5px solid #d1d5db !important;   /* gray-300 — visible but not harsh */
+  border-radius: 0.5rem !important;          /* rounded-lg — matches image */
+  padding: 0.625rem 0.875rem !important;     /* comfortable tap target */
+
+  /* Text */
+  color: #000000 !important;                 /* pure black — always visible */
+  font-size: 0.9375rem !important;           /* 15px */
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
+
+  /* Kill browser defaults that cause glows */
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+
+  /* Smooth border color transition only */
+  transition: border-color 0.15s ease !important;
 }
 
-/* Ensure placeholder text has excellent contrast (slate-500/600 equivalent) and full opacity */
-input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="file"])::placeholder,
+/* Placeholder — dark enough to read, lighter than typed text */
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"])
+  :not([type="button"]):not([type="reset"]):not([type="file"]):not([type="range"])::placeholder,
 textarea::placeholder {
-  color: #475569 !important; /* highly visible slate-600 */
-  opacity: 1 !important; /* override browser default opacity to ensure visible contrast */
+  color: #9ca3af !important;   /* gray-400 */
+  opacity: 1 !important;
 }
 
-/* Adjust borders and text when focused for better accessibility */
-input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="file"]):focus,
+/* Focus — green border only, zero glow */
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"])
+  :not([type="button"]):not([type="reset"]):not([type="file"]):not([type="range"]):focus,
 textarea:focus,
 select:focus {
-  border-color: #22c55e !important; /* Trite primary green on focus */
+  border-color: #22c55e !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
-/* 
-  If the input itself has a dark background class, or is within an explicit dark container
-  (like SOC 2 compliance panels, dark dashboards, or dark-themed sections)
-*/
-.dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="file"]),
-.dark textarea,
-.dark select,
-[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="file"]),
-[data-theme="dark"] textarea,
-[data-theme="dark"] select,
-.bg-black input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="file"]),
-.bg-black textarea,
-.bg-black select,
-.bg-slate-900 input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="file"]),
-.bg-slate-900 textarea,
-.bg-slate-900 select,
-.bg-slate-950 input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="file"]),
-.bg-slate-950 textarea,
-.bg-slate-950 select {
-  color: #f8fafc !important; /* light slate text for dark backgrounds */
-  border-color: rgba(255, 255, 255, 0.3) !important; /* visible border on dark backgrounds */
-}
-
-.dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="file"])::placeholder,
-.dark textarea::placeholder,
-[data-theme="dark"] input::placeholder,
-[data-theme="dark"] textarea::placeholder {
-  color: #94a3b8 !important; /* light slate placeholder */
-}
-
-/* Also handle prefers-color-scheme: dark for containers that do not force light backgrounds */
-@media (prefers-color-scheme: dark) {
-  body:not(.bg-white) input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="file"]):not(.bg-white):not(.bg-gray-50):not(.bg-gray-50\/50),
-  body:not(.bg-white) textarea:not(.bg-white):not(.bg-gray-50),
-  body:not(.bg-white) select:not(.bg-white) {
-    color: #f8fafc !important;
-    border-color: rgba(255, 255, 255, 0.25) !important;
-  }
-  
-  body:not(.bg-white) input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="file"]):not(.bg-white):not(.bg-gray-50):not(.bg-gray-50\/50)::placeholder,
-  body:not(.bg-white) textarea:not(.bg-white):not(.bg-gray-50)::placeholder {
-    color: #94a3b8 !important;
-  }
+/* Select arrow keeps its appearance on supported browsers */
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.75rem center !important;
+  padding-right: 2.25rem !important;
 }
 
 /* --- Remove all box shadows from cards and containers in merchant and admin portals and add thin border --- */
