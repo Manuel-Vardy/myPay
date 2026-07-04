@@ -12,11 +12,6 @@ const montserrat = Montserrat({
 export const metadata: Metadata = {
   title: "Trite",
   description: "Financial architecture for the modern enterprise.",
-  icons: {
-    icon: "/trite-fav.png",
-    shortcut: "/trite-fav.png",
-    apple: "/trite-fav.png",
-  },
 };
 
 export default function RootLayout({
