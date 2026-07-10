@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import HeroHeadingCard from "@/components/HeroHeadingCard";
 import WhyTriteCarouselAccent from "@/components/WhyTriteCarouselAccent";
+import { CircularTestimonials } from "@/components/ui/circular-testimonials";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 import {
@@ -114,43 +115,41 @@ function HowItWorksIcon({
   );
 }
 
-const whyTriteItems = [
+const whyTriteTestimonials = [
   {
-    title: "Built for Africa",
-    content: "Africa’s payment ecosystem is fragmented. Trite simplifies complexity by integrating local payment rails and digital asset infrastructure into a single secure layer.",
+    name: "Built for Africa",
+    designation: "Financial Infrastructure",
+    quote: "Africa’s payment ecosystem is fragmented. Trite simplifies complexity by integrating local payment rails and digital asset infrastructure into a single secure layer.",
+    src: "/images/built-for-africa.jpg"
   },
   {
-    title: "Security First",
-    content: "Our high-security compliance standard includes AI-powered fraud detection and real-time monitoring.",
-    subPoints: ["PCI-aligned architecture", "AML & KYC automation"],
+    name: "Security First",
+    designation: "Bank-Grade Protection",
+    quote: "Our high-security compliance standard includes AI-powered fraud detection and real-time monitoring. PCI-aligned architecture. AML & KYC automation.",
+    src: "/images/businessman-working-laptop.jpg"
   },
   {
-    title: "Compliance-Driven",
-    content: "We operate within regulatory frameworks and embed compliance directly into our systems.",
+    name: "Compliance-Driven",
+    designation: "Regulatory Standard",
+    quote: "We operate within regulatory frameworks and embed compliance directly into our systems.",
+    src: "/images/traders.jpg"
   },
   {
-    title: "Scalable by Design",
-    content: "From local SMEs to cross-border enterprises, Trite grows with your business.",
-  },
+    name: "Scalable by Design",
+    designation: "Enterprise Growth",
+    quote: "From local SMEs to cross-border enterprises, Trite grows with your business.",
+    src: "/images/real-estate.jpg"
+  }
 ];
 
 export default function Home() {
   const [builtForIndex, setBuiltForIndex] = useState(0);
-  const [whyTriteIndex, setWhyTriteIndex] = useState(0);
 
   // Carousel timer for the Built For section
   useEffect(() => {
     const timer = setInterval(() => {
       setBuiltForIndex((prev) => (prev + 1) % builtForItems.length);
     }, 3000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Carousel timer for the Why Trite section
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setWhyTriteIndex((prev) => (prev + 1) % whyTriteItems.length);
-    }, 5000);
     return () => clearInterval(timer);
   }, []);
 
@@ -1157,116 +1156,33 @@ export default function Home() {
           style={{ backgroundColor: "rgba(247, 247, 247, 1)" }}
         >
           <div className="animate-on-scroll stagger-1 relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-              {/* Left Column: Text content */}
-              <div className="lg:col-span-7 space-y-12 relative text-left order-2 lg:order-1">
-                <div className="animate-on-scroll stagger-2 space-y-4">
-                  <h3 className="animate-on-scroll stagger-3 text-3xl font-extrabold text-black tracking-tight sm:text-4xl lg:text-5xl">
-                    Why Trite
-                  </h3>
-                  <p className="animate-on-scroll stagger-4 text-xl sm:text-2xl text-gray-600 leading-relaxed font-medium max-w-2xl lg:mx-0">
-                    We are building a unified financial infrastructure that connects traditional payments and digital assets - securely and compliantly.
-                  </p>
-                </div>
+            <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+              <h3 className="animate-on-scroll stagger-3 text-3xl font-extrabold text-black tracking-tight sm:text-4xl lg:text-5xl">
+                Why Trite
+              </h3>
+              <p className="animate-on-scroll stagger-4 text-xl sm:text-2xl text-gray-600 leading-relaxed font-medium max-w-2xl mx-auto">
+                We are building a unified financial infrastructure that connects traditional payments and digital assets - securely and compliantly.
+              </p>
+            </div>
 
-                <div className="animate-on-scroll stagger-5 flex flex-col space-y-5">
-                  {/* Tab navigation */}
-                  <div className="animate-on-scroll stagger-6 grid w-full max-w-full grid-cols-2 gap-1 rounded-2xl border border-gray-200 bg-white p-1 sm:inline-flex sm:w-fit sm:items-center sm:overflow-x-auto sm:rounded-full sm:p-1.5 no-scrollbar transition-all duration-300 hover:shadow-lg">
-                    {whyTriteItems.map((item, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setWhyTriteIndex(idx)}
-                        className={cn(
-                          "w-full rounded-full px-2 py-1.5 text-center text-[10px] font-bold leading-tight transition-all duration-500 sm:w-auto sm:min-w-[120px] sm:whitespace-nowrap sm:px-6 sm:py-2.5 sm:text-sm transform hover:scale-105",
-                          whyTriteIndex === idx
-                            ? "bg-[#0c1e43] text-white shadow-sm scale-105"
-                            : "text-[#22c55e] hover:text-[#16a34a] hover:bg-gray-50"
-                        )}
-                      >
-                        {item.title}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Carousel card */}
-                  <div className="animate-on-scroll stagger-7 relative w-full">
-                    <div className="relative min-h-[200px] overflow-hidden border border-gray-200 bg-[#f6f9fc] sm:min-h-[220px] rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500">
-                      <div className="relative h-full min-h-[200px] sm:min-h-[220px]">
-                        {whyTriteItems.map((item, idx) => (
-                          <motion.div
-                            key={idx}
-                            initial={{ opacity: 0, y: 12 }}
-                            animate={{
-                              opacity: whyTriteIndex === idx ? 1 : 0,
-                              y: whyTriteIndex === idx ? 0 : 12,
-                              pointerEvents: whyTriteIndex === idx ? "auto" : "none",
-                            }}
-                            transition={{
-                              duration: 0.45,
-                              ease: [0.23, 1, 0.32, 1],
-                            }}
-                            className={cn(
-                              "flex h-full min-h-[200px] flex-col justify-center sm:min-h-[220px]",
-                              whyTriteIndex === idx
-                                ? "relative"
-                                : "absolute inset-0"
-                            )}
-                          >
-                            {/* Text — left side */}
-                            <div className="relative z-10 flex flex-col justify-center px-6 py-5 pr-[38%] sm:px-8 sm:py-6 sm:pr-[42%]">
-                              <div className="mb-3 flex items-center gap-2.5 transform transition-transform duration-300 hover:translate-x-1">
-                                <span className="h-2 w-2 shrink-0 rounded-full bg-white/90 animate-pulse" />
-                                <h4 className="text-lg font-extrabold text-white sm:text-xl">
-                                  {item.title}
-                                </h4>
-                              </div>
-                              <p className="text-sm leading-relaxed text-white/90 sm:text-base">
-                                {item.content}
-                              </p>
-                              {item.subPoints && (
-                                <ul className="mt-4 space-y-1.5 pl-4 text-sm font-semibold text-white/90">
-                                  {item.subPoints.map((sub, sIdx) => (
-                                    <li key={sIdx} className="flex items-center gap-2 transform transition-transform duration-300 hover:translate-x-1">
-                                      <span className="h-1 w-1 shrink-0 rounded-full bg-white/80" />
-                                      {sub}
-                                    </li>
-                                  ))}
-                                </ul>
-                              )}
-                            </div>
-
-                            <WhyTriteCarouselAccent />
-                          </motion.div>
-                        ))}
-                      </div>
-
-                      {/* Auto-advance progress bar */}
-                      <div className="absolute bottom-0 left-0 z-20 h-[3px] w-full bg-gray-200/60">
-                        <motion.div
-                          key={whyTriteIndex}
-                          initial={{ width: "0%" }}
-                          animate={{ width: "100%" }}
-                          transition={{ duration: 5, ease: "linear" }}
-                          className="h-full bg-gradient-to-r from-[#22c55e] to-[#86efac] shadow-sm"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Column: Image */}
-              <div className="animate-on-scroll stagger-8 lg:col-span-5 relative order-1 lg:order-2">
-                <div className="relative z-10 w-full h-auto group">
-                  <img 
-                    src="/images/girl-copy.png" 
-                    alt="Why Trite" 
-                    className="w-full h-auto object-contain drop-shadow-2xl transition-all duration-700 group-hover:scale-105 group-hover:drop-shadow-3xl"
-                  />
-                  {/* Subtle background glow */}
-                  <div className="absolute -inset-8 bg-gradient-to-br from-[#22c55e]/5 to-transparent rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                </div>
-              </div>
+            <div className="flex justify-center items-center">
+              <CircularTestimonials
+                testimonials={whyTriteTestimonials}
+                autoplay={true}
+                colors={{
+                  name: "#0c1e43",
+                  designation: "#6b7280",
+                  testimony: "#4b5563",
+                  arrowBackground: "#0c1e43",
+                  arrowForeground: "#f1f1f7",
+                  arrowHoverBackground: "#22c55e",
+                }}
+                fontSizes={{
+                  name: "1.75rem",
+                  designation: "0.95rem",
+                  quote: "1.125rem",
+                }}
+              />
             </div>
           </div>
         </section>

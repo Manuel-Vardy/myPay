@@ -201,7 +201,7 @@ export default function CareersPage() {
       <main className="pt-24 sm:pt-28">
         
         {/* HERO SECTION */}
-        <section className="relative py-20 lg:py-28 overflow-hidden bg-white border-b border-black/[0.04]">
+        <section className="relative py-12 lg:py-20 overflow-hidden bg-white border-b border-black/[0.04]">
           {/* Subtle Grid Lines & Background Blur */}
           <div className="absolute inset-0 pointer-events-none z-0">
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30" />
@@ -209,10 +209,7 @@ export default function CareersPage() {
           </div>
 
           <div className="relative z-10 mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 text-center space-y-6">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#22c55e]/10 border border-[#22c55e]/20 text-[#16a34a] text-xs font-bold uppercase tracking-wider animate-fade-in">
-              <Sparkles className="w-3.5 h-3.5" /> We are Hiring
-            </div>
-            
+
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-black tracking-tight leading-[1.08] max-w-4xl mx-auto">
               Join Us in Building the Future of Payments in Africa
             </h1>
@@ -221,22 +218,70 @@ export default function CareersPage() {
               Help us lay down the infrastructure that powers modern commerce across the continent. We're bridging borders and stablecoins.
             </p>
 
-            <div className="pt-6 flex justify-center gap-4">
-              <button 
-                onClick={() => formRef.current?.scrollIntoView({ behavior: "smooth" })}
-                className="px-6 py-3 rounded-full bg-[#22c55e] text-white hover:bg-[#16a34a] font-bold text-sm transition-all duration-300 shadow-sm hover:shadow hover:scale-[1.03] flex items-center gap-2"
-              >
-                Apply Spontaneously <ArrowRight className="w-4 h-4" />
-              </button>
-              <button 
-                onClick={() => {
-                  const element = document.getElementById("jobs");
-                  element?.scrollIntoView({ behavior: "smooth" });
-                }}
-                className="px-6 py-3 rounded-full border border-black/10 text-slate-700 hover:bg-black/5 hover:text-black font-bold text-sm transition-all duration-300"
-              >
-                Explore Open Roles
-              </button>
+            {/* Three-image mosaic */}
+            {/* Mobile: 2-col (tall left + two stacked right) | Desktop: 3-col elevated */}
+            <div className="pt-6 max-w-5xl mx-auto">
+              {/* ── Mobile layout ── */}
+              <div className="grid grid-cols-2 gap-3 sm:hidden">
+                {/* Left — spans full height */}
+                <div className="relative overflow-hidden rounded-2xl row-span-2 h-72 shadow-md group">
+                  <img
+                    src="/images/brand-building.jpg"
+                    alt="Brand Building at Trite"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                </div>
+                {/* Right top */}
+                <div className="relative overflow-hidden rounded-2xl h-[138px] shadow-md group">
+                  <img
+                    src="/images/traders.jpg"
+                    alt="Traders using Trite"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                </div>
+                {/* Right bottom */}
+                <div className="relative overflow-hidden rounded-2xl h-[138px] shadow-md group">
+                  <img
+                    src="/images/business-report.jpg"
+                    alt="Business Growth with Trite"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                </div>
+              </div>
+
+              {/* ── Desktop layout (sm and up) ── */}
+              <div className="hidden sm:grid grid-cols-3 gap-5">
+                {/* Left */}
+                <div className="relative overflow-hidden rounded-2xl h-80 shadow-md group">
+                  <img
+                    src="/images/brand-building.jpg"
+                    alt="Brand Building at Trite"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                </div>
+                {/* Center — elevated */}
+                <div className="relative overflow-hidden rounded-2xl h-96 -mt-8 shadow-xl group">
+                  <img
+                    src="/images/traders.jpg"
+                    alt="Traders using Trite"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                </div>
+                {/* Right */}
+                <div className="relative overflow-hidden rounded-2xl h-80 shadow-md group">
+                  <img
+                    src="/images/business-report.jpg"
+                    alt="Business Growth with Trite"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                </div>
+              </div>
             </div>
           </div>
         </section>
