@@ -83,10 +83,10 @@ export default function CareersPage() {
     <div className="min-h-screen bg-[#fcfcfc] text-black selection:bg-[#22c55e]/30 selection:text-black overflow-x-hidden">
       <Header transparent={true} darkLogo={true} />
 
-      <main className="pt-24 sm:pt-28">
+      <main>
         
         {/* HERO SECTION */}
-        <section className="relative py-12 lg:py-20 overflow-hidden bg-white border-b border-black/[0.04]">
+        <section className="relative -mt-28 sm:-mt-32 pt-56 sm:pt-64 pb-12 lg:pb-20 overflow-hidden bg-white border-b border-black/[0.04]">
           {/* Subtle Grid Lines & Background Blur */}
           <div className="absolute inset-0 pointer-events-none z-0">
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30" />

@@ -10,7 +10,7 @@ const adminRoutes = [
   "/kyc",
   "/logs",
   "/roles",
-  "/support",
+  "/admin/support",
 ];
 
 // Routes that require MERCHANT role

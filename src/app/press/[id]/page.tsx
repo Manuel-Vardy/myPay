@@ -1,64 +1,96 @@
-"use client";
-
-import { use } from "react";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, Calendar, Clock } from "lucide-react";
+import { notFound } from "next/navigation";
+import { Calendar, Clock } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import BackButton from "./BackButton";
 import { allArticles } from "@/lib/newsData";
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+/** Resolve an absolute URL for OG images regardless of environment */
+function absoluteUrl(path: string): string {
+  const base =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+  return `${base.replace(/\/$/, "")}${path}`;
+}
+
+// ── Static params (optional but recommended for SSG) ─────────────────────────
+
+export async function generateStaticParams() {
+  return allArticles.map((a) => ({ id: a.id }));
+}
+
+// ── Per-article Open Graph metadata ──────────────────────────────────────────
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-export default function ArticleDetailPage({ params }: PageProps) {
-  const { id } = use(params);
-  const router = useRouter();
-
-  // Look up the article by slug/id
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
   const article = allArticles.find((a) => a.id === id);
 
-  // Fallback if the article is not found
   if (!article) {
-    return (
-      <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between">
-        <Header transparent={true} darkLogo={true} />
-        <main className="mx-auto max-w-md px-4 py-32 text-center space-y-6">
-          <h1 className="text-3xl font-bold text-slate-950">Article Not Found</h1>
-          <p className="text-sm text-slate-500 font-medium leading-relaxed">
-            The article you are looking for does not exist or has been moved.
-          </p>
-          <button
-            onClick={() => router.back()}
-            className="inline-flex items-center gap-2 text-sm font-bold text-[#22c55e] hover:text-[#16a34a] transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" /> Back
-          </button>
-        </main>
-        <Footer />
-      </div>
-    );
+    return {
+      title: "Article Not Found | Trite",
+      description: "The article you are looking for does not exist.",
+    };
   }
 
-  // Get up to 4 related articles (excluding the current one)
-  const relatedArticles = allArticles
-    .filter((a) => a.id !== id)
-    .slice(0, 4);
+  const imageUrl = absoluteUrl(article.image);
+  const pageUrl = absoluteUrl(`/press/${article.id}`);
+
+  return {
+    title: `${article.title} | Trite`,
+    description: article.description,
+    openGraph: {
+      type: "article",
+      url: pageUrl,
+      title: article.title,
+      description: article.description,
+      siteName: "Trite",
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: article.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: article.title,
+      description: article.description,
+      images: [imageUrl],
+    },
+  };
+}
+
+// ── Page component (Server Component) ────────────────────────────────────────
+
+export default async function ArticleDetailPage({ params }: PageProps) {
+  const { id } = await params;
+  const article = allArticles.find((a) => a.id === id);
+
+  if (!article) {
+    notFound();
+  }
+
+  // Up to 4 related articles (excluding current)
+  const relatedArticles = allArticles.filter((a) => a.id !== id).slice(0, 4);
 
   return (
     <div className="min-h-screen bg-white text-slate-900 selection:bg-[#22c55e]/30 selection:text-black overflow-x-hidden">
       <Header transparent={true} darkLogo={true} />
 
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-32 pb-24">
-        {/* Breadcrumb Back Navigation */}
-        <button
-          onClick={() => router.back()}
-          className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-black mb-8 transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" /> Back
-        </button>
+        {/* Back navigation – client island */}
+        <BackButton />
 
         {/* Two-column layout: article body left, related stories right */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-12 xl:gap-16 items-start">

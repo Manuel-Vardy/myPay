@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import "./globals.css";
 
@@ -22,11 +23,20 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${montserrat.variable} h-full antialiased`}
+      className={`${montserrat.variable} h-full antialiased light`}
+      style={{ colorScheme: "light" }}
+      suppressHydrationWarning
     >
-      <body suppressHydrationWarning className="min-h-full flex flex-col bg-black text-[color:var(--trite-ink)] font-montserrat">
-        <LoadingOverlay />
-        {children}
+      <body className="min-h-full flex flex-col bg-black text-[color:var(--trite-ink)] font-montserrat">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          <LoadingOverlay />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

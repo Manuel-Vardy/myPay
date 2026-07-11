@@ -10,54 +10,6 @@ export interface Article {
   content: string[];
 }
 
-export const featuredStories: Article[] = [
-  {
-    id: "stablecoin-settlement-rails",
-    title: "Trite Launches Real-Time Stablecoin Settlement Rails across African Corridors",
-    date: "July 10, 2026",
-    readTime: "5-minute read",
-    category: "Core Updates",
-    description: "Deploying institutional liquidity pools to enable instantaneous trade settlement, eliminating traditional multi-day SWIFT cycles for enterprise merchants across the continent.",
-    image: "/images/two-african-businessman.jpg",
-    content: [
-      "Trite has officially rolled out its real-time stablecoin settlement rails across major trade corridors in West and East Africa. This deployment marks a major shift in cross-border commerce, allowing enterprise merchants to settle transactions in minutes rather than waiting the typical 3-5 business days associated with SWIFT and traditional banking correspondence.",
-      "By integrating stablecoins like USDT and USDC directly with local payment networks, Trite bypasses the friction points of multiple intermediary clearing banks. The new service leverages deep localized liquidity pools, enabling automated conversions with near-zero slippage. Corporate treasuries can now manage cash flows dynamically and eliminate currency volatility risk in real-time.",
-      "Our engineering team has worked closely with regional liquidity providers to ensure that transaction queues are cleared programmatically. Transactions are backed by end-to-end telemetry, allowing compliance officers to track and audit the flow of funds from digital wallets straight through to local fiat currency bank accounts.",
-      "With initial corridors established between Nigeria, Ghana, Kenya, and South Africa, Trite plans to expand this high-velocity architecture to another six markets in French-speaking West Africa by the end of the year. This rollout represents a critical component of our mission to build a frictionless payment architecture tailored to the modern African enterprise."
-    ]
-  },
-  {
-    id: "telecom-payouts-partnership",
-    title: "Accelerating Financial Integration: Trite and Regional Telecoms Partner for Mobile Money Off-Ramps",
-    date: "July 8, 2026",
-    readTime: "4-minute read",
-    category: "Partnerships",
-    description: "Trite integrates direct stablecoin settlement API with major telecom APIs, enabling merchants to push payouts to Mobile Money wallets instantly and securely.",
-    image: "/images/man-momoo.png",
-    content: [
-      "In a major step forward for financial interoperability, Trite has completed direct API integrations with the region's leading telecommunications providers. This partnership enables merchants using the Trite platform to disburse funds from stablecoin balances directly into MTN Mobile Money, Telecel, and AirtelTigo wallets in real-time.",
-      "Mobile Money remains the primary financial interface for millions of consumers and micro-merchants across Sub-Saharan Africa. However, businesses operating internationally have historically struggled to bridge digital assets with these mobile wallets. Trite's new payout API solves this problem, acting as an instant bridge between corporate stablecoin reserves and mobile-first retail networks.",
-      "The integration has been designed for maximum reliability and throughput. The gateway handles high-concurrency settlement requests, utilizing automated fallbacks to maintain transaction success rates above 99.9%. Furthermore, our compliance engine runs automated KYC validation checks in the background before any payout is triggered, keeping settlements fully compliant with regional central bank regulations.",
-      "By bridging stablecoins with Mobile Money, Trite is helping global businesses pay local vendors, contract workers, and suppliers instantly. This capability lowers operational overhead and accelerates transaction velocity, opening up new opportunities for digital commerce in emerging markets."
-    ]
-  },
-  {
-    id: "regulatory-electronic-money",
-    title: "Trite Secures Regulatory Approvals for Cross-Border Electronic Money Operations",
-    date: "June 25, 2026",
-    readTime: "3-minute read",
-    category: "Compliance",
-    description: "Acquiring compliance clearances to expand legal operations across East and West African jurisdictions, reinforcing security and bank-grade standards.",
-    image: "/images/modern-business-center.jpg",
-    content: [
-      "Trite has secured key regulatory clearances and electronic money licenses from banking authorities in both East and West Africa. These licenses allow Trite to hold merchant balances, facilitate domestic settlements, and offer compliant digital wallet infrastructure to local and international enterprises.",
-      "Operating at the intersection of traditional banking and digital assets requires a rigorous approach to compliance. Over the past twelve months, Trite has invested heavily in security audits, compliance staffing, and regulatory partnerships to ensure our stablecoin rails align perfectly with standard monetary guidelines.",
-      "Our system now features built-in compliance boundaries that automatically adjust transaction limits based on a merchant's verification tier. This compliance-first approach gives our banking partners the trust they need to support digital asset settlements, establishing a stable foundation for the future of enterprise payments on the continent.",
-      "Securing these approvals is a testament to Trite's commitment to security and transparency. We believe that sustainable fintech innovation relies on cooperating with regulators, and these licenses mark a major milestone in our journey to build a licensed, secure, and resilient cross-border settlement system."
-    ]
-  }
-];
-
 export const pressReleases: Article[] = [
   {
     id: "hybrid-banking-networks",
@@ -66,7 +18,7 @@ export const pressReleases: Article[] = [
     readTime: "4-minute read",
     category: "Press Releases",
     description: "Establishing secure gateways linking traditional clearing networks with digital liquidity nodes, allowing treasury managers to transition between fiat and stablecoins seamlessly.",
-    image: "/images/businessman-working-laptop.jpg",
+    image: "/images/bank-partners.jpg",
     content: [
       "Trite is pleased to announce a strategic collaboration with regional clearing banks to establish a hybrid payment network. This collaboration creates a secure settlement bridge connecting traditional commercial bank ledgers with digital asset liquidity networks.",
       "Through this hybrid network, corporate treasury managers can transition between local fiat currencies and stablecoins seamlessly. When a merchant requests a payout, the settlement engine routes the transaction through the optimal channel—whether that is a local real-time gross settlement (RTGS) bank network or a digital asset ledger.",
@@ -90,63 +42,18 @@ export const pressReleases: Article[] = [
     ]
   },
   {
-    id: "high-growth-fintech-award",
-    title: "Trite Named Among Top 10 High-Growth Fintech Infrastructures in Africa for 2026",
-    date: "June 18, 2026",
-    readTime: "4-minute read",
-    category: "Milestones",
-    description: "Recognized for driving financial innovation and stablecoin payment rail adoption across African corridors, processing millions in transaction volumes.",
-    image: "/images/business-report.jpg",
-    content: [
-      "Trite has been recognized by the African Fintech Association as one of the Top 10 High-Growth Fintech Infrastructures of 2026. The award highlights Trite's contribution to expanding digital asset payment rails and reducing transaction friction across the continent.",
-      "Our platform has seen massive adoption over the past year, processing millions of dollars in cross-border settlements for merchants, logistics firms, and e-commerce platforms. By combining stablecoin liquidity with local banking integrations, we have resolved critical cash flow issues for cross-border businesses.",
-      "We are honored by this recognition, which reflects the hard work of our engineering and compliance teams. Building reliable payment systems in fragmented markets is a complex task, and this milestone encourages us to keep pushing the boundaries of what is possible.",
-      "Looking ahead, Trite will continue to invest in core ledger performance and localized regulatory licenses. Our goal is to expand our footprint across another ten African countries, making frictionless cross-border payments the standard for businesses of all sizes."
-    ]
-  },
-  {
     id: "routing-engine-api-v2",
     title: "Introducing Trite API v2.0: High-Performance Merchant Payment Routing Engine",
     date: "May 22, 2026",
     readTime: "5-minute read",
     category: "Developer Updates",
     description: "Upgraded developer infrastructure featuring lower latencies, improved webhooks reliability, and multi-threaded transaction processing support.",
-    image: "/images/trite-api.png",
+    image: "/images/merchant-payment.jpg",
     content: [
       "We are excited to launch Trite API v2.0, a complete upgrade to our developer infrastructure. The new version features up to 40% lower response latencies, multi-threaded transaction processing, and a more robust webhook delivery engine.",
       "Our developers require payment tools that can scale alongside their applications. API v2.0 introduces simplified endpoints, making it easier to initiate stablecoin-to-fiat settlements, query transaction ledgers, and manage client verification tiers programmatically.",
       "The webhook infrastructure has been rebuilt from scratch to guarantee message delivery, utilizing an automated exponential backoff retry mechanism. Developers can now track transaction state changes with high-resolution log telemetry, simplifying debugging and accounting integrations.",
       "The API v2.0 developer portal is now live with comprehensive SDK support for Node.js, Go, Python, and React. Detailed documentation, code playgrounds, and sandboxed testing credentials are available in the developer settings."
-    ]
-  },
-  {
-    id: "pci-dss-compliance-security",
-    title: "Trite Achieves Full PCI-DSS Compliance to Guarantee Bank-Grade Transaction Protection",
-    date: "May 08, 2026",
-    readTime: "2-minute read",
-    category: "Security",
-    description: "Achieving standard security certification for payment processing card security, ensuring complete cardholder data protection.",
-    image: "/images/Credit-Card.jpg",
-    content: [
-      "Trite has achieved full PCI-DSS (Payment Card Industry Data Security Standard) compliance. This certification guarantees that our card processing gateways meet the highest industry standards for protecting cardholder data.",
-      "While Trite focuses heavily on stablecoin rails, we understand that traditional card payments remain an important tool for hybrid retail merchants. Achieving PCI-DSS compliance ensures that businesses can accept Visa, Mastercard, and local cards on the same dashboard without exposing data to security leaks.",
-      "Our security infrastructure incorporates advanced tokenization, hardware security modules (HSMs), and continuous network vulnerability scanning. Every transaction is encrypted in transit and at rest, maintaining a secure corridor between the payer and the merchant's settlement account.",
-      "This certification is a major milestone in our bank-grade security checklist. Trite will continue to run regular audits and security drills, ensuring our infrastructure remains a secure and trusted gateway for enterprise payments."
-    ]
-  },
-  {
-    id: "east-africa-expansion",
-    title: "Trite Expands Electronic Money Settlement Infrastructure to East Africa",
-    date: "April 25, 2026",
-    readTime: "4-minute read",
-    category: "Expansion",
-    description: "Deploying payment infrastructure hubs in Kenya and Tanzania to bridge East African payment rails with global stablecoin settlement layers.",
-    image: "/images/modern-business-center.jpg",
-    content: [
-      "Trite is expanding its core settlement networks to East Africa, deploying regional hubs in Nairobi and Dar es Salaam. This expansion links East African trade networks directly with our global stablecoin settlement layers.",
-      "East Africa is a global leader in mobile payments, driven by systems like M-Pesa. By integrating directly with local mobile wallets and RTGS networks, Trite enables businesses in Kenya and Tanzania to settle trade invoices internationally in stablecoins instantly.",
-      "Our localized infrastructure routes payments with minimal friction, providing treasury managers with real-time settlement transparency and competitive currency conversion rates. This setup reduces dependency on banking corridors that charge high fees for cross-border conversions.",
-      "We believe that linking East African mobile money networks with stablecoins is a key step to lowering the cost of cross-border trade. With the new hubs live, merchants can configure East African currencies in their Trite dashboard starting today."
     ]
   },
   {
@@ -156,7 +63,7 @@ export const pressReleases: Article[] = [
     readTime: "3-minute read",
     category: "Core Updates",
     description: "Integrating automated market-making algorithms to optimize currency swaps between USDT, USDC, and local African currencies.",
-    image: "/images/USDT.jpg",
+    image: "/images/cross-border.jpg",
     content: [
       "Trite has deployed automated liquidity pool swaps across its settlement nodes. This feature integrates automated market-making (AMM) algorithms to optimize currency swaps between USDT, USDC, and local currencies.",
       "Cross-border payments are often delayed due to a lack of immediate foreign currency availability. Trite's liquidity pools act as localized reserves, allowing the system to execute transactions without waiting for bank-level currency allocations.",
@@ -182,6 +89,21 @@ export const pressReleases: Article[] = [
 ];
 
 export const ourStories: Article[] = [
+  {
+    id: "stablecoin-settlement-rails",
+    title: "Trite Launches Real-Time Stablecoin Settlement Rails across African Corridors",
+    date: "July 10, 2026",
+    readTime: "5-minute read",
+    category: "Core Updates",
+    description: "Deploying institutional liquidity pools to enable instantaneous trade settlement, eliminating traditional multi-day SWIFT cycles for enterprise merchants across the continent.",
+    image: "/images/two-african-businessman.jpg",
+    content: [
+      "Trite has officially rolled out its real-time stablecoin settlement rails across major trade corridors in West and East Africa. This deployment marks a major shift in cross-border commerce, allowing enterprise merchants to settle transactions in minutes rather than waiting the typical 3-5 business days associated with SWIFT and traditional banking correspondence.",
+      "By integrating stablecoins like USDT and USDC directly with local payment networks, Trite bypasses the friction points of multiple intermediary clearing banks. The new service leverages deep localized liquidity pools, enabling automated conversions with near-zero slippage. Corporate treasuries can now manage cash flows dynamically and eliminate currency volatility risk in real-time.",
+      "Our engineering team has worked closely with regional liquidity providers to ensure that transaction queues are cleared programmatically. Transactions are backed by end-to-end telemetry, allowing compliance officers to track and audit the flow of funds from digital wallets straight through to local fiat currency bank accounts.",
+      "With initial corridors established between Nigeria, Ghana, Kenya, and South Africa, Trite plans to expand this high-velocity architecture to another six markets in French-speaking West Africa by the end of the year. This rollout represents a critical component of our mission to build a frictionless payment architecture tailored to the modern African enterprise."
+    ]
+  },
   {
     id: "engineering-ledger-databases",
     title: "Inside Trite's High-Velocity Infrastructure: Engineering Sub-Second Settlement Ledger Systems",
@@ -306,7 +228,11 @@ export const ourStories: Article[] = [
 ];
 
 export const allArticles: Article[] = [
-  ...featuredStories,
   ...pressReleases,
   ...ourStories
 ];
+
+// Dynamically get the latest 4 articles by date for the carousel
+export const featuredStories: Article[] = [...allArticles]
+  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  .slice(0, 4);

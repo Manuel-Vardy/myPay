@@ -39,7 +39,7 @@ export default function Footer() {
             <h5 className="text-xs font-extrabold uppercase tracking-wider text-black">Products</h5>
             <ul className="mt-4 space-y-2 text-xs text-gray-500 font-bold">
               <li><Link href="/products" className="hover:text-black transition-colors">Products</Link></li>
-              <li><Link href="#" className="hover:text-black transition-colors">Support</Link></li>
+              <li><Link href="/support" className="hover:text-black transition-colors">Support</Link></li>
             </ul>
           </div>
 
@@ -56,9 +56,9 @@ export default function Footer() {
             <h5 className="text-xs font-extrabold uppercase tracking-wider text-black">Legal</h5>
             <ul className="mt-4 space-y-2 text-xs text-gray-500 font-bold">
               <li><Link href="#" className="hover:text-black transition-colors">Legal</Link></li>
-              <li><Link href="#" className="hover:text-black transition-colors">Privacy Policy</Link></li>
-              <li><Link href="#" className="hover:text-black transition-colors">Terms of Service</Link></li>
-              <li><Link href="#" className="hover:text-black transition-colors">Connect</Link></li>
+              <li><Link href="/privacy" className="hover:text-black transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/terms" className="hover:text-black transition-colors">Terms of Service</Link></li>
+              <li><Link href="/connect" className="hover:text-black transition-colors">Connect</Link></li>
             </ul>
           </div>
 

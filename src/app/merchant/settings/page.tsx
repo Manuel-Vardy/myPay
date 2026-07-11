@@ -769,7 +769,7 @@ export default function SettingsPage() {
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[color:var(--trite-muted)]">
             <div className="flex gap-4">
               <Link href="#" className="hover:text-[color:var(--trite-ink)]">Documentation</Link>
-              <Link href="#" className="hover:text-[color:var(--trite-ink)]">API Privacy</Link>
+              <Link href="/privacy" className="hover:text-[color:var(--trite-ink)]">API Privacy</Link>
             </div>
             <div>
               Last updated: Oct 24, 2023 • IP: 102.176.65.1

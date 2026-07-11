@@ -147,9 +147,9 @@ export default function LoginPage() {
 
           <p className="text-gray-400 mt-6 text-[10px] text-center leading-relaxed max-w-xs mx-auto">
             By clicking enter, you agree to our{' '}
-            <a href="#" className="text-gray-600 font-bold hover:underline">Terms</a>{' '}
+            <Link href="/terms" className="text-gray-600 font-bold hover:underline">Terms</Link>{' '}
             and{' '}
-            <a href="#" className="text-gray-600 font-bold hover:underline">Privacy</a>.
+            <Link href="/privacy" className="text-gray-600 font-bold hover:underline">Privacy</Link>.
           </p>
         </div>
       </div>
