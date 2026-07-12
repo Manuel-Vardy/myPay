@@ -135,21 +135,6 @@ export const ourStories: Article[] = [
     ]
   },
   {
-    id: "one-year-milestone",
-    title: "Celebrating 1 Year of Trite: Over $100M Processed Safely across the Continent",
-    date: "June 12, 2026",
-    readTime: "3-minute read",
-    category: "Community",
-    description: "Marking one year of operational success, supporting hundreds of merchants and driving stablecoin payment rail adoption across Africa.",
-    image: "/images/excited-girl.jpg",
-    content: [
-      "Trite is celebrating its first year of operational success. Since our launch, our payment network has processed over $100M in transaction volumes, supporting hundreds of merchants and digital businesses across Africa.",
-      "Our goal has always been to build a payment system that addresses the cash flow and settlement issues faced by African enterprises. Over the past twelve months, we have successfully integrated multiple local payment rails and digital asset networks into a single gateway.",
-      "We want to thank our merchants, developers, and compliance partners for their trust and collaboration. Your feedback has been critical to our product development, helping us shape features like real-time dashboards and API v2.0.",
-      "As we enter our second year, we remain focused on expanding our regulatory licenses and deployment corridors. We are excited to continue building the next generation of financial infrastructure for the modern African enterprise."
-    ]
-  },
-  {
     id: "cornell-university-delegation",
     title: "Cornell University Delegation Visits Trite to Understand the African Digital Currency Economy",
     date: "May 18, 2026",
@@ -236,3 +221,8 @@ export const allArticles: Article[] = [
 export const featuredStories: Article[] = [...allArticles]
   .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
   .slice(0, 4);
+
+// Inside Trite — product launches, engineering deep-dives, employee stories, and company culture
+export const insideTrite: Article[] = ourStories.filter((s) =>
+  ["Engineering", "Impact", "Community", "Core Updates", "Education"].includes(s.category)
+);

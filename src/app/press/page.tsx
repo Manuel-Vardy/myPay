@@ -14,54 +14,27 @@ import {
   Image as ImageIcon,
   Users,
   Package,
-  Download,
   Megaphone,
   Handshake,
-  CalendarDays,
-  Trophy,
   ShieldCheck,
   Mail,
-  Newspaper,
   BookOpen,
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { featuredStories, pressReleases, ourStories } from "@/lib/newsData";
+import { featuredStories, pressReleases, ourStories, insideTrite } from "@/lib/newsData";
 
 // ─── Tab definition ────────────────────────────────────────────────────────────
 const TABS = [
   { id: "releases",      label: "Press Releases" },
   { id: "stories",       label: "Our Stories" },
-  { id: "media",         label: "Media Resources" },
+  { id: "media",         label: "Inside Trite" },
   { id: "enquiries",     label: "Media Enquiries" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
 
-// ─── Media Resources data ──────────────────────────────────────────────────────
-const mediaResources = [
-  {
-    icon: ImageIcon,
-    title: "Brand Assets",
-    description: "Official Trite brand guidelines including colour palettes, typography, and usage rules.",
-    action: "View",
-    href: "/press/brand-assets",
-  },
-  {
-    icon: Package,
-    title: "Logos",
-    description: "Full-colour, monochrome, and reversed logo variants in PNG, SVG, and EPS formats.",
-    action: "View",
-    href: "/press/logos",
-  },
-  {
-    icon: ImageIcon,
-    title: "Product Images",
-    description: "Press-ready screenshots, product mockups, and interface imagery for editorial use.",
-    action: "Browse Gallery",
-    href: "/press/product-images",
-  },
-];
+
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 export default function PressPage() {
@@ -342,33 +315,59 @@ export default function PressPage() {
                   </section>
                 )}
 
-                {/* ── MEDIA RESOURCES ── */}
+                {/* ── INSIDE TRITE ── */}
                 {activeTab === "media" && (
-                  <section className="space-y-10">
-                    <div className="space-y-2">
-                      <h2 className="text-2xl sm:text-3xl font-bold text-black">Media Resources</h2>
-                      <p className="text-sm text-slate-500 font-medium max-w-2xl leading-relaxed">
-                        Everything the press needs to accurately represent Trite — downloadable assets, brand guidelines, executive profiles, and more.
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {mediaResources.map((resource, index) => {
-                        const Icon = resource.icon;
-                        return (
-                          <div key={index} className="bg-white rounded-xl border border-slate-200/50 p-8 flex flex-col gap-6 hover:shadow-[0_8px_32px_rgba(0,0,0,0.04)] transition-all duration-300 group">
-                            <div className="w-12 h-12 rounded-xl bg-[#22c55e] flex items-center justify-center shadow-sm">
-                              <Icon className="w-5 h-5 text-white" />
+                  <section>
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                      <div className="lg:col-span-4 flex flex-col justify-start gap-6">
+                        <div className="space-y-4">
+                          <h3 className="text-xl sm:text-2xl font-bold uppercase tracking-tight text-black border-b-2 border-black/10 pb-2">
+                            Inside Trite
+                          </h3>
+                          <p className="text-xs sm:text-sm text-slate-500 font-bold leading-relaxed">
+                            Behind-the-scenes stories on our products, engineering team, company culture, and the people building the future of African payments.
+                          </p>
+                        </div>
+                        {insideTrite[0] && (
+                          <Link href={`/press/${insideTrite[0].id}`} className="bg-white rounded-3xl border border-slate-200/50 shadow-none overflow-hidden flex flex-col group cursor-pointer hover:shadow-[0_4px_20px_rgba(0,0,0,0.04)] transition-all duration-300">
+                            <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
+                              <Image src={insideTrite[0].image} alt={insideTrite[0].title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
                             </div>
-                            <div className="space-y-2 flex-1">
-                              <h3 className="text-base font-bold text-black">{resource.title}</h3>
-                              <p className="text-sm text-slate-500 font-medium leading-relaxed">{resource.description}</p>
+                            <div className="p-6 flex-1 flex flex-col justify-between">
+                              <div className="space-y-3">
+                                <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#22c55e]">{insideTrite[0].category}</span>
+                                <h4 className="text-base sm:text-lg font-bold text-slate-900 leading-tight line-clamp-3">{insideTrite[0].title}</h4>
+                                <p className="text-xs sm:text-sm text-slate-500 font-medium line-clamp-3 leading-relaxed">{insideTrite[0].description}</p>
+                              </div>
+                              <div className="flex items-center gap-3 pt-5 text-[11px] text-slate-400 font-bold border-t border-slate-100 mt-4">
+                                <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5 text-[#22c55e]" />{insideTrite[0].date}</span>
+                                <span>•</span>
+                                <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-[#22c55e]" />{insideTrite[0].readTime}</span>
+                              </div>
                             </div>
-                            <Link href={resource.href} className="inline-flex items-center justify-center gap-2 text-xs font-bold text-white bg-[#22c55e] hover:bg-[#16a34a] transition-all duration-300 py-3 px-6 rounded-lg w-full text-center">
-                              {resource.action} <ArrowRight className="w-3.5 h-3.5" />
-                            </Link>
-                          </div>
-                        );
-                      })}
+                          </Link>
+                        )}
+                      </div>
+                      <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6 lg:pt-10">
+                        {insideTrite.slice(1, 5).map((story, index) => (
+                          <Link key={index} href={`/press/${story.id}`} className="bg-white rounded-3xl border border-slate-200/50 shadow-none overflow-hidden flex flex-col justify-between group cursor-pointer hover:shadow-[0_4px_20px_rgba(0,0,0,0.04)] transition-all duration-300">
+                            <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
+                              <Image src={story.image} alt={story.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                            </div>
+                            <div className="p-6 flex-1 flex flex-col justify-between">
+                              <div className="space-y-1">
+                                <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#22c55e]">{story.category}</span>
+                                <h4 className="text-sm sm:text-base font-bold text-slate-900 leading-tight line-clamp-3">{story.title}</h4>
+                              </div>
+                              <div className="flex items-center gap-3 pt-4 text-[11px] text-slate-400 font-bold border-t border-slate-100 mt-4">
+                                <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5 text-[#22c55e]" />{story.date}</span>
+                                <span>•</span>
+                                <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-[#22c55e]" />{story.readTime}</span>
+                              </div>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
                     </div>
                   </section>
                 )}
@@ -433,6 +432,53 @@ export default function PressPage() {
                         </ul>
                       </div>
                     </div>
+
+                    {/* ── Media Resources ── */}
+                    <div className="space-y-4 pt-4">
+                      <h3 className="text-base font-extrabold text-black uppercase tracking-wide border-b border-slate-100 pb-3">Media Resources</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                        {[
+                          {
+                            icon: ImageIcon,
+                            title: "Brand Assets",
+                            description: "Official Trite brand guidelines including colour palettes, typography, and usage rules.",
+                            action: "View",
+                            href: "/press/brand-assets",
+                          },
+                          {
+                            icon: Package,
+                            title: "Logos",
+                            description: "Full-colour, monochrome, and reversed logo variants in PNG, SVG, and EPS formats.",
+                            action: "View",
+                            href: "/press/logos",
+                          },
+                          {
+                            icon: ImageIcon,
+                            title: "Product Images",
+                            description: "Press-ready screenshots, product mockups, and interface imagery for editorial use.",
+                            action: "Browse Gallery",
+                            href: "/press/product-images",
+                          },
+                        ].map((resource, index) => {
+                          const Icon = resource.icon;
+                          return (
+                            <div key={index} className="bg-white rounded-xl border border-slate-200/50 p-8 flex flex-col gap-6 hover:shadow-[0_8px_32px_rgba(0,0,0,0.04)] transition-all duration-300">
+                              <div className="w-12 h-12 rounded-xl bg-[#22c55e] flex items-center justify-center shadow-sm">
+                                <Icon className="w-5 h-5 text-white" />
+                              </div>
+                              <div className="space-y-2 flex-1">
+                                <h4 className="text-base font-bold text-black">{resource.title}</h4>
+                                <p className="text-sm text-slate-500 font-medium leading-relaxed">{resource.description}</p>
+                              </div>
+                              <Link href={resource.href} className="inline-flex items-center justify-center gap-2 text-xs font-bold text-white bg-[#22c55e] hover:bg-[#16a34a] transition-all duration-300 py-3 px-6 rounded-lg w-full text-center">
+                                {resource.action} <ArrowRight className="w-3.5 h-3.5" />
+                              </Link>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
                   </section>
                 )}
 

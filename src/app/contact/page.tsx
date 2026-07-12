@@ -7,9 +7,141 @@ import {
   MapPin, 
   CheckCircle2
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import dynamic from "next/dynamic";
+
+const IconCloud = dynamic(() => import("@/components/ui/interactive-icon-cloud").then(mod => mod.IconCloud), {
+  ssr: false,
+});
+
+// Animation hook for scroll-based reveals
+const useScrollAnimation = () => {
+  const [elements, setElements] = useState<Set<Element>>(new Set());
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-fade-in-up');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    const animateElements = document.querySelectorAll('.animate-on-scroll');
+    animateElements.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, []);
+};
+
+const CONNECT_AVATARS = [
+  {
+    src: "/images/smiling-woman-smartphone.jpg",
+    alt: "Trite team member",
+    left: "18%",
+    top: "14%",
+    hidden: "",
+  },
+  {
+    src: "/images/young-man-talking.jpg",
+    alt: "Trite team member",
+    left: "50%",
+    top: "14%",
+    hidden: "",
+  },
+  {
+    src: "/images/chief-financial-officer.jpg",
+    alt: "Trite team member",
+    left: "82%",
+    top: "14%",
+    hidden: "",
+  },
+  {
+    src: "/images/Happy black woman sitting by big copy.jpg",
+    alt: "Trite team member",
+    left: "8%",
+    top: "50%",
+    hidden: "hidden sm:block",
+  },
+  {
+    src: "/images/male-sitting.jpg",
+    alt: "Trite team member",
+    left: "92%",
+    top: "48%",
+    hidden: "hidden sm:block",
+  },
+  {
+    src: "/images/People on phone.jpg",
+    alt: "Trite team member",
+    left: "26%",
+    top: "84%",
+    hidden: "",
+  },
+  {
+    src: "/images/two-african-businessman.jpg",
+    alt: "Trite team member",
+    left: "74%",
+    top: "82%",
+    hidden: "",
+  },
+];
+
+const CONTACT_CATEGORIES = [
+  {
+    title: "General Enquiries",
+    email: "info@trite.tech"
+  },
+  {
+    title: "Sales",
+    email: "sales@trite.tech"
+  },
+  {
+    title: "Partnerships",
+    email: "partnerships@trite.tech"
+  },
+  {
+    title: "Support",
+    email: "support@trite.tech"
+  },
+  {
+    title: "Careers",
+    email: "careers@trite.tech"
+  }
+];
+
+const SOCIAL_LINKS = [
+  {
+    title: "LinkedIn",
+    href: "#"
+  },
+  {
+    title: "X (formerly Twitter)",
+    href: "https://x.com/trite_pay?s=11"
+  },
+  {
+    title: "GitHub (Developers)",
+    href: "#"
+  }
+];
+
+const slugs = [
+  "facebook",
+  "x",
+  "whatsapp",
+  "youtube",
+  "instagram",
+  "gmail",
+  "linkedin",
+  "github",
+];
 
 export default function ContactPage() {
+  useScrollAnimation();
   const [formState, setFormState] = useState<"idle" | "submitting" | "success">("idle");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -22,25 +154,83 @@ export default function ContactPage() {
   };
 
   return (
+    <>
+      {/* CSS Animation Styles */}
+      <style jsx global>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(40px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-fade-in-up {
+          animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        .animate-on-scroll {
+          opacity: 0;
+        }
+
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+      `}</style>
     <div className="flex min-h-screen flex-col bg-white">
       <Header transparent={true} darkLogo={true} />
 
-      <main className="flex-grow pt-40 sm:pt-52 pb-32">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <main className="flex-grow pb-0">
+        {/* HERO WRAP (like Careers page) */}
+        <section className="relative -mt-28 sm:-mt-32 pt-56 sm:pt-64 pb-12 lg:pb-20 overflow-hidden bg-white border-b border-black/[0.04]">
+          {/* Subtle Grid Lines & Background Blur */}
+          <div className="absolute inset-0 pointer-events-none z-0">
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30" />
+            <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#22c55e]/5 rounded-full blur-[80px]" />
+          </div>
           
+          {/* Hero Content */}
+          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+
+          {/* ── Hero Heading ── */}
+          <div className="mb-20 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Left: text */}
+            <div className="space-y-6">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-black leading-tight">
+                We&rsquo;d love to{" "}
+                <span className="text-[#22c55e]">hear from you</span>
+              </h1>
+              <p className="text-lg sm:text-xl text-gray-500 font-medium leading-relaxed max-w-lg">
+                Whether you&rsquo;re scaling a business, exploring partnerships, or just getting started —
+                our team is ready to help you move faster.
+              </p>
+
+            </div>
+
+            {/* Right: image */}
+            <div className="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-xl">
+              <Image
+                src="/images/assistant-call.jpg"
+                alt="Trite support team"
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
             
-            {/* Left Side: Heading, Contact Info, Social */}
+            {/* Left Side: Contact Info, Social */}
             <div className="space-y-12">
-              <div className="space-y-6">
-                <h2 className="text-sm font-extrabold uppercase tracking-widest text-[#22c55e]">
-                  Get in touch
+              <div className="space-y-4">
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-black tracking-tight">
+                  Let&rsquo;s connect
                 </h2>
-                <h1 className="text-3xl sm:text-4xl font-extrabold text-black tracking-tight">
-                  CONTACT US
-                </h1>
                 <p className="text-gray-600 font-medium text-lg leading-relaxed">
-                  Have questions or need support? We're here to help you scale your business.
+                  Have questions or need support? We&rsquo;re here to help you scale your business.
                 </p>
               </div>
 
@@ -230,10 +420,126 @@ export default function ContactPage() {
             </div>
 
           </div>
-        </div>
+          </div>
+        </section>
+
+        {/* Contact Categories */}
+        <section className="pt-8 pb-16 lg:pt-12 lg:pb-24 bg-[#22c55e]">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="space-y-8">
+              {CONTACT_CATEGORIES.map((category, idx) => (
+                <div key={category.title} className="animate-on-scroll stagger-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 border-b border-white/30">
+                  <h3 className="text-xl font-bold text-white">
+                    {category.title}
+                  </h3>
+                  <a
+                    href={`mailto:${category.email}`}
+                    className="text-lg font-medium text-white/90 hover:text-white transition-colors flex items-center gap-2"
+                  >
+                    <Mail className="h-5 w-5" />
+                    {category.email}
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Follow Trite */}
+        <section className="py-16 lg:py-24 bg-slate-50/60">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+              <div className="space-y-6">
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-black tracking-tight">
+                  Follow Trite
+                </h2>
+                <p className="text-lg text-gray-600 font-medium leading-relaxed">
+                  Stay connected for product updates, industry insights, company news, and thought leadership.
+                </p>
+                <div className="space-y-3">
+                  {SOCIAL_LINKS.map((social) => (
+                    <a
+                      key={social.title}
+                      href={social.href}
+                      target={social.href !== "#" ? "_blank" : undefined}
+                      rel={social.href !== "#" ? "noopener noreferrer" : undefined}
+                      className="block text-lg font-semibold text-black hover:text-[#22c55e] transition-colors"
+                    >
+                      {social.title}
+                    </a>
+                  ))}
+                </div>
+              </div>
+              <div className="relative">
+                <div className="relative flex size-full max-w-lg items-center justify-center overflow-hidden rounded-lg px-20 pb-20 pt-8">
+                  <IconCloud iconSlugs={slugs} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Bottom Section (like Support page) */}
+        <section className="relative overflow-hidden bg-[#22c55e]">
+          {/* Grid overlay */}
+          <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(to_right,rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.12)_1px,transparent_1px)] bg-[size:3.5rem_3.5rem]" />
+          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,0,0,0.06)_100%)]" />
+
+          {/* Orbit canvas — full width, avatars + text share same coordinate space */}
+          <div className="relative mx-auto w-full max-w-[1200px] h-[460px] sm:h-[540px] md:h-[600px] lg:h-[640px] px-6 sm:px-10 md:px-16">
+            {/* Orbiting avatars */}
+            {CONNECT_AVATARS.map((avatar) => (
+              <div
+                key={avatar.src}
+                className={`absolute -translate-x-1/2 -translate-y-1/2 ${avatar.hidden}`}
+                style={{ left: avatar.left, top: avatar.top }}
+              >
+                <div className="relative w-[56px] h-[56px] sm:w-[64px] sm:h-[64px] md:w-[72px] md:h-[72px] rounded-[18px] overflow-hidden shadow-xl ring-[3px] ring-white/40">
+                  <Image
+                    src={avatar.src}
+                    alt={avatar.alt}
+                    fill
+                    className="object-cover"
+                    sizes="72px"
+                  />
+                </div>
+              </div>
+            ))}
+
+            {/* Center content */}
+            <div className="absolute inset-0 flex items-center justify-center z-10">
+              <div className="text-center space-y-4 sm:space-y-5 px-4 max-w-md">
+                <h2 className="text-4xl sm:text-5xl md:text-[3.5rem] font-extrabold text-white tracking-tight leading-none">
+                  Get in Touch
+                </h2>
+
+                <div className="space-y-1">
+                  <a
+                    href="mailto:info@trite.tech"
+                    className="block text-base sm:text-lg font-bold text-white/95 hover:text-white transition-colors"
+                  >
+                    info@trite.tech
+                  </a>
+                  <p className="text-xs sm:text-sm font-semibold text-white/75">
+                    Monday – Friday · 8:00 AM – 5:00 PM GMT
+                  </p>
+                </div>
+
+                <a
+                  href="mailto:info@trite.tech"
+                  className="inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-xs sm:text-sm font-bold text-white shadow-lg hover:bg-gray-900 transition-colors"
+                >
+                  <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  Email us
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
       <Footer />
     </div>
+    </>
   );
 }

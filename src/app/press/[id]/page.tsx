@@ -6,6 +6,7 @@ import { Calendar, Clock } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BackButton from "./BackButton";
+import ShareButtons from "./ShareButtons";
 import { allArticles } from "@/lib/newsData";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -145,6 +146,9 @@ export default async function ArticleDetailPage({ params }: PageProps) {
                 </p>
               ))}
             </div>
+
+            {/* Share buttons */}
+            <ShareButtons title={article.title} />
           </article>
 
           {/* ── RIGHT: Related Stories sticky sidebar ── */}
