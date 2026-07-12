@@ -322,7 +322,7 @@ export default function AboutPage() {
                       </div>
                       <div>
                         <p className="text-xs font-medium uppercase tracking-wider text-gray-400 mb-1">Email us</p>
-                        <p className="text-lg font-bold text-black">support@trite.com</p>
+                        <p className="text-lg font-bold text-black">support@trite.tech</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-5">
@@ -341,8 +341,8 @@ export default function AboutPage() {
                       <div>
                         <p className="text-xs font-medium uppercase tracking-wider text-gray-400 mb-1">Visit us</p>
                         <p className="text-lg font-bold text-black">
-                          Ahodwo-Daban, Dei-Kwarteng Street,<br />
-                          Near Hill-Top (AK-606-2396)
+                          Ahodwo-Daban, No. Two Street Off Gyamfua Courts<br />
+                          GPS AG-2709-3228
                         </p>
                       </div>
                     </div>

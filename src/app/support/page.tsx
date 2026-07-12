@@ -105,7 +105,7 @@ const FAQS = [
   {
     question: "What fees does Trite charge?",
     answer:
-      "Trite offers transparent, competitive pricing based on transaction volume and payment method. Contact our team at support@trite.com for a tailored fee schedule, or review your merchant agreement for your current rate card.",
+      "Trite offers transparent, competitive pricing based on transaction volume and payment method. Contact our team at support@trite.tech for a tailored fee schedule, or review your merchant agreement for your current rate card.",
   },
 ];
 
@@ -331,10 +331,10 @@ export default function SupportPage() {
 
                 <div className="space-y-1">
                   <a
-                    href="mailto:support@trite.com"
+                    href="mailto:support@trite.tech"
                     className="block text-base sm:text-lg font-bold text-white/95 hover:text-white transition-colors"
                   >
-                    support@trite.com
+                    support@trite.tech
                   </a>
                   <p className="text-xs sm:text-sm font-semibold text-white/75">
                     Monday – Friday · 8:00 AM – 5:00 PM GMT
@@ -342,7 +342,7 @@ export default function SupportPage() {
                 </div>
 
                 <a
-                  href="mailto:support@trite.com"
+                  href="mailto:support@trite.tech"
                   className="inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-xs sm:text-sm font-bold text-white shadow-lg hover:bg-gray-900 transition-colors"
                 >
                   <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4" />

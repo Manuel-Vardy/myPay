@@ -315,7 +315,7 @@ export default function AdminSignupPage() {
                   <p className="mt-1 text-xs text-[color:var(--trite-muted)]">
                     All applications are verified against the Bank of Ghana registry. 
                     Approved applicants receive credentials within 3-5 business days. 
-                    For urgent access, contact compliance@trite.com.gh
+                    For urgent access, contact compliance@trite.tech
                   </p>
                 </div>
               </div>

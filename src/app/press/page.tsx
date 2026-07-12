@@ -397,11 +397,11 @@ export default function PressPage() {
                           </p>
                         </div>
                         <a
-                          href="mailto:info@trite.com"
+                          href="mailto:info@trite.tech"
                           className="inline-flex items-center gap-3 bg-black text-white text-sm font-bold px-6 py-4 rounded-lg hover:bg-[#22c55e] transition-colors duration-300 self-start"
                         >
                           <Mail className="w-4 h-4" />
-                          info@trite.com
+                          info@trite.tech
                         </a>
                       </div>
 
@@ -433,51 +433,7 @@ export default function PressPage() {
                       </div>
                     </div>
 
-                    {/* ── Media Resources ── */}
-                    <div className="space-y-4 pt-4">
-                      <h3 className="text-base font-extrabold text-black uppercase tracking-wide border-b border-slate-100 pb-3">Media Resources</h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                        {[
-                          {
-                            icon: ImageIcon,
-                            title: "Brand Assets",
-                            description: "Official Trite brand guidelines including colour palettes, typography, and usage rules.",
-                            action: "View",
-                            href: "/press/brand-assets",
-                          },
-                          {
-                            icon: Package,
-                            title: "Logos",
-                            description: "Full-colour, monochrome, and reversed logo variants in PNG, SVG, and EPS formats.",
-                            action: "View",
-                            href: "/press/logos",
-                          },
-                          {
-                            icon: ImageIcon,
-                            title: "Product Images",
-                            description: "Press-ready screenshots, product mockups, and interface imagery for editorial use.",
-                            action: "Browse Gallery",
-                            href: "/press/product-images",
-                          },
-                        ].map((resource, index) => {
-                          const Icon = resource.icon;
-                          return (
-                            <div key={index} className="bg-white rounded-xl border border-slate-200/50 p-8 flex flex-col gap-6 hover:shadow-[0_8px_32px_rgba(0,0,0,0.04)] transition-all duration-300">
-                              <div className="w-12 h-12 rounded-xl bg-[#22c55e] flex items-center justify-center shadow-sm">
-                                <Icon className="w-5 h-5 text-white" />
-                              </div>
-                              <div className="space-y-2 flex-1">
-                                <h4 className="text-base font-bold text-black">{resource.title}</h4>
-                                <p className="text-sm text-slate-500 font-medium leading-relaxed">{resource.description}</p>
-                              </div>
-                              <Link href={resource.href} className="inline-flex items-center justify-center gap-2 text-xs font-bold text-white bg-[#22c55e] hover:bg-[#16a34a] transition-all duration-300 py-3 px-6 rounded-lg w-full text-center">
-                                {resource.action} <ArrowRight className="w-3.5 h-3.5" />
-                              </Link>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
+
 
                   </section>
                 )}

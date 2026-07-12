@@ -162,7 +162,7 @@ export default function TermsPage() {
                 <h3 className="text-xl font-bold text-black">For questions regarding these Terms</h3>
                 <div className="flex items-center gap-3 text-lg">
                   <Mail className="h-6 w-6 text-[#22c55e]" />
-                  <a href="mailto:info@trite.com" className="text-slate-700 font-medium hover:text-[#22c55e] transition-colors">info@trite.com</a>
+                  <a href="mailto:info@trite.tech" className="text-slate-700 font-medium hover:text-[#22c55e] transition-colors">info@trite.tech</a>
                 </div>
               </div>
             </div>

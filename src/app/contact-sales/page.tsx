@@ -153,7 +153,7 @@ export default function ContactSalesPage() {
             </button>
             
             <p className="text-center text-xs text-gray-600 mt-4 font-medium">
-              Prefer email? Write to us at <a href="mailto:sales@trite.com" className="font-bold text-black hover:text-[#22c55e] transition-colors">sales@trite.com</a>
+              Prefer email? Write to us at <a href="mailto:sales@trite.tech" className="font-bold text-black hover:text-[#22c55e] transition-colors">sales@trite.tech</a>
             </p>
           </form>
         </div>
