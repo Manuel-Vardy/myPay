@@ -9,16 +9,6 @@ import BackButton from "./BackButton";
 import ShareButtons from "./ShareButtons";
 import { allArticles } from "@/lib/newsData";
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-/** Resolve an absolute URL for OG images regardless of environment */
-function absoluteUrl(path: string): string {
-  const base =
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
-  return `${base.replace(/\/$/, "")}${path}`;
-}
-
 // ── Static params (optional but recommended for SSG) ─────────────────────────
 
 export async function generateStaticParams() {
@@ -42,21 +32,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  const imageUrl = absoluteUrl(article.image);
-  const pageUrl = absoluteUrl(`/press/${article.id}`);
-
   return {
     title: `${article.title} | Trite`,
     description: article.description,
     openGraph: {
       type: "article",
-      url: pageUrl,
+      url: `/press/${article.id}`,
       title: article.title,
       description: article.description,
       siteName: "Trite",
       images: [
         {
-          url: imageUrl,
+          url: article.image,
           width: 1200,
           height: 630,
           alt: article.title,
@@ -67,7 +54,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       card: "summary_large_image",
       title: article.title,
       description: article.description,
-      images: [imageUrl],
+      images: [article.image],
     },
   };
 }
