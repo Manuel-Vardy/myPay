@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import BackButton from "./BackButton";
 import ShareButtons from "./ShareButtons";
 import { allArticles } from "@/lib/newsData";
+import { absoluteUrl } from "@/lib/site";
 
 // ── Static params (optional but recommended for SSG) ─────────────────────────
 
@@ -32,21 +33,31 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
+  const pageUrl = absoluteUrl(`/press/${article.id}`);
+  const imageUrl = absoluteUrl(article.image);
+
   return {
     title: `${article.title} | Trite`,
     description: article.description,
+    alternates: {
+      canonical: pageUrl,
+    },
     openGraph: {
       type: "article",
-      url: `/press/${article.id}`,
+      url: pageUrl,
       title: article.title,
       description: article.description,
       siteName: "Trite",
+      locale: "en_US",
+      publishedTime: new Date(article.date).toISOString(),
       images: [
         {
-          url: article.image,
+          url: imageUrl,
+          secureUrl: imageUrl,
           width: 1200,
           height: 630,
           alt: article.title,
+          type: article.image.endsWith(".png") ? "image/png" : "image/jpeg",
         },
       ],
     },
@@ -54,7 +65,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       card: "summary_large_image",
       title: article.title,
       description: article.description,
-      images: [article.image],
+      images: [imageUrl],
     },
   };
 }

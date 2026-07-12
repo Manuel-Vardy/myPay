@@ -11,15 +11,8 @@ import {
   Terminal,
   ShieldCheck,
   Zap,
-  Smartphone,
-  CreditCard,
-  Landmark,
-  Coins,
-  Link2,
-  Scan,
   CheckCircle2,
   BookOpen,
-  ArrowRight,
   Server
 } from "lucide-react";
 
@@ -152,14 +145,14 @@ export default function DevelopersPage() {
         </section>
 
         {/* DEVELOPER RESOURCES */}
-        <section className="animate-on-scroll bg-white py-20 lg:py-28">
+        <section className="animate-on-scroll bg-[#22c55e] py-20 lg:py-28">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16 space-y-4">
-              <h2 className="animate-on-scroll stagger-1 text-3xl font-bold text-black">Developer Resources</h2>
-              <p className="animate-on-scroll stagger-2 text-sm font-bold text-[#22c55e] uppercase tracking-widest">Everything you need to build</p>
+              <h2 className="animate-on-scroll stagger-1 text-3xl font-bold text-white">Developer Resources</h2>
+              <p className="animate-on-scroll stagger-2 text-sm font-bold text-white/80 uppercase tracking-widest">Everything you need to build</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0">
               {[
                 {
                   icon: <Server className="h-8 w-8" />,
@@ -210,14 +203,20 @@ export default function DevelopersPage() {
                 <Link
                   key={item.title}
                   href="/api-docs"
-                  className="animate-on-scroll group bg-white rounded-[1.5rem] p-8 border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                  className={`animate-on-scroll group flex items-start gap-6 py-8 transition-all duration-300 hover:translate-x-2 ${
+                    index < 6 ? 'border-b border-white/30' : ''
+                  } ${
+                    index % 3 !== 2 ? 'border-r border-white/30' : ''
+                  } px-4`}
                   style={{ animationDelay: `${0.1 * (index + 2)}s` }}
                 >
-                  <div className="h-14 w-14 rounded-2xl bg-[#22c55e]/10 flex items-center justify-center text-[#22c55e] mb-6 transition-colors duration-300 group-hover:bg-[#22c55e] group-hover:text-white">
+                  <div className="h-14 w-14 rounded-2xl bg-white/10 flex items-center justify-center text-white shrink-0 transition-colors duration-300 group-hover:bg-white group-hover:text-[#22c55e]">
                     {item.icon}
                   </div>
-                  <h3 className="text-xl font-bold text-black mb-2">{item.title}</h3>
-                  <p className="text-sm text-slate-600 leading-relaxed">{item.description}</p>
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-2">{item.title}</h3>
+                    <p className="text-sm text-white/80 leading-relaxed">{item.description}</p>
+                  </div>
                 </Link>
               ))}
             </div>
@@ -238,27 +237,133 @@ export default function DevelopersPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[
-                { icon: <Smartphone className="h-7 w-7" />, title: "Mobile Money" },
-                { icon: <CreditCard className="h-7 w-7" />, title: "Cards" },
-                { icon: <Landmark className="h-7 w-7" />, title: "Bank Transfers" },
-                { icon: <Coins className="h-7 w-7" />, title: "Stablecoin Payments" },
-                { icon: <Link2 className="h-7 w-7" />, title: "Payment Links" },
-                { icon: <Scan className="h-7 w-7" />, title: "QR Payments" }
-              ].map((item, index) => (
-                <div
-                  key={item.title}
-                  className="animate-on-scroll flex items-center gap-4 p-6 bg-white rounded-[1.5rem] border border-slate-200 shadow-sm transition-all duration-300 hover:shadow-md group"
-                  style={{ animationDelay: `${0.1 * (index + 2)}s` }}
-                >
-                  <div className="h-12 w-12 rounded-xl bg-[#22c55e]/10 flex items-center justify-center text-[#22c55e] transition-colors duration-300 group-hover:bg-[#22c55e] group-hover:text-white">
-                    {item.icon}
+              {/* Mobile Money */}
+              <div
+                className="animate-on-scroll flex flex-col items-center justify-between gap-4 p-8 bg-white rounded-[1.5rem] border border-slate-200 transition-all duration-300 min-h-[250px]"
+                style={{ animationDelay: '0.2s' }}
+              >
+                <div className="flex items-center gap-3 h-32">
+                  <div className="h-16 w-16 rounded-xl bg-white flex items-center justify-center shrink-0">
+                    <Image
+                      src="/images/mtn-logo.png"
+                      alt="MTN"
+                      width={50}
+                      height={50}
+                      className="max-w-full max-h-full object-contain"
+                    />
                   </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-black">{item.title}</h3>
+                  <div className="h-16 w-16 rounded-xl bg-white flex items-center justify-center shrink-0">
+                    <Image
+                      src="/images/AirtelTigo-logo.png"
+                      alt="AirtelTigo"
+                      width={50}
+                      height={50}
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  </div>
+                  <div className="h-16 w-16 rounded-xl bg-white flex items-center justify-center shrink-0">
+                    <Image
+                      src="/images/Telecel-logo.png"
+                      alt="Telecel"
+                      width={70}
+                      height={70}
+                      className="max-w-full max-h-full object-contain"
+                    />
                   </div>
                 </div>
-              ))}
+                <h3 className="text-lg font-bold text-black">Mobile Money</h3>
+              </div>
+              {/* Cards */}
+              <div
+                className="animate-on-scroll flex flex-col items-center justify-between gap-4 p-8 bg-white rounded-[1.5rem] border border-slate-200 transition-all duration-300 min-h-[250px]"
+                style={{ animationDelay: '0.3s' }}
+              >
+                <div className="flex items-center gap-3 h-32">
+                  <div className="h-16 w-16 rounded-xl bg-white flex items-center justify-center shrink-0">
+                    <Image
+                      src="/images/mastercard-logo.png"
+                      alt="Mastercard"
+                      width={50}
+                      height={50}
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  </div>
+                  <div className="h-16 w-16 rounded-xl bg-white flex items-center justify-center shrink-0">
+                    <Image
+                      src="/images/visa-logo.png"
+                      alt="Visa"
+                      width={50}
+                      height={50}
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  </div>
+                </div>
+                <h3 className="text-lg font-bold text-black">Cards</h3>
+              </div>
+              {/* Bank Transfers */}
+              <div
+                className="animate-on-scroll flex flex-col items-center justify-between gap-4 p-8 bg-white rounded-[1.5rem] border border-slate-200 transition-all duration-300 min-h-[250px]"
+                style={{ animationDelay: '0.4s' }}
+              >
+                <div className="h-32 w-32 rounded-2xl bg-white flex items-center justify-center shrink-0">
+                  <Image
+                    src="/images/bank-transfer-icon.png"
+                    alt="Bank Transfers"
+                    width={100}
+                    height={100}
+                    className="max-w-full max-h-full object-contain"
+                  />
+                </div>
+                <h3 className="text-lg font-bold text-black">Bank Transfers</h3>
+              </div>
+              {/* Stablecoin Payments */}
+              <div
+                className="animate-on-scroll flex flex-col items-center justify-between gap-4 p-8 bg-white rounded-[1.5rem] border border-slate-200 transition-all duration-300 min-h-[250px]"
+                style={{ animationDelay: '0.5s' }}
+              >
+                <div className="h-32 w-32 rounded-2xl bg-white flex items-center justify-center shrink-0">
+                  <Image
+                    src="/images/stablecoin-logo1.png"
+                    alt="Stablecoin Payments"
+                    width={100}
+                    height={100}
+                    className="max-w-full max-h-full object-contain"
+                  />
+                </div>
+                <h3 className="text-lg font-bold text-black">Stablecoin Payments</h3>
+              </div>
+              {/* Payment Links */}
+              <div
+                className="animate-on-scroll flex flex-col items-center justify-between gap-4 p-8 bg-white rounded-[1.5rem] border border-slate-200 transition-all duration-300 min-h-[250px]"
+                style={{ animationDelay: '0.6s' }}
+              >
+                <div className="h-32 w-32 rounded-2xl bg-white flex items-center justify-center shrink-0">
+                  <Image
+                    src="/images/payment-link.png"
+                    alt="Payment Links"
+                    width={100}
+                    height={100}
+                    className="max-w-full max-h-full object-contain"
+                  />
+                </div>
+                <h3 className="text-lg font-bold text-black">Payment Links</h3>
+              </div>
+              {/* QR Payments */}
+              <div
+                className="animate-on-scroll flex flex-col items-center justify-between gap-4 p-8 bg-white rounded-[1.5rem] border border-slate-200 transition-all duration-300 min-h-[250px]"
+                style={{ animationDelay: '0.7s' }}
+              >
+                <div className="h-32 w-32 rounded-2xl bg-white flex items-center justify-center shrink-0">
+                  <Image
+                    src="/images/qr-mockup.png"
+                    alt="QR Payments"
+                    width={100}
+                    height={100}
+                    className="max-w-full max-h-full object-contain"
+                  />
+                </div>
+                <h3 className="text-lg font-bold text-black">QR Payments</h3>
+              </div>
             </div>
           </div>
         </section>
@@ -295,43 +400,17 @@ export default function DevelopersPage() {
                     </div>
                   </div>
                 ))}
-
-                <div className="animate-on-scroll pt-6" style={{ animationDelay: '0.7s' }}>
-                  <Link
-                    href="/get-started"
-                    className="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-[#22c55e] text-white text-base font-bold hover:bg-[#16a34a] transition-colors shadow-lg shadow-[#22c55e]/20"
-                  >
-                    Build once. Scale everywhere.
-                    <ArrowRight className="h-5 w-5" />
-                  </Link>
-                </div>
               </div>
-
               {/* Right: Image */}
-              <div className="animate-on-scroll lg:col-span-5 relative h-[400px] sm:h-[500px] flex items-center justify-center" style={{ animationDelay: '0.4s' }}>
-                <div className="bg-slate-900 rounded-[2rem] p-6 w-full h-full shadow-2xl">
-                  <div className="bg-slate-800 rounded-lg p-4 h-full flex items-center justify-center">
-                    <div className="text-center space-y-4">
-                      <div className="flex items-center justify-center gap-2 mb-8">
-                        <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                        <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                      </div>
-                      <pre className="text-left text-sm text-green-400 font-mono">
-{`// Initialize Trite
-const trite = new Trite({
-  apiKey: process.env.TRITE_KEY
-});
-
-// Create payment
-const payment = await trite.payments.create({
-  amount: 1000,
-  currency: 'USD',
-  customer: 'cus_123'
-});`}
-                      </pre>
-                    </div>
-                  </div>
+              <div className="animate-on-scroll lg:col-span-5 relative" style={{ animationDelay: '0.4s' }}>
+                <div className="relative rounded-[2rem] overflow-hidden">
+                  <Image
+                    src="/images/girl-in-office.jpg"
+                    alt="Girl in office"
+                    width={500}
+                    height={600}
+                    className="w-full h-auto object-cover"
+                  />
                 </div>
               </div>
             </div>

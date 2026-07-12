@@ -402,9 +402,7 @@ export default function Home() {
 
                 {/* Bank Transfers */}
                 <div className="flex flex-col items-center gap-1">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100">
-                    <Building2 className="h-6 w-6 text-orange-500" />
-                  </div>
+                  <img src="/images/bank-transfer-icon.png" alt="Bank Transfers" className="h-16 w-auto object-contain" />
                   <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Bank Transfers</span>
                 </div>
               </div>
@@ -431,9 +429,7 @@ export default function Home() {
                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Stablecoins</span>
                   </div>
                   <div className="flex flex-col items-center gap-1">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100">
-                      <Building2 className="h-6 w-6 text-orange-500" />
-                    </div>
+                    <img src="/images/bank-transfer-icon.png" alt="Bank Transfers" className="h-16 w-auto object-contain" />
                     <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Bank Transfers</span>
                   </div>
                 </div>
