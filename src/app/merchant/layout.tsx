@@ -136,29 +136,13 @@ export default function MerchantLayout({ children }: { children: React.ReactNode
   const [profile, setProfile] = useState<{ first_name?: string; last_name?: string; merchant?: { business_name: string; } } | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [notifications, setNotifications] = useState([
-    {
-      id: "1",
-      title: "New Payment Received",
-      message: "Received 150.00 USDT from customer via WalletConnect.",
-      time: "5m ago",
-      read: false,
-    },
-    {
-      id: "2",
-      title: "Settlement Processed",
-      message: "Settlement #SET-901 has been sent to your bank account.",
-      time: "2h ago",
-      read: false,
-    },
-    {
-      id: "3",
-      title: "KYC Tier Upgraded",
-      message: "Congratulations! Your account has been upgraded to Premium tier.",
-      time: "1d ago",
-      read: true,
-    },
-  ]);
+  const [notifications, setNotifications] = useState<{
+    id: string;
+    title: string;
+    message: string;
+    time: string;
+    read: boolean;
+  }[]>([]);
 
   useEffect(() => {
     fetch("/api/auth/me")

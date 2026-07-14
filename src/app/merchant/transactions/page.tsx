@@ -28,7 +28,59 @@ export default function TransactionsPage() {
   const [statusFilter, setStatusFilter] = useState<string | "all" | "success" | "pending" | "failed">("all");
   const [page, setPage] = useState(1);
   const [currencyFilter, setCurrencyFilter] = useState<"all" | "fiat" | "stablecoin" | "crypto">("all");
-  const [dateRange, setDateRange] = useState<"7" | "30" | "90" | "all">("30");
+  
+  // Dynamic Calendar Date Filter States
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [dateFrom, setDateFrom] = useState<string>(() => new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+  const [dateTo, setDateTo] = useState<string>("");
+  const [datePresetLabel, setDatePresetLabel] = useState<string>("Last 30 days");
+  const [startDateInput, setStartDateInput] = useState("");
+  const [endDateInput, setEndDateInput] = useState("");
+
+  const presets = [
+    { label: "Last 5 minutes", value: "5m", durationMs: 5 * 60 * 1000 },
+    { label: "Last 15 minutes", value: "15m", durationMs: 15 * 60 * 1000 },
+    { label: "Last 30 minutes", value: "30m", durationMs: 30 * 60 * 1000 },
+    { label: "Last 1 hour", value: "1h", durationMs: 60 * 60 * 1000 },
+    { label: "Last 12 hours", value: "12h", durationMs: 12 * 60 * 60 * 1000 },
+    { label: "Last 24 hours", value: "24h", durationMs: 24 * 60 * 60 * 1000 },
+    { label: "Last 7 days", value: "7d", durationMs: 7 * 24 * 60 * 60 * 1000 },
+    { label: "Last 30 days", value: "30d", durationMs: 30 * 24 * 60 * 60 * 1000 },
+    { label: "Last 90 days", value: "90d", durationMs: 90 * 24 * 60 * 60 * 1000 },
+    { label: "All time", value: "all", durationMs: 0 },
+  ];
+
+  const handlePresetClick = (preset: typeof presets[0]) => {
+    if (preset.value === "all") {
+      setDateFrom("");
+      setDateTo("");
+    } else {
+      setDateFrom(new Date(Date.now() - preset.durationMs).toISOString());
+      setDateTo("");
+    }
+    setDatePresetLabel(preset.label);
+    setCalendarOpen(false);
+    setPage(1);
+  };
+
+  const handleApplyCustom = () => {
+    if (!startDateInput) return;
+    const fromStr = new Date(startDateInput + "T00:00:00.000Z").toISOString();
+    const toDate = endDateInput ? new Date(endDateInput + "T23:59:59.999Z") : new Date();
+    const toStr = toDate.toISOString();
+
+    setDateFrom(fromStr);
+    setDateTo(toStr);
+    
+    const formattedStart = new Date(startDateInput).toLocaleDateString("en-GH", { month: "short", day: "numeric", year: "numeric" });
+    const formattedEnd = endDateInput 
+      ? new Date(endDateInput).toLocaleDateString("en-GH", { month: "short", day: "numeric", year: "numeric" })
+      : "Now";
+    
+    setDatePresetLabel(`${formattedStart} - ${formattedEnd}`);
+    setCalendarOpen(false);
+    setPage(1);
+  };
 
   // Build clean params — exclude empty/default values to match how dashboard fetches
   const fetchParams = useMemo(() => {
@@ -39,9 +91,10 @@ export default function TransactionsPage() {
     if (query) p.search = query;
     if (statusFilter !== "all") p.status = statusFilter.toUpperCase();
     if (currencyFilter !== "all") p.currency = currencyFilter.toUpperCase();
-    if (dateRange !== "all") p.dateRange = dateRange;
+    if (dateFrom) p.date_from = dateFrom;
+    if (dateTo) p.date_to = dateTo;
     return p;
-  }, [query, statusFilter, currencyFilter, page, dateRange]);
+  }, [query, statusFilter, currencyFilter, page, dateFrom, dateTo]);
 
   const { data: fetchRes, loading } = useMerchantFetch<{ 
     data: APITransaction[]; 
@@ -200,16 +253,151 @@ export default function TransactionsPage() {
                   <option value="pending">Pending</option>
                   <option value="failed">Failed</option>
                 </select>
-                <select
-                    value={dateRange}
-                    onChange={(e) => setDateRange(e.target.value as any)}
-                    className="rounded-lg border border-black/10 px-3 py-1.5 text-sm text-gray-900 outline-none focus:border-[color:var(--trite-lime-strong)]"
-                >
-                  <option value="7">Last 7 days</option>
-                  <option value="30">Last 30 days</option>
-                  <option value="90">Last 90 days</option>
-                  <option value="all">All time</option>
-                </select>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setCalendarOpen(!calendarOpen)}
+                    className="flex items-center gap-2 rounded-lg border border-black/10 px-3 py-1.5 text-sm text-gray-900 bg-white outline-none hover:bg-black/[0.02] focus:border-[color:var(--trite-lime-strong)] transition-all cursor-pointer"
+                  >
+                    <CalendarIcon className="h-4 w-4 text-[color:var(--trite-muted)]" />
+                    <span>{datePresetLabel}</span>
+                    <svg className="h-3 w-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {calendarOpen && (
+                    <>
+                      {/* Backdrop */}
+                      <div className="fixed inset-0 z-40" onClick={() => setCalendarOpen(false)} />
+
+                      {/* Mobile: bottom sheet — fixed, full width, anchored to bottom */}
+                      <div className="fixed inset-x-0 bottom-0 z-50 flex flex-col gap-0 rounded-t-2xl border-t border-black/10 bg-white shadow-2xl sm:hidden">
+                        {/* Handle */}
+                        <div className="flex justify-center pt-3 pb-1">
+                          <div className="h-1 w-10 rounded-full bg-black/10" />
+                        </div>
+                        <div className="px-5 pb-2 pt-1 flex items-center justify-between">
+                          <p className="text-sm font-bold text-[color:var(--trite-ink)]">Filter by Date</p>
+                          <button type="button" onClick={() => setCalendarOpen(false)} className="text-xs font-semibold text-[color:var(--trite-muted)] hover:text-[color:var(--trite-ink)] transition-colors">Done</button>
+                        </div>
+
+                        {/* Presets: single-column list */}
+                        <div className="px-5 pb-3">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-[color:var(--trite-muted)] mb-2">Presets</p>
+                          <div className="flex flex-col gap-1">
+                            {presets.map((preset) => (
+                              <button
+                                key={preset.value}
+                                type="button"
+                                onClick={() => handlePresetClick(preset)}
+                                className={`text-left rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
+                                  datePresetLabel === preset.label
+                                    ? "bg-[color:var(--trite-ink)] text-white"
+                                    : "text-gray-700 hover:bg-black/[0.03]"
+                                }`}
+                              >
+                                {preset.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Custom range */}
+                        <div className="border-t border-black/5 px-5 py-4">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-[color:var(--trite-muted)] mb-3">Custom Range</p>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-[10px] font-bold text-gray-600 uppercase tracking-wide mb-1" htmlFor="start-date-input-m">Start Date</label>
+                              <input
+                                id="start-date-input-m"
+                                type="date"
+                                value={startDateInput}
+                                onChange={(e) => setStartDateInput(e.target.value)}
+                                className="w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 outline-none focus:border-[color:var(--trite-lime-strong)]"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-gray-600 uppercase tracking-wide mb-1" htmlFor="end-date-input-m">End Date</label>
+                              <input
+                                id="end-date-input-m"
+                                type="date"
+                                value={endDateInput}
+                                onChange={(e) => setEndDateInput(e.target.value)}
+                                className="w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 outline-none focus:border-[color:var(--trite-lime-strong)]"
+                              />
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleApplyCustom}
+                            className="mt-3 w-full inline-flex items-center justify-center rounded-xl bg-[color:var(--trite-ink)] px-4 py-3 text-sm font-bold text-white hover:bg-black transition-all active:scale-[0.98]"
+                          >
+                            Apply Range
+                          </button>
+                        </div>
+                        {/* iOS safe-area spacer */}
+                        <div className="h-6" />
+                      </div>
+
+                      {/* Desktop/tablet: absolute dropdown */}
+                      <div className="hidden sm:flex absolute left-0 mt-2 z-50 w-[460px] rounded-2xl border border-black/10 bg-slate-50 p-5 shadow-xl ring-1 ring-black/5 flex-row gap-4">
+                        <div className="w-[155px] flex flex-col gap-1 border-r border-black/5 pr-3">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-[color:var(--trite-muted)] mb-2">Presets</p>
+                          <div className="flex flex-col gap-1 max-h-[220px] overflow-y-auto">
+                            {presets.map((preset) => (
+                              <button
+                                key={preset.value}
+                                type="button"
+                                onClick={() => handlePresetClick(preset)}
+                                className={`text-left rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all ${
+                                  datePresetLabel === preset.label
+                                    ? "bg-[color:var(--trite-ink)] text-white"
+                                    : "text-gray-700 hover:bg-black/[0.03]"
+                                }`}
+                              >
+                                {preset.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="flex-1 flex flex-col">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-[color:var(--trite-muted)] mb-3">Custom Range</p>
+                          <div className="space-y-3">
+                            <div>
+                              <label className="block text-[10px] font-bold text-gray-600 uppercase tracking-wide mb-1" htmlFor="start-date-input">Start Date</label>
+                              <input
+                                id="start-date-input"
+                                type="date"
+                                value={startDateInput}
+                                onChange={(e) => setStartDateInput(e.target.value)}
+                                className="w-full rounded-lg border border-black/10 px-3 py-1.5 text-xs text-gray-900 outline-none focus:border-[color:var(--trite-lime-strong)]"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-gray-600 uppercase tracking-wide mb-1" htmlFor="end-date-input">End Date</label>
+                              <input
+                                id="end-date-input"
+                                type="date"
+                                value={endDateInput}
+                                onChange={(e) => setEndDateInput(e.target.value)}
+                                className="w-full rounded-lg border border-black/10 px-3 py-1.5 text-xs text-gray-900 outline-none focus:border-[color:var(--trite-lime-strong)]"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={handleApplyCustom}
+                              className="w-full mt-2 inline-flex items-center justify-center rounded-lg bg-[color:var(--trite-ink)] px-4 py-2 text-xs font-bold text-white hover:bg-black transition-all active:scale-[0.98]"
+                            >
+                              Apply Custom Range
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
               <div className="mb-4 flex flex-wrap gap-2">
                 <FilterChip
@@ -618,6 +806,17 @@ function CoinIcon({ className }: { className?: string }) {
       <ellipse cx="12" cy="5" rx="9" ry="3" />
       <path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5" />
       <path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3" />
+    </svg>
+  );
+}
+
+function CalendarIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
     </svg>
   );
 }

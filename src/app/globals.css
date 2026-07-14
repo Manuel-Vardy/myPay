@@ -295,5 +295,12 @@ select {
   border-color: rgba(255, 255, 255, 0.15) !important;
 }
 
+/* Hide default Internet Explorer/Edge eye icon on password input fields to prevent duplicate reveal icons */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none !important;
+}
+
+
 
 

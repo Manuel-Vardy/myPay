@@ -69,22 +69,48 @@ export default function DashboardPage() {
   const [convertAmount, setConvertAmount] = useState("");
   const [convertFrom, setConvertFrom] = useState<"USDC" | "USDT">("USDC");
 
+  const getGreetingData = () => {
+    const hour = new Date().getHours();
+    const name = dashData?.merchant?.business_name || "Merchant";
+    if (hour >= 5 && hour < 12) {
+      return {
+        title: `Good morning, ${name}!`,
+        description: "Hope your morning is off to a great start. We're ready to help you power secure global payments today.",
+      };
+    } else if (hour >= 12 && hour < 18) {
+      return {
+        title: `Good afternoon, ${name}!`,
+        description: "Hope your day is going wonderfully. Your Trite portal is running smoothly with excellent transaction success rates.",
+      };
+    } else if (hour >= 18 && hour < 22) {
+      return {
+        title: `Good evening, ${name}!`,
+        description: "We hope you're having a pleasant and relaxing finish to your day. Here's a quick look at today's achievements.",
+      };
+    } else {
+      return {
+        title: `Working late, ${name}?`,
+        description: "We're up with you. Your global payment infrastructure is running perfectly and secure in the background.",
+      };
+    }
+  };
+
   const { data: dashData } = useMerchantFetch<DashboardData>("/api/merchant/dashboard");
   const { data: txData } = useMerchantFetch<{ data: TxRow[] }>("/api/merchant/transactions", { per_page: "5" });
   const { data: settlementData } = useMerchantFetch<{ data: SettlementRow[] }>("/api/merchant/settlements");
 
   const transactions = txData?.data ?? [];
+  const greeting = getGreetingData();
 
   return (
     <>
         <div className="px-4 py-5 sm:p-6">
           <div className="mb-8">
             <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--trite-ink)]">
-              Welcome back, Merchant.
+              {greeting.title}
             </h1>
             <p className="mt-2 text-sm text-[color:var(--trite-muted)]">
-              Your institutional portal is ready. Global markets are stable, and your
-              transaction success rate is currently exceeding the 98th percentile.
+              {greeting.description}
             </p>
           </div>
 

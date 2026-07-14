@@ -167,13 +167,42 @@ export default function ContactPage() {
       <Header transparent={true} darkLogo={true} />
 
       <main className="flex-grow pb-0">
-        {/* HERO WRAP (like Careers page) */}
-        <section className="relative -mt-28 sm:-mt-32 pt-56 sm:pt-64 pb-12 lg:pb-20 overflow-hidden bg-white border-b border-black/[0.04]">
-          {/* Subtle Grid Lines & Background Blur */}
-          <div className="absolute inset-0 pointer-events-none z-0">
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30" />
-            <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#22c55e]/5 rounded-full blur-[80px]" />
+        {/* ABOUT US SECTION */}
+        <section className="relative -mt-28 sm:-mt-32 pt-56 sm:pt-64 pb-16 lg:pb-24 overflow-hidden bg-[#fdfcf6] border-b border-black/[0.04]">
+          
+          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
+              {/* Left: About Us Heading & Intro */}
+              <div className="space-y-6">
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-[0.2em]">
+                  About Us
+                </p>
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-black leading-tight">
+                  Building Africa’s Payment Infrastructure Layer
+                </h2>
+                <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
+                  Trite was founded to solve a fundamental problem: Africa’s payment systems are fragmented, expensive and not built for digital scale.
+                </p>
+              </div>
+
+              {/* Right: About Us Content */}
+              <div className="space-y-8">
+                <p className="text-base sm:text-lg text-gray-700 leading-relaxed">
+                  We are building a unified financial infrastructure that connects traditional payments and digital assets - securely and compliantly. Our mission is to empower businesses across Africa with frictionless, borderless payment solutions.
+                </p>
+                <p className="text-base sm:text-lg text-gray-700 leading-relaxed">
+                  Trite is a next-generation Payment Service Provider (PSP) designed to bridge traditional finance and digital assets. We enable businesses to accept mobile money, cards, bank transfers, and stablecoins - all through a single unified platform.
+                </p>
+                <p className="text-base sm:text-lg text-gray-700 leading-relaxed">
+                  Whether you’re a startup, enterprise, marketplace, or fintech, Trite provides secure, compliant, and scalable payment infrastructure across Africa. We are the infrastructure layer for modern African commerce.
+                </p>
+              </div>
+            </div>
           </div>
+        </section>
+
+        {/* HERO WRAP (like Careers page) */}
+        <section className="relative pt-16 pb-12 lg:pb-20 overflow-hidden bg-white border-b border-black/[0.04]">
           
           {/* Hero Content */}
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -218,9 +247,8 @@ export default function ContactPage() {
                 </p>
               </div>
 
-              <div className="space-y-8">
-                <div className="space-y-6">
-                  <div className="flex items-start gap-5">
+              <div className="divide-y divide-black/10 border-t border-black/10">
+                  <div className="flex items-start gap-5 py-5">
                     <div className="shrink-0 pt-1">
                       <Mail className="h-6 w-6 text-black" />
                     </div>
@@ -230,7 +258,7 @@ export default function ContactPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-5">
+                  <div className="flex items-start gap-5 py-5">
                     <div className="shrink-0 pt-1">
                       <MapPin className="h-6 w-6 text-black" />
                     </div>
@@ -243,7 +271,7 @@ export default function ContactPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-5">
+                  <div className="flex items-start gap-5 py-5">
                     <div className="shrink-0 pt-1">
                       <Mail className="h-6 w-6 text-black" />
                     </div>
@@ -258,7 +286,7 @@ export default function ContactPage() {
                     </div>
                   </div>
                 </div>
-              </div>
+
 
               {/* CONNECT SECTION - SOCIAL MEDIA */}
               <div className="space-y-6">
@@ -315,7 +343,7 @@ export default function ContactPage() {
                       href={social.href}
                       target={social.href !== "#" ? "_blank" : undefined}
                       rel={social.href !== "#" ? "noopener noreferrer" : undefined}
-                      className="h-12 w-12 bg-[#22c55e] text-white flex items-center justify-center hover:bg-[#16a34a] transition-all duration-300"
+                      className="h-12 w-12 bg-white border border-black/10 text-black flex items-center justify-center hover:bg-[#22c55e] hover:text-white hover:border-[#22c55e] transition-all duration-300 rounded-xl"
                       aria-label={social.label}
                     >
                       {social.icon}
@@ -328,7 +356,7 @@ export default function ContactPage() {
             {/* Right Side: Contact Form */}
             <div className="pt-8 lg:pt-12">
               {formState === "success" ? (
-                <div className="bg-gray-50 p-8 sm:p-12 text-center flex flex-col items-center justify-center min-h-[500px] border border-black/[0.03]">
+                <div className="bg-gray-50 p-8 sm:p-12 text-center flex flex-col items-center justify-center min-h-[500px] border border-black/[0.03] rounded-[2rem]">
                   <div className="h-20 w-20 bg-[#22c55e]/10 rounded-full flex items-center justify-center mb-6">
                     <CheckCircle2 className="h-10 w-10 text-[#22c55e]" />
                   </div>
@@ -338,7 +366,7 @@ export default function ContactPage() {
                   </p>
                   <button 
                     onClick={() => setFormState("idle")}
-                    className="px-8 py-4 bg-[#22c55e] text-white font-bold hover:bg-[#16a34a] transition-all"
+                    className="px-8 py-4 bg-[#22c55e] text-white font-bold hover:bg-[#16a34a] transition-all rounded-full"
                   >
                     Send another message
                   </button>
@@ -351,7 +379,7 @@ export default function ContactPage() {
                         required
                         type="text"
                         id="first-name"
-                        className="w-full bg-white border border-gray-300 px-4 py-3 text-black font-medium focus:outline-none focus:border-[#22c55e] transition-all"
+                        className="w-full bg-white border border-gray-300 px-4 py-3 text-black font-medium focus:outline-none focus:border-[#22c55e] transition-all rounded-2xl"
                         placeholder="First Name (*)"
                       />
                     </div>
@@ -360,7 +388,7 @@ export default function ContactPage() {
                         required
                         type="text"
                         id="last-name"
-                        className="w-full bg-white border border-gray-300 px-4 py-3 text-black font-medium focus:outline-none focus:border-[#22c55e] transition-all"
+                        className="w-full bg-white border border-gray-300 px-4 py-3 text-black font-medium focus:outline-none focus:border-[#22c55e] transition-all rounded-2xl"
                         placeholder="Last Name (*)"
                       />
                     </div>
@@ -371,7 +399,7 @@ export default function ContactPage() {
                       <input
                         type="tel"
                         id="telephone"
-                        className="w-full bg-white border border-gray-300 px-4 py-3 text-black font-medium focus:outline-none focus:border-[#22c55e] transition-all"
+                        className="w-full bg-white border border-gray-300 px-4 py-3 text-black font-medium focus:outline-none focus:border-[#22c55e] transition-all rounded-2xl"
                         placeholder="Telephone Number"
                       />
                     </div>
@@ -380,7 +408,7 @@ export default function ContactPage() {
                         required
                         type="email"
                         id="email"
-                        className="w-full bg-white border border-gray-300 px-4 py-3 text-black font-medium focus:outline-none focus:border-[#22c55e] transition-all"
+                        className="w-full bg-white border border-gray-300 px-4 py-3 text-black font-medium focus:outline-none focus:border-[#22c55e] transition-all rounded-2xl"
                         placeholder="Email (*)"
                       />
                     </div>
@@ -391,7 +419,7 @@ export default function ContactPage() {
                       required
                       id="message"
                       rows={6}
-                      className="w-full bg-white border border-gray-300 px-4 py-3 text-black font-medium focus:outline-none focus:border-[#22c55e] transition-all"
+                      className="w-full bg-white border border-gray-300 px-4 py-3 text-black font-medium focus:outline-none focus:border-[#22c55e] transition-all rounded-xl"
                       placeholder="Your Message"
                     ></textarea>
                   </div>
@@ -400,7 +428,7 @@ export default function ContactPage() {
                     <button
                       disabled={formState === "submitting"}
                       type="submit"
-                      className="px-10 py-4 bg-[#22c55e] text-white font-bold text-sm hover:bg-[#16a34a] transition-all flex items-center justify-center gap-3 disabled:opacity-70"
+                      className="px-10 py-4 bg-[#22c55e] text-white font-bold text-sm hover:bg-[#16a34a] transition-all flex items-center justify-center gap-3 disabled:opacity-70 rounded-full"
                     >
                       {formState === "submitting" ? (
                         <>

@@ -29,29 +29,79 @@ export default function AdminTransactionsPage() {
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [page, setPage] = useState(1);
 
+  // ── Calendar date-range picker ────────────────────────────────────────────
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [dateFrom, setDateFrom] = useState<string>(() =>
+    new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+  );
+  const [dateTo, setDateTo] = useState<string>("");
+  const [datePresetLabel, setDatePresetLabel] = useState<string>("Last 30 days");
+  const [startDateInput, setStartDateInput] = useState("");
+  const [endDateInput, setEndDateInput] = useState("");
+
+  const presets = [
+    { label: "Last 5 minutes",  value: "5m",  durationMs: 5  * 60 * 1000 },
+    { label: "Last 15 minutes", value: "15m", durationMs: 15 * 60 * 1000 },
+    { label: "Last 30 minutes", value: "30m", durationMs: 30 * 60 * 1000 },
+    { label: "Last 1 hour",     value: "1h",  durationMs: 60 * 60 * 1000 },
+    { label: "Last 12 hours",   value: "12h", durationMs: 12 * 60 * 60 * 1000 },
+    { label: "Last 24 hours",   value: "24h", durationMs: 24 * 60 * 60 * 1000 },
+    { label: "Last 7 days",     value: "7d",  durationMs: 7  * 24 * 60 * 60 * 1000 },
+    { label: "Last 30 days",    value: "30d", durationMs: 30 * 24 * 60 * 60 * 1000 },
+    { label: "Last 90 days",    value: "90d", durationMs: 90 * 24 * 60 * 60 * 1000 },
+    { label: "All time",        value: "all", durationMs: 0 },
+  ];
+
+  const handlePresetClick = (preset: (typeof presets)[0]) => {
+    if (preset.value === "all") {
+      setDateFrom("");
+      setDateTo("");
+    } else {
+      setDateFrom(new Date(Date.now() - preset.durationMs).toISOString());
+      setDateTo("");
+    }
+    setDatePresetLabel(preset.label);
+    setCalendarOpen(false);
+    setPage(1);
+  };
+
+  const handleApplyCustom = () => {
+    if (!startDateInput) return;
+    const fromStr = new Date(startDateInput + "T00:00:00.000Z").toISOString();
+    const toDate  = endDateInput ? new Date(endDateInput + "T23:59:59.999Z") : new Date();
+    const toStr   = toDate.toISOString();
+    setDateFrom(fromStr);
+    setDateTo(toStr);
+    const fmtStart = new Date(startDateInput).toLocaleDateString("en-GH", { month: "short", day: "numeric", year: "numeric" });
+    const fmtEnd   = endDateInput
+      ? new Date(endDateInput).toLocaleDateString("en-GH", { month: "short", day: "numeric", year: "numeric" })
+      : "Now";
+    setDatePresetLabel(`${fmtStart} – ${fmtEnd}`);
+    setCalendarOpen(false);
+    setPage(1);
+  };
+  // ─────────────────────────────────────────────────────────────────────────
+
   const params: Record<string, string> = { page: String(page), per_page: String(rowsPerPage) };
-  if (searchQuery) params.search = searchQuery;
-  if (statusFilter !== "All") params.status = statusFilter.toUpperCase();
+  if (searchQuery)           params.search   = searchQuery;
+  if (statusFilter !== "All") params.status  = statusFilter.toUpperCase();
+  if (dateFrom)              params.date_from = dateFrom;
+  if (dateTo)                params.date_to   = dateTo;
 
   const { data: txData } = useAdminFetch<{ data: ApiTx[]; pagination: { total: number; total_pages: number } }>("/api/admin/transactions", params);
   const transactions = txData?.data ?? [];
-  const pagination = txData?.pagination;
+  const pagination   = txData?.pagination;
 
   const formatAmount = (amount: number) =>
     `GH₵${amount.toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const getStatusColor = (status: TxStatus) => {
     switch (status) {
-      case "success":
-        return "bg-emerald-100 text-emerald-700 border-emerald-200";
-      case "pending":
-        return "bg-blue-100 text-blue-700 border-blue-200";
-      case "failed":
-        return "bg-red-100 text-red-700 border-red-200";
-      case "flagged":
-        return "bg-amber-100 text-amber-700 border-amber-200";
-      default:
-        return "bg-gray-100 text-gray-700";
+      case "success": return "bg-emerald-100 text-emerald-700 border-emerald-200";
+      case "pending": return "bg-blue-100 text-blue-700 border-blue-200";
+      case "failed":  return "bg-red-100 text-red-700 border-red-200";
+      case "flagged": return "bg-amber-100 text-amber-700 border-amber-200";
+      default:        return "bg-gray-100 text-gray-700";
     }
   };
 
@@ -59,7 +109,7 @@ export default function AdminTransactionsPage() {
     if (!flag) return "";
     if (flag === "HIGH" || flag === "SUSPICIOUS") return "text-red-500";
     if (flag === "MISMATCH") return "text-amber-500";
-    if (flag === "LARGE") return "text-blue-500";
+    if (flag === "LARGE")    return "text-blue-500";
     return "text-gray-500";
   };
 
@@ -74,9 +124,9 @@ export default function AdminTransactionsPage() {
         </p>
       </div>
 
-      {/* Filters */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {/* Search Transaction ID */}
+      {/* Filters — now 4 cols on desktop to accommodate the date picker */}
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Search */}
         <div className="rounded-2xl border border-black/5 bg-white p-5">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[color:var(--trite-muted)] mb-3">Search System</p>
           <div className="relative">
@@ -101,10 +151,10 @@ export default function AdminTransactionsPage() {
                 onClick={() => setStatusFilter(status)}
                 className={`rounded-lg px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all ${
                   statusFilter === status
-                    ? status === "All" ? "bg-[color:var(--trite-ink)] text-white" :
-                      status === "Success" ? "bg-emerald-600 text-white" :
-                      status === "Failed" ? "bg-red-500 text-white" :
-                      "bg-amber-500 text-white"
+                    ? status === "All"     ? "bg-[color:var(--trite-ink)] text-white"
+                    : status === "Success" ? "bg-emerald-600 text-white"
+                    : status === "Failed"  ? "bg-red-500 text-white"
+                    :                        "bg-amber-500 text-white"
                     : "bg-black/5 text-[color:var(--trite-muted)] hover:bg-black/10"
                 }`}
               >
@@ -114,8 +164,128 @@ export default function AdminTransactionsPage() {
           </div>
         </div>
 
+        {/* Date Range Picker */}
+        <div className="rounded-2xl border border-black/5 bg-white p-5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[color:var(--trite-muted)] mb-3">Date Range</p>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setCalendarOpen(!calendarOpen)}
+              className="flex h-11 w-full items-center gap-2 rounded-xl border border-black/10 bg-slate-50 px-3 text-sm text-[color:var(--trite-ink)] hover:bg-black/[0.02] focus:border-[color:var(--trite-lime-strong)] transition-all cursor-pointer"
+            >
+              <Calendar className="h-4 w-4 shrink-0 text-[color:var(--trite-muted)]" />
+              <span className="flex-1 truncate text-left">{datePresetLabel}</span>
+              <svg className="h-3 w-3 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {calendarOpen && (
+              <>
+                {/* Backdrop */}
+                <div className="fixed inset-0 z-40" onClick={() => setCalendarOpen(false)} />
+
+                {/* Mobile: bottom sheet */}
+                <div className="fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-2xl border-t border-black/10 bg-white shadow-2xl sm:hidden">
+                  <div className="flex justify-center pt-3 pb-1">
+                    <div className="h-1 w-10 rounded-full bg-black/10" />
+                  </div>
+                  <div className="px-5 pb-2 pt-1 flex items-center justify-between">
+                    <p className="text-sm font-bold text-[color:var(--trite-ink)]">Filter by Date</p>
+                    <button type="button" onClick={() => setCalendarOpen(false)} className="text-xs font-semibold text-[color:var(--trite-muted)] hover:text-[color:var(--trite-ink)] transition-colors">Done</button>
+                  </div>
+
+                  <div className="px-5 pb-3">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-[color:var(--trite-muted)] mb-2">Presets</p>
+                    <div className="flex flex-col gap-1">
+                      {presets.map((preset) => (
+                        <button
+                          key={preset.value}
+                          type="button"
+                          onClick={() => handlePresetClick(preset)}
+                          className={`text-left rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
+                            datePresetLabel === preset.label
+                              ? "bg-[color:var(--trite-ink)] text-white"
+                              : "text-gray-700 hover:bg-black/[0.03]"
+                          }`}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="border-t border-black/5 px-5 py-4">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-[color:var(--trite-muted)] mb-3">Custom Range</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label htmlFor="admin-start-date-m" className="block text-[10px] font-bold text-gray-600 uppercase tracking-wide mb-1">Start Date</label>
+                        <input id="admin-start-date-m" type="date" value={startDateInput} onChange={(e) => setStartDateInput(e.target.value)}
+                          className="w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 outline-none focus:border-[color:var(--trite-lime-strong)]" />
+                      </div>
+                      <div>
+                        <label htmlFor="admin-end-date-m" className="block text-[10px] font-bold text-gray-600 uppercase tracking-wide mb-1">End Date</label>
+                        <input id="admin-end-date-m" type="date" value={endDateInput} onChange={(e) => setEndDateInput(e.target.value)}
+                          className="w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 outline-none focus:border-[color:var(--trite-lime-strong)]" />
+                      </div>
+                    </div>
+                    <button type="button" onClick={handleApplyCustom}
+                      className="mt-3 w-full inline-flex items-center justify-center rounded-xl bg-[color:var(--trite-ink)] px-4 py-3 text-sm font-bold text-white hover:bg-black transition-all active:scale-[0.98]">
+                      Apply Range
+                    </button>
+                  </div>
+                  <div className="h-6" />
+                </div>
+
+                {/* Desktop: absolute dropdown */}
+                <div className="hidden sm:flex absolute left-0 mt-2 z-50 w-[460px] rounded-2xl border border-black/10 bg-slate-50 p-5 shadow-xl ring-1 ring-black/5 flex-row gap-4">
+                  <div className="w-[155px] flex flex-col gap-1 border-r border-black/5 pr-3">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-[color:var(--trite-muted)] mb-2">Presets</p>
+                    <div className="flex flex-col gap-1 max-h-[200px] overflow-y-auto">
+                      {presets.map((preset) => (
+                        <button
+                          key={preset.value}
+                          type="button"
+                          onClick={() => handlePresetClick(preset)}
+                          className={`text-left rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all ${
+                            datePresetLabel === preset.label
+                              ? "bg-[color:var(--trite-ink)] text-white"
+                              : "text-gray-700 hover:bg-black/[0.03]"
+                          }`}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex-1 flex flex-col">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-[color:var(--trite-muted)] mb-3">Custom Range</p>
+                    <div className="space-y-3">
+                      <div>
+                        <label htmlFor="admin-start-date" className="block text-[10px] font-bold text-gray-600 uppercase tracking-wide mb-1">Start Date</label>
+                        <input id="admin-start-date" type="date" value={startDateInput} onChange={(e) => setStartDateInput(e.target.value)}
+                          className="w-full rounded-lg border border-black/10 px-3 py-1.5 text-xs text-gray-900 outline-none focus:border-[color:var(--trite-lime-strong)]" />
+                      </div>
+                      <div>
+                        <label htmlFor="admin-end-date" className="block text-[10px] font-bold text-gray-600 uppercase tracking-wide mb-1">End Date</label>
+                        <input id="admin-end-date" type="date" value={endDateInput} onChange={(e) => setEndDateInput(e.target.value)}
+                          className="w-full rounded-lg border border-black/10 px-3 py-1.5 text-xs text-gray-900 outline-none focus:border-[color:var(--trite-lime-strong)]" />
+                      </div>
+                      <button type="button" onClick={handleApplyCustom}
+                        className="w-full mt-1 inline-flex items-center justify-center rounded-lg bg-[color:var(--trite-ink)] px-4 py-2 text-xs font-bold text-white hover:bg-black transition-all active:scale-[0.98]">
+                        Apply Range
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
         {/* Export */}
-        <div className="rounded-2xl border border-black/5 bg-white p-5 sm:col-span-2 lg:col-span-1">
+        <div className="rounded-2xl border border-black/5 bg-white p-5">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[color:var(--trite-muted)] mb-3">Institutional Export</p>
           <div className="flex gap-2">
             <button className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-black/10 bg-white px-4 py-2 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-black/[0.02] transition-colors">
@@ -136,12 +306,12 @@ export default function AdminTransactionsPage() {
           <div>
             <h2 className="text-lg font-bold text-[color:var(--trite-ink)]">Live Ledger</h2>
             <p className="text-xs text-[color:var(--trite-muted)] mt-1">
-              Showing {pagination?.total === 0 ? 0 : (page - 1) * rowsPerPage + 1}-{Math.min(page * rowsPerPage, pagination?.total ?? 0)} of {pagination?.total ?? 0}
+              Showing {pagination?.total === 0 ? 0 : (page - 1) * rowsPerPage + 1}–{Math.min(page * rowsPerPage, pagination?.total ?? 0)} of {pagination?.total ?? 0}
             </p>
           </div>
           <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[color:var(--trite-muted)]">
             <Calendar className="h-4 w-4" />
-            Oct 12 - Oct 19, 2023
+            {datePresetLabel}
           </div>
         </div>
 
@@ -260,7 +430,7 @@ export default function AdminTransactionsPage() {
                       <span className={`h-1.5 w-1.5 rounded-full ${
                         tx.status === "SUCCESS" ? "bg-emerald-500" :
                         tx.status === "PENDING" ? "bg-blue-500" :
-                        tx.status === "FAILED" ? "bg-red-500" : "bg-amber-500"
+                        tx.status === "FAILED"  ? "bg-red-500" : "bg-amber-500"
                       }`} />
                       {tx.status.toLowerCase()}
                     </span>
@@ -298,35 +468,23 @@ export default function AdminTransactionsPage() {
           </div>
           <div className="flex items-center justify-between sm:justify-end gap-4">
             <span className="text-sm text-[color:var(--trite-muted)]">
-              {pagination?.total === 0 ? 0 : (page - 1) * rowsPerPage + 1}-{Math.min(page * rowsPerPage, pagination?.total ?? 0)} of {pagination?.total ?? 0}
+              {pagination?.total === 0 ? 0 : (page - 1) * rowsPerPage + 1}–{Math.min(page * rowsPerPage, pagination?.total ?? 0)} of {pagination?.total ?? 0}
             </span>
             <div className="flex items-center gap-1">
-              <button 
-                onClick={() => setPage(1)}
-                disabled={page <= 1}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-sm text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50 transition-colors"
-              >
+              <button onClick={() => setPage(1)} disabled={page <= 1}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-sm text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50 transition-colors">
                 &lt;&lt;
               </button>
-              <button 
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page <= 1}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-sm text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50 transition-colors"
-              >
+              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-sm text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50 transition-colors">
                 &lt;
               </button>
-              <button 
-                onClick={() => setPage(p => Math.min(pagination?.total_pages ?? 1, p + 1))}
-                disabled={page >= (pagination?.total_pages ?? 1)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-sm text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50 transition-colors"
-              >
+              <button onClick={() => setPage(p => Math.min(pagination?.total_pages ?? 1, p + 1))} disabled={page >= (pagination?.total_pages ?? 1)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-sm text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50 transition-colors">
                 &gt;
               </button>
-              <button 
-                onClick={() => setPage(pagination?.total_pages ?? 1)}
-                disabled={page >= (pagination?.total_pages ?? 1)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-sm text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50 transition-colors"
-              >
+              <button onClick={() => setPage(pagination?.total_pages ?? 1)} disabled={page >= (pagination?.total_pages ?? 1)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-sm text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50 transition-colors">
                 &gt;&gt;
               </button>
             </div>
