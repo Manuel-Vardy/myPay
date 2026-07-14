@@ -14,18 +14,18 @@ const montserrat = Montserrat({
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
   title: "Trite",
-  description: "Financial architecture for the modern enterprise.",
+  description: "Financial Services Company",
   openGraph: {
     type: "website",
     siteName: "Trite",
     title: "Trite",
-    description: "Financial architecture for the modern enterprise.",
+    description: "Financial Services Company",
     images: [{ url: "/trite-fav.png", width: 512, height: 512, alt: "Trite" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Trite",
-    description: "Financial architecture for the modern enterprise.",
+    description: "Financial Services Company",
     images: ["/trite-fav.png"],
   },
 };

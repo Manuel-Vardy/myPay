@@ -300,7 +300,7 @@ export default function Home() {
                 </div>
 
                 <p className="hero-subtext animate-on-scroll stagger-2 max-w-2xl text-base sm:text-xl leading-relaxed text-white/80 sm:text-white/90">
-                  Seamless bank, mobile money, and stablecoin payments - built for businesses and institutions scaling across Ghana and the continent – pay and get paid with Trite!
+                  Seamless bank, mobile money, and stablecoin payment - Pay and get PAID with Trite!
                 </p>
 
                 {/* Hero CTA Buttons */}
