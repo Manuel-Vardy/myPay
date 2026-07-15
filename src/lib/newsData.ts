@@ -135,22 +135,6 @@ export const ourStories: Article[] = [
     ]
   },
   {
-    id: "cornell-university-delegation",
-    title: "Cornell University Delegation Visits Trite to Understand the African Digital Currency Economy",
-    date: "May 18, 2026",
-    readTime: "5-minute read",
-    category: "Education",
-    description: "Studying the intersection of traditional clearing networks, mobile money, and stablecoins in emerging fintech markets.",
-    overlayText: "Academic Collaboration",
-    image: "/images/digital-markets.jpg",
-    content: [
-      "A delegation of researchers and students from Cornell University recently visited Trite's offices. The visit focused on studying how digital currencies and stablecoins are transforming business settlements and remittances in Africa.",
-      "The delegation participated in workshops with our engineering, compliance, and product teams, examining our ledger systems and localized payout gateways. The workshops highlighted how Trite bridges digital asset networks with traditional banking corridors.",
-      "We were excited to host the Cornell delegation and share our insights on the digital currency economy. Academic collaboration is key to developing research and understanding the economic impact of fintech innovations in emerging markets.",
-      "The visit concluded with a discussion on future research partnerships, focusing on tracking transaction velocities and measuring the efficiency of stablecoin settlements compared to traditional bank corridors."
-    ]
-  },
-  {
     id: "future-remittance-markets",
     title: "The Future of Frictionless Cross-Border Remittances in Emerging Markets",
     date: "April 30, 2026",
@@ -193,21 +177,6 @@ export const ourStories: Article[] = [
       "Bank-grade compliance requires a multi-layered approach, combining identity verification (KYC), transaction monitoring (AML), and rigorous database security standards. These measures prevent fraud and ensure operations align with central bank regulations.",
       "This article outlines the compliance architecture developed at Trite. We discuss how we integrate automated verification databases, run continuous security audits, and implement hardware security modules to protect data and assets.",
       "We believe that maintaining high compliance standards is non-negotiable for digital asset providers, safeguarding merchants and establishing a secure ecosystem for modern enterprise payments."
-    ]
-  },
-  {
-    id: "ceo-fintech-award",
-    title: "Celebrating Leadership: Trite CEO Awarded Young FinTech Innovator of the Year",
-    date: "February 28, 2026",
-    readTime: "2-minute read",
-    category: "Community",
-    description: "Recognized for leading Trite's growth, developing stablecoin corridors, and expanding financial access across the African region.",
-    image: "/images/two-african-businessman.jpg",
-    content: [
-      "Trite's Chief Executive Officer has been awarded the Young FinTech Innovator of the Year. The award recognizes outstanding leadership, product innovation, and impact in the regional fintech sector.",
-      "Under our CEO's leadership, Trite has grown from a seed-stage project to a licensed cross-border payment provider, processing transactions for hundreds of enterprise merchants and linking mobile networks with stablecoins.",
-      "We congratuate our CEO on this recognition. This award highlights the team's commitment to building payment systems that address the actual cash flow challenges faced by African businesses.",
-      "Trite remains focused on expanding our team, developing new features, and building the infrastructure needed to support trade and financial integration across emerging markets."
     ]
   }
 ];
