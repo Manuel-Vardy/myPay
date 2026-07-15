@@ -167,42 +167,8 @@ export default function ContactPage() {
       <Header transparent={true} darkLogo={true} />
 
       <main className="flex-grow pb-0">
-        {/* ABOUT US SECTION */}
-        <section className="relative -mt-28 sm:-mt-32 pt-56 sm:pt-64 pb-16 lg:pb-24 overflow-hidden bg-[#fdfcf6] border-b border-black/[0.04]">
-          
-          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
-              {/* Left: About Us Heading & Intro */}
-              <div className="space-y-6">
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-[0.2em]">
-                  About Us
-                </p>
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-black leading-tight">
-                  Building Africa’s Payment Infrastructure Layer
-                </h2>
-                <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
-                  Trite was founded to solve a fundamental problem: Africa’s payment systems are fragmented, expensive and not built for digital scale.
-                </p>
-              </div>
-
-              {/* Right: About Us Content */}
-              <div className="space-y-8">
-                <p className="text-base sm:text-lg text-gray-700 leading-relaxed">
-                  We are building a unified financial infrastructure that connects traditional payments and digital assets - securely and compliantly. Our mission is to empower businesses across Africa with frictionless, borderless payment solutions.
-                </p>
-                <p className="text-base sm:text-lg text-gray-700 leading-relaxed">
-                  Trite is a next-generation Payment Service Provider (PSP) designed to bridge traditional finance and digital assets. We enable businesses to accept mobile money, cards, bank transfers, and stablecoins - all through a single unified platform.
-                </p>
-                <p className="text-base sm:text-lg text-gray-700 leading-relaxed">
-                  Whether you’re a startup, enterprise, marketplace, or fintech, Trite provides secure, compliant, and scalable payment infrastructure across Africa. We are the infrastructure layer for modern African commerce.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* HERO WRAP (like Careers page) */}
-        <section className="relative pt-16 pb-12 lg:pb-20 overflow-hidden bg-white border-b border-black/[0.04]">
+        <section className="relative -mt-28 sm:-mt-32 pt-56 sm:pt-64 pb-12 lg:pb-20 overflow-hidden bg-[#fdfcf6] border-b border-black/[0.04]">
           
           {/* Hero Content */}
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
