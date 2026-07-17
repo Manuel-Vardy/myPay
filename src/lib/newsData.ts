@@ -63,7 +63,7 @@ export const pressReleases: Article[] = [
     readTime: "3-minute read",
     category: "Core Updates",
     description: "Integrating automated market-making algorithms to optimize currency swaps between USDT, USDC, and local African currencies.",
-    image: "/images/cross-border.jpg",
+    image: "/images/news2.jpeg",
     content: [
       "Trite has deployed automated liquidity pool swaps across its settlement nodes. This feature integrates automated market-making (AMM) algorithms to optimize currency swaps between USDT, USDC, and local currencies.",
       "Cross-border payments are often delayed due to a lack of immediate foreign currency availability. Trite's liquidity pools act as localized reserves, allowing the system to execute transactions without waiting for bank-level currency allocations.",
@@ -78,7 +78,7 @@ export const pressReleases: Article[] = [
     readTime: "5-minute read",
     category: "Compliance",
     description: "Engaging top-tier accounting partners to run real-time audits of custodial accounts, guaranteeing 100% stablecoin asset backing.",
-    image: "/images/businessman-working-laptop.jpg",
+    image: "/images/confirmation.jpg",
     content: [
       "Trite has partnered with a leading global audit firm to provide real-time transparency into our institutional custody accounts. This partnership ensures that all stablecoin assets managed on our platform are fully audited and verified.",
       "In the digital asset industry, transparency is the cornerstone of institutional trust. By auditing custodial reserves, Trite guarantees that every digital dollar processed on our network is fully backed by real-world assets in audited banking institutions.",
@@ -96,7 +96,7 @@ export const ourStories: Article[] = [
     readTime: "5-minute read",
     category: "Core Updates",
     description: "Deploying institutional liquidity pools to enable instantaneous trade settlement, eliminating traditional multi-day SWIFT cycles for enterprise merchants across the continent.",
-    image: "/images/two-african-businessman.jpg",
+    image: "/images/business-owner.jpg",
     content: [
       "Trite has officially rolled out its real-time stablecoin settlement rails across major trade corridors in West and East Africa. This deployment marks a major shift in cross-border commerce, allowing enterprise merchants to settle transactions in minutes rather than waiting the typical 3-5 business days associated with SWIFT and traditional banking correspondence.",
       "By integrating stablecoins like USDT and USDC directly with local payment networks, Trite bypasses the friction points of multiple intermediary clearing banks. The new service leverages deep localized liquidity pools, enabling automated conversions with near-zero slippage. Corporate treasuries can now manage cash flows dynamically and eliminate currency volatility risk in real-time.",
@@ -111,7 +111,7 @@ export const ourStories: Article[] = [
     readTime: "6-minute read",
     category: "Engineering",
     description: "An in-depth look at our technical architecture, highlighting how we maintain database integrity, concurrency, and real-time telemetry under peak platform volume.",
-    image: "/images/saas.jpg",
+    image: "/images/news1.jpeg",
     content: [
       "At the core of the Trite Payment Service Provider is our ledger database, built to handle high-concurrency payment volumes with sub-second finality. This system ensures that all transactions are recorded in a secure, tamper-proof audit trail.",
       "Traditional ledgers often suffer from write lock issues under heavy load, causing transaction timeouts and settlement delays. Trite resolves this bottleneck by implementing a specialized distributed database architecture that logs transactions asynchronously while maintaining strict consistency.",

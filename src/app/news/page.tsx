@@ -350,11 +350,11 @@ export default function NewsPage() {
                       </div>
                       <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6 lg:pt-10">
                         {insideTrite.slice(1, 5).map((story, index) => (
-                          <Link key={index} href={`/news/${story.id}`} className="bg-white rounded-3xl border border-slate-200/50 shadow-none overflow-hidden flex flex-col justify-between group cursor-pointer hover:shadow-[0_4px_20px_rgba(0,0,0,0.04)] transition-all duration-300">
+                          <Link key={index} href={`/news/${story.id}`} className="bg-white rounded-3xl border border-slate-200/50 shadow-none overflow-hidden flex flex-col self-start group cursor-pointer hover:shadow-[0_4px_20px_rgba(0,0,0,0.04)] transition-all duration-300">
                             <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
                               <Image src={story.image} alt={story.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
                             </div>
-                            <div className="p-6 flex-1 flex flex-col justify-between">
+                            <div className="p-6 flex flex-col">
                               <div className="space-y-1">
                                 <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#22c55e]">{story.category}</span>
                                 <h4 className="text-sm sm:text-base font-bold text-slate-900 leading-tight line-clamp-3">{story.title}</h4>
