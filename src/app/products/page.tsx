@@ -224,7 +224,7 @@ export default function ProductsPage() {
             {/* Layout Grid: 4 Cards Surrounding Center Student Image */}
             <div className="animate-on-scroll stagger-7 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center max-w-7xl mx-auto">
               
-              {/* Left Column: Cards 1 & 3 (Trite Gateway & Trite Merchant Dashboard) */}
+              {/* Left Column: Cards 1 & 3 (Trite Gateway & Trite Merchant Storefront) */}
               <div className="lg:col-span-4 flex flex-col gap-12 sm:gap-16 order-2 lg:order-1">
                 
                 {/* Product 1: Trite Gateway */}
@@ -243,27 +243,27 @@ export default function ProductsPage() {
                     </h3>
                   </div>
                   <p className="mt-3 text-sm sm:text-base text-gray-500 font-medium leading-relaxed lg:text-right text-left transition-colors duration-300 group-hover:text-gray-700">
-                    Complete online payment solution for web & mobile businesses.
+                    A complete online payment infrastructure built for web and mobile businesses. Accept payments across multiple methods cards, mobile money, stablecoins, and bank transfers through a single unified checkout experience. Built-in fraud detection, real-time transaction monitoring, and automatic currency routing ensure every payment is processed reliably and securely.
                   </p>
                 </div>
 
-                {/* Product 3: Trite Merchant Dashboard */}
+                {/* Product 3: Trite Merchant Storefront */}
                 <div className="animate-on-scroll stagger-8 flex flex-col lg:items-end items-start text-left lg:text-right group cursor-pointer transition-all duration-500 hover:translate-y-[-8px]" style={{ animationDelay: '1.0s' }}>
                   <div className="flex items-center gap-4 lg:flex-row-reverse flex-row">
                     {/* Reduced Image Icon Container */}
                     <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white flex items-center justify-center border border-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.04)] p-2 overflow-hidden transition-all duration-500 group-hover:border-[#22c55e] group-hover:shadow-[0_12px_30px_rgba(34,197,94,0.2)] group-hover:scale-110 shrink-0">
                       <img
                         src="/images/mockup7.png"
-                        alt="Trite Merchant Dashboard Icon"
+                        alt="Trite Merchant Storefront Icon"
                         className="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-105"
                       />
                     </div>
                     <h3 className="text-xl sm:text-2xl font-bold text-black tracking-tight transition-colors duration-300 group-hover:text-[#22c55e]">
-                      Trite Merchant Dashboard
+                      Trite Merchant Storefront
                     </h3>
                   </div>
                   <p className="mt-3 text-sm sm:text-base text-gray-500 font-medium leading-relaxed lg:text-right text-left transition-colors duration-300 group-hover:text-gray-700">
-                    Advanced reporting, reconciliation, settlement tracking, and business insights.
+                    A dedicated merchant portal that gives you full visibility into your business performance. Track revenue, monitor transaction health, manage settlements, and access detailed reconciliation reports all from a single dashboard designed to help you make smarter financial decisions faster.
                   </p>
                 </div>
 
@@ -309,7 +309,7 @@ export default function ProductsPage() {
                     </h3>
                   </div>
                   <p className="mt-3 text-sm sm:text-base text-gray-500 font-medium leading-relaxed text-left transition-colors duration-300 group-hover:text-gray-700">
-                    Stablecoin acceptance with automatic fiat conversion and settlement.
+                    Accept stablecoins USDT, USDC, and more with automatic conversion to local fiat at the point of settlement. Stable-Pay eliminates volatility risk while giving your customers the flexibility of crypto-native payments, with instant on-chain confirmation and cross-border settlement capabilities.
                   </p>
                 </div>
 
@@ -329,7 +329,7 @@ export default function ProductsPage() {
                     </h3>
                   </div>
                   <p className="mt-3 text-sm sm:text-base text-gray-500 font-medium leading-relaxed text-left transition-colors duration-300 group-hover:text-gray-700">
-                    Developer-first RESTful APIs with comprehensive documentation.
+                    A developer-first RESTful API suite with comprehensive documentation, sandbox environments, and webhooks for real-time event notifications. Integrate payment processing, KYC flows, wallet management, and settlement triggers directly into your product with SDKs available for popular languages and frameworks.
                   </p>
                 </div>
 
@@ -340,7 +340,7 @@ export default function ProductsPage() {
             {/* CTA Button - Now under the cards */}
             <div className="animate-on-scroll stagger-8 mt-20 flex justify-center" style={{ animationDelay: '1.4s' }}>
               <Link
-                href="/products"
+                href="/get-started"
                 className="inline-flex items-center justify-center px-10 py-5 font-bold bg-[#22c55e] text-white hover:bg-[#16a34a] rounded-full transition-all duration-500 gap-2 shadow-xl hover:shadow-2xl hover:scale-[1.05] hover:translate-y-[-4px]"
               >
                 Explore Product Suite <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />

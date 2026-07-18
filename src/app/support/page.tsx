@@ -12,57 +12,7 @@ import {
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
-const SUPPORT_AVATARS = [
-  {
-    src: "/images/smiling-woman-smartphone.jpg",
-    alt: "Trite support specialist",
-    left: "18%",
-    top: "14%",
-    hidden: "",
-  },
-  {
-    src: "/images/young-man-talking.jpg",
-    alt: "Trite support specialist",
-    left: "50%",
-    top: "14%",
-    hidden: "",
-  },
-  {
-    src: "/images/chief-financial-officer.jpg",
-    alt: "Trite support specialist",
-    left: "82%",
-    top: "14%",
-    hidden: "",
-  },
-  {
-    src: "/images/Happy black woman sitting by big copy.jpg",
-    alt: "Trite support specialist",
-    left: "8%",
-    top: "50%",
-    hidden: "hidden sm:block",
-  },
-  {
-    src: "/images/male-sitting.jpg",
-    alt: "Trite support specialist",
-    left: "92%",
-    top: "48%",
-    hidden: "hidden sm:block",
-  },
-  {
-    src: "/images/People on phone.jpg",
-    alt: "Trite support specialist",
-    left: "26%",
-    top: "84%",
-    hidden: "",
-  },
-  {
-    src: "/images/two-african-businessman.jpg",
-    alt: "Trite support specialist",
-    left: "74%",
-    top: "82%",
-    hidden: "",
-  },
-];
+// Avatars removed to clean up unused code
 
 const MERCHANT_TOPICS = [
   { label: "Account setup" },
@@ -295,84 +245,88 @@ export default function SupportPage() {
           </div>
         </section>
 
-        {/* Contact Support Hero */}
-        <section className="relative overflow-hidden bg-[#22c55e]">
-          {/* Grid overlay */}
-          <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(to_right,rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.12)_1px,transparent_1px)] bg-[size:3.5rem_3.5rem]" />
-          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,0,0,0.06)_100%)]" />
-
-          {/* Orbit canvas — full width, avatars + text share same coordinate space */}
-          <div className="relative mx-auto w-full max-w-[1200px] h-[460px] sm:h-[540px] md:h-[600px] lg:h-[640px] px-6 sm:px-10 md:px-16">
-            {/* Orbiting avatars */}
-            {SUPPORT_AVATARS.map((avatar) => (
-              <div
-                key={avatar.src}
-                className={`absolute -translate-x-1/2 -translate-y-1/2 ${avatar.hidden}`}
-                style={{ left: avatar.left, top: avatar.top }}
-              >
-                <div className="relative w-[56px] h-[56px] sm:w-[64px] sm:h-[64px] md:w-[72px] md:h-[72px] rounded-[18px] overflow-hidden shadow-xl ring-[3px] ring-white/40">
-                  <Image
-                    src={avatar.src}
-                    alt={avatar.alt}
-                    fill
-                    className="object-cover"
-                    sizes="72px"
-                  />
-                </div>
-              </div>
-            ))}
-
-            {/* Center content */}
-            <div className="absolute inset-0 flex items-center justify-center z-10">
-              <div className="text-center space-y-4 sm:space-y-5 px-4 max-w-md">
-                <h2 className="text-4xl sm:text-5xl md:text-[3.5rem] font-extrabold text-white tracking-tight leading-none">
-                  Contact support
-                </h2>
-
-                <div className="space-y-1">
-                  <a
-                    href="mailto:support@trite.tech"
-                    className="block text-base sm:text-lg font-bold text-white/95 hover:text-white transition-colors"
-                  >
-                    support@trite.tech
-                  </a>
-                  <p className="text-xs sm:text-sm font-semibold text-white/75">
-                    Monday – Friday · 8:00 AM – 5:00 PM GMT
-                  </p>
-                </div>
-
-                <a
-                  href="mailto:support@trite.tech"
-                  className="inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-xs sm:text-sm font-bold text-white shadow-lg hover:bg-gray-900 transition-colors"
-                >
-                  <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  Email us
-                </a>
-              </div>
-            </div>
+        {/* Training & Support Header Banner */}
+        <section className="relative h-[300px] sm:h-[385px] md:h-[450px] overflow-hidden bg-slate-950">
+          <div className="absolute inset-0 z-0">
+            <Image
+              src="/images/young-african.jpg"
+              alt="Our Support"
+              fill
+              className="object-cover object-center lg:object-right"
+              priority
+            />
+            <div className="absolute inset-0 bg-slate-950/10" />
           </div>
         </section>
 
-        {/* Incident monitoring */}
-        <section className="bg-black py-8">
-          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-center sm:text-left">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10">
-                <Shield className="h-5 w-5 text-[#22c55e]" />
+        {/* Training & Onboarding split section */}
+        <section className="bg-white pb-16 sm:pb-24">
+          <div className="w-full relative z-20 -mt-20 sm:-mt-28 md:-mt-32">
+            <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-0 items-stretch overflow-hidden border-y border-black/[0.06]">
+              
+              {/* Left Column: Onboarding and Video Walkthrough */}
+              <div className="bg-[#fdfcf6] p-8 sm:p-12 md:p-16 lg:p-20 xl:p-24 flex flex-col justify-center items-center relative overflow-hidden">
+                <div className="max-w-4xl w-full space-y-6">
+                  <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+                    Our Support
+                  </h3>
+                  <p className="text-slate-600 text-sm sm:text-base font-medium leading-relaxed">
+                    Learning to operate on this platform is streamlined with our support team guiding you at every step. You can be assured of having all the expertise, resources, and live support you need.
+                  </p>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-[#16a34a]">
+                      Step-By-Step Thorough Onboarding Process
+                    </h4>
+                  </div>
+                  
+                  {/* Video Placeholder */}
+                  <div className="mt-8 relative aspect-video w-full rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center group cursor-pointer hover:border-[#22c55e]/40 transition-all duration-300 shadow-inner">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-[#22c55e]/10 group-hover:border-[#22c55e] transition-all duration-300 shadow-md">
+                      <svg
+                        className="w-6 h-6 sm:w-8 sm:h-8 text-white group-hover:text-[#22c55e] translate-x-0.5 transition-colors"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <p className="text-sm font-bold text-white/90 leading-relaxed max-w-xl">
-                For critical service incidents, our monitoring team provides continuous
-                platform oversight.
-              </p>
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#22c55e] opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#22c55e]" />
-                </span>
-                <span className="text-xs font-bold uppercase tracking-wider text-[#22c55e] whitespace-nowrap">
-                  24/7 monitoring
-                </span>
+
+              {/* Right Column: Contact support card styled like the original middle section */}
+              <div className="relative overflow-hidden bg-[#22c55e] p-8 sm:p-12 md:p-16 lg:p-20 xl:p-24 flex flex-col items-center justify-center text-center min-h-[420px]">
+                {/* Grid overlay */}
+                <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(to_right,rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.12)_1px,transparent_1px)] bg-[size:3.5rem_3.5rem]" />
+                <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,0,0,0.06)_100%)]" />
+
+                <div className="relative z-10 space-y-6 max-w-sm">
+                  <h3 className="text-4xl sm:text-[2.75rem] font-extrabold text-white tracking-tight leading-none">
+                    Contact support
+                  </h3>
+
+                  <div className="space-y-1">
+                    <a
+                      href="mailto:support@trite.tech"
+                      className="block text-base sm:text-lg font-bold text-white hover:text-white/90 transition-colors"
+                    >
+                      support@trite.tech
+                    </a>
+                    <p className="text-xs sm:text-sm font-semibold text-white/75">
+                      Monday – Friday · 8:00 AM – 5:00 PM GMT
+                    </p>
+                  </div>
+
+                  <a
+                    href="mailto:support@trite.tech"
+                    className="inline-flex items-center gap-2 rounded-full bg-black px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-lg hover:bg-gray-900 transition-colors"
+                  >
+                    <Mail className="h-4 w-4" />
+                    Email us
+                  </a>
+                </div>
               </div>
+
             </div>
           </div>
         </section>

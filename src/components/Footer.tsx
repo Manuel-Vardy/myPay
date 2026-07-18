@@ -38,8 +38,9 @@ export default function Footer() {
           <div>
             <h5 className="text-xs font-extrabold uppercase tracking-wider text-black">Products</h5>
             <ul className="mt-4 space-y-2 text-xs text-gray-500 font-bold">
-              <li><Link href="/products" className="hover:text-black transition-colors">Products</Link></li>
-              <li><Link href="/support" className="hover:text-black transition-colors">Support</Link></li>
+              <li><Link href="/products#merchant-storefront" className="hover:text-black transition-colors">Merchant Storefront</Link></li>
+              <li><Link href="/products#stable-pay" className="hover:text-black transition-colors">Stable-Pay</Link></li>
+              <li><Link href="/products#trite-api" className="hover:text-black transition-colors">Trite API</Link></li>
             </ul>
           </div>
 
@@ -48,6 +49,7 @@ export default function Footer() {
             <ul className="mt-4 space-y-2 text-xs text-gray-500 font-bold">
               <li><Link href="/developers" className="hover:text-black transition-colors">Developers</Link></li>
               <li><Link href="/compliance" className="hover:text-black transition-colors">Compliance</Link></li>
+              <li><Link href="/support" className="hover:text-black transition-colors">Support</Link></li>
               <li><Link href="/contact" className="hover:text-black transition-colors">Contact</Link></li>
             </ul>
           </div>
@@ -55,7 +57,7 @@ export default function Footer() {
           <div>
             <h5 className="text-xs font-extrabold uppercase tracking-wider text-black">Legal</h5>
             <ul className="mt-4 space-y-2 text-xs text-gray-500 font-bold">
-              <li><Link href="/legal" className="hover:text-black transition-colors">Legal</Link></li>
+              <li><Link href="/legal" className="hover:text-black transition-colors">Refund Policy</Link></li>
               <li><Link href="/legal?tab=privacy-policy" className="hover:text-black transition-colors">Privacy Policy</Link></li>
               <li><Link href="/legal?tab=general-terms-of-use" className="hover:text-black transition-colors">Terms of Service</Link></li>
             </ul>
