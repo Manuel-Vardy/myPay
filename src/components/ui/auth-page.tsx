@@ -104,14 +104,14 @@ export function AuthPage() {
 					<p className="text-muted-foreground mt-8 text-sm">
 						By clicking continue, you agree to our{' '}
 						<Link
-							href="/terms"
+							href="/legal?tab=general-terms-of-use"
 							className="hover:text-primary underline underline-offset-4"
 						>
 							Terms of Service
 						</Link>{' '}
 						and{' '}
 						<Link
-							href="/privacy"
+							href="/legal?tab=privacy-policy"
 							className="hover:text-primary underline underline-offset-4"
 						>
 							Privacy Policy

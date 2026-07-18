@@ -11,10 +11,12 @@ import { cn } from "@/lib/utils";
 
 export default function Header({
   transparent = false,
-  darkLogo = false
+  darkLogo = false,
+  hideBorder = false
 }: {
   transparent?: boolean;
   darkLogo?: boolean;
+  hideBorder?: boolean;
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDownloadOpen, setIsDownloadOpen] = useState(false);
@@ -160,8 +162,8 @@ export default function Header({
                 isSticky
                   ? "fixed top-0 left-0 right-0 bg-transparent py-2 sm:py-4 flex justify-center"
                   : transparent
-                    ? "absolute left-0 right-0 py-3 sm:py-6 bg-white sm:bg-transparent border-b border-black/[0.06] sm:border-none"
-                    : "bg-white border-b border-black/[0.06] py-3 sm:py-6 relative"
+                    ? cn("absolute left-0 right-0 py-3 sm:py-6 bg-white sm:bg-transparent sm:border-none", hideBorder ? "border-none" : "border-b border-black/[0.06]")
+                    : cn("bg-white py-3 sm:py-6 relative", hideBorder ? "border-none" : "border-b border-black/[0.06]")
               ),
           mounted && isSticky && !isVisible ? "-translate-y-full" : "translate-y-0"
         )}

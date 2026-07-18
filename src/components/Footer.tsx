@@ -55,8 +55,9 @@ export default function Footer() {
           <div>
             <h5 className="text-xs font-extrabold uppercase tracking-wider text-black">Legal</h5>
             <ul className="mt-4 space-y-2 text-xs text-gray-500 font-bold">
-              <li><Link href="/privacy" className="hover:text-black transition-colors">Privacy Policy</Link></li>
-              <li><Link href="/terms" className="hover:text-black transition-colors">Terms of Service</Link></li>
+              <li><Link href="/legal" className="hover:text-black transition-colors">Legal</Link></li>
+              <li><Link href="/legal?tab=privacy-policy" className="hover:text-black transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/legal?tab=general-terms-of-use" className="hover:text-black transition-colors">Terms of Service</Link></li>
             </ul>
           </div>
 

@@ -83,7 +83,7 @@ export default function AboutPage() {
 
         <main className="flex-grow pb-0">
           {/* ABOUT US SECTION */}
-          <section className="relative -mt-28 sm:-mt-32 pt-56 sm:pt-64 pb-16 lg:pb-24 overflow-hidden bg-[#fdfcf6] border-b border-black/[0.04]">
+          <section className="relative -mt-28 sm:-mt-32 pt-56 sm:pt-64 pb-16 lg:pb-24 overflow-hidden bg-[#fdfcf6]">
 
             <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
@@ -116,8 +116,46 @@ export default function AboutPage() {
             </div>
           </section>
 
+          {/* OUR GOAL SECTION */}
+          <section className="relative py-16 lg:py-20 bg-white">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              {/* Outer card */}
+              <div className="rounded-3xl bg-[#e8eaed] overflow-hidden">
+                <div className="grid grid-cols-1 lg:grid-cols-2 items-stretch">
+
+                  {/* Left: text */}
+                  <div className="flex flex-col justify-center gap-6 p-8 sm:p-10 lg:p-12">
+                    <div className="space-y-5">
+                      <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-black leading-tight">
+                        Our goal
+                      </h2>
+                      <p className="text-sm sm:text-base text-gray-700 leading-relaxed max-w-md">
+                        At Trite we aim to eliminate the fragmentation holding African commerce back by building a single compliant high velocity infrastructure layer. We empower businesses of all sizes to collect payments move money and settle instantly across borders and currencies. Through robust engineering and compliant integrations we enable seamless global transactions that connect local payment rails with digital assets to drive sustainable growth.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Right: photo inside card with padding */}
+                  <div className="p-6 sm:p-8 lg:p-10 flex">
+                    <div className="relative w-full min-h-[300px] lg:min-h-[360px] rounded-2xl overflow-hidden">
+                      <Image
+                        src="/images/smiley-man.jpg"
+                        alt="Happy Trite user"
+                        fill
+                        className="object-cover object-center"
+                        sizes="(max-width: 1024px) 100vw, 50vw"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+
+
           {/* GET IN TOUCH SECTION (like Contact page's Hero Wrap */}
-          <section className="relative pt-16 pb-12 lg:pb-20 overflow-hidden bg-[#fdfcf6] border-t border-black/[0.04]">
+          <section className="relative pt-16 pb-12 lg:pb-20 overflow-hidden bg-[#fdfcf6]">
             <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
                 {/* Left Side: Contact Info, Social */}
