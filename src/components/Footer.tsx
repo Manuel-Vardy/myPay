@@ -38,7 +38,7 @@ export default function Footer() {
           <div>
             <h5 className="text-xs font-extrabold uppercase tracking-wider text-black">Products</h5>
             <ul className="mt-4 space-y-2 text-xs text-gray-500 font-bold">
-              <li><Link href="/products#merchant-operating-system" className="hover:text-black transition-colors">Merchant Operating System</Link></li>
+              <li><Link href="/products#trite-mos" className="hover:text-black transition-colors">Trite-MOS</Link></li>
               <li><Link href="/products#stable-pay" className="hover:text-black transition-colors">Stable-Pay</Link></li>
               <li><Link href="/products#trite-api" className="hover:text-black transition-colors">Trite API</Link></li>
             </ul>

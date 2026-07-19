@@ -1020,7 +1020,7 @@ export default function Home() {
             {/* Layout Grid: 4 Cards Surrounding Center Student Image */}
             <div className="animate-on-scroll stagger-7 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center max-w-7xl mx-auto">
               
-              {/* Left Column: Cards 1 & 3 (Trite Gateway & Trite Merchant Operating System) */}
+              {/* Left Column: Cards 1 & 3 (Trite Gateway & Trite Merchant Operating System (TMOS)) */}
               <div className="lg:col-span-4 flex flex-col gap-12 sm:gap-16 order-2 lg:order-1">
                 
                 {/* Product 1: Trite Gateway */}
@@ -1043,19 +1043,19 @@ export default function Home() {
                   </p>
                 </div>
 
-                {/* Product 3: Trite Merchant Operating System */}
-                <div id="merchant-operating-system" className="animate-on-scroll stagger-8 flex flex-col lg:items-end items-start text-left lg:text-right group cursor-pointer transition-all duration-500 hover:translate-y-[-8px]" style={{ animationDelay: '1.0s' }}>
+                {/* Product 3: Trite Merchant Operating System (TMOS) */}
+                <div id="trite-mos" className="animate-on-scroll stagger-8 flex flex-col lg:items-end items-start text-left lg:text-right group cursor-pointer transition-all duration-500 hover:translate-y-[-8px]" style={{ animationDelay: '1.0s' }}>
                   <div className="flex items-center gap-4 lg:flex-row-reverse flex-row">
                     {/* Reduced Image Icon Container */}
                     <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white flex items-center justify-center border border-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.04)] p-2 overflow-hidden transition-all duration-500 group-hover:border-[#22c55e] group-hover:shadow-[0_12px_30px_rgba(34,197,94,0.2)] group-hover:scale-110 shrink-0">
                       <img
                         src="/images/mockup7.png"
-                        alt="Trite Merchant Operating System Icon"
+                        alt="Trite Merchant Operating System (TMOS) Icon"
                         className="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-105"
                       />
                     </div>
                     <h3 className="text-xl sm:text-2xl font-bold text-black tracking-tight transition-colors duration-300 group-hover:text-[#22c55e]">
-                      Trite Merchant Operating System
+                      Trite Merchant Operating System (TMOS)
                     </h3>
                   </div>
                   <p className="mt-3 text-sm sm:text-base text-gray-500 font-medium leading-relaxed lg:text-right text-left transition-colors duration-300 group-hover:text-gray-700">
