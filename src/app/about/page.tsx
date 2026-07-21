@@ -129,8 +129,8 @@ export default function AboutPage() {
                       <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-black leading-tight">
                         Our goal
                       </h2>
-                      <p className="text-sm sm:text-base text-gray-700 leading-relaxed max-w-md">
-                        At Trite we aim to eliminate the fragmentation holding African commerce back by building a single compliant high velocity infrastructure layer. We empower businesses of all sizes to collect payments move money and settle instantly across borders and currencies. Through robust engineering and compliant integrations we enable seamless global transactions that connect local payment rails with digital assets to drive sustainable growth.
+                      <p className="text-base sm:text-lg text-gray-700 leading-relaxed max-w-md">
+                        At Trite, our aim is to be constantly INNOVATIVE, build TRUST and improve GROWTH for businesses on Trite.
                       </p>
                     </div>
                   </div>

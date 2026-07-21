@@ -287,11 +287,11 @@ export default function Home() {
             <div className="absolute inset-0 bg-black/45" />
           </div>
 
-          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-32 sm:pt-56 lg:pt-64">
-            <div className="max-w-2xl pb-20">
+          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-32 sm:pt-44 lg:pt-52 pb-24 sm:pb-32">
+            <div className="max-w-5xl">
 
               {/* Hero Texts */}
-              <div className="space-y-6">
+              <div className="space-y-6 max-w-2xl">
                 <div className="animate-on-scroll stagger-1">
                   <h1 className="hero-heading text-3xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl sm:font-extrabold leading-[1.1] sm:leading-[1.08]">
                     Powering the Future of Payments in Africa
@@ -302,28 +302,29 @@ export default function Home() {
                 <p className="hero-subtext animate-on-scroll stagger-2 max-w-2xl text-base sm:text-xl leading-relaxed text-white/80 sm:text-white/90">
                   Seamless bank, mobile money, and stablecoin payment - Pay and get PAID with Trite!
                 </p>
+              </div>
 
-                {/* Hero CTA Buttons */}
-                <div className="animate-on-scroll stagger-3 flex flex-wrap gap-3 pt-2">
-                  <Link
-                    className="hero-cta-btn-primary inline-flex h-12 items-center justify-center rounded-full bg-[#22c55e] px-8 text-sm font-semibold text-white hover:bg-[#16a34a] shadow transition-all duration-200"
-                    href="/get-started"
-                  >
-                    Get Started
-                  </Link>
-                  <Link
-                    className="hero-cta-btn-secondary inline-flex h-12 items-center justify-center rounded-full border border-white/30 bg-white/10 backdrop-blur-sm px-8 text-sm font-semibold text-white hover:bg-white/20 transition-all duration-200"
-                    href="/contact-sales"
-                  >
-                    Talk to Sales
-                  </Link>
-                  <Link
-                    className="hero-cta-btn-ghost inline-flex h-12 items-center justify-center gap-1 rounded-full px-5 text-sm font-semibold text-white hover:underline group transition-all duration-200"
-                    href="/api-docs"
-                  >
-                    View API Docs
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </Link>
+              {/* 3 Feature Boxes in Hero (INNOVATIVE, TRUST, GROWTH) - Button styled */}
+              <div className="mt-8 animate-on-scroll stagger-3 flex flex-wrap items-center gap-3 sm:gap-4">
+                {/* Box 1: INNOVATIVE (White default with green text -> Green background with white text on hover) */}
+                <div className="group h-12 px-7 sm:px-8 rounded-full bg-white text-[#22c55e] hover:bg-[#22c55e] hover:text-white shadow-lg border border-white/20 transition-all duration-300 hover:-translate-y-0.5 cursor-pointer inline-flex items-center justify-center select-none">
+                  <span className="text-sm font-extrabold uppercase tracking-wider transition-colors duration-300">
+                    INNOVATIVE
+                  </span>
+                </div>
+
+                {/* Box 2: TRUST (Green default with white text -> White background with green text on hover) */}
+                <div className="group h-12 px-7 sm:px-8 rounded-full bg-[#22c55e] text-white hover:bg-white hover:text-[#22c55e] shadow-lg border border-[#22c55e] hover:border-white transition-all duration-300 hover:-translate-y-0.5 cursor-pointer inline-flex items-center justify-center select-none">
+                  <span className="text-sm font-extrabold uppercase tracking-wider transition-colors duration-300">
+                    TRUST
+                  </span>
+                </div>
+
+                {/* Box 3: GROWTH (Transparent default -> Darker transparent on hover) */}
+                <div className="group h-12 px-7 sm:px-8 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/25 shadow-lg border border-white/30 hover:border-white/50 transition-all duration-300 hover:-translate-y-0.5 cursor-pointer inline-flex items-center justify-center select-none">
+                  <span className="text-sm font-extrabold uppercase tracking-wider transition-colors duration-300">
+                    GROWTH
+                  </span>
                 </div>
               </div>
 
