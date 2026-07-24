@@ -63,7 +63,7 @@ export default function LoginPage() {
           </h1>
           <div className="mt-6 w-full relative">
             <Image
-              src="/images/login-pic.png"
+              src="/images/login-pics.png"
               alt="Trite Illustration"
               width={600}
               height={450}
