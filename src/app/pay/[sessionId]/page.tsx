@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { QRCodeSVG } from "qrcode.react";
 import { useParams } from "next/navigation";
 
 interface SessionDetails {
@@ -13,8 +13,30 @@ interface SessionDetails {
   description: string;
   stablecoin_equivalent: number;
   processing_fee: number;
+  fee_bearer: "MERCHANT" | "CUSTOMER";
+  total_amount: number;
   network_gas: string;
+  card_enabled: boolean;
+  crypto_enabled: boolean;
   redirect_url: string | null;
+}
+
+interface TokenNetwork {
+  networkId: string;
+  networkName: string;
+  blockchainVmCode: string;
+  decimals: number;
+  contractOrMintAddress: string;
+  isActive: boolean;
+}
+
+interface CryptoToken {
+  id: string;
+  symbol: string;
+  name: string;
+  logo: string | null;
+  isActive: boolean;
+  networks: TokenNetwork[];
 }
 
 export default function DynamicCheckoutPage() {
@@ -28,7 +50,7 @@ export default function DynamicCheckoutPage() {
 
   // Checkout flow state
   const [step, setStep] = useState<"method" | "details" | "processing" | "success" | "failed">("method");
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "momo" | "usdc" | "usdt" | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "momo" | "crypto" | null>(null);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [cardNumber, setCardNumber] = useState("");
   const [cardExpiry, setCardExpiry] = useState("");
@@ -36,6 +58,7 @@ export default function DynamicCheckoutPage() {
   const [momoNetwork, setMomoNetwork] = useState<"MTN" | "TELECEL" | "AT">("MTN");
   const [transactionId, setTransactionId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [receiptDismissed, setReceiptDismissed] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [processingMessage, setProcessingMessage] = useState("");
   const [otpRequired, setOtpRequired] = useState(false);
@@ -44,6 +67,15 @@ export default function DynamicCheckoutPage() {
   const [cryptoAddress, setCryptoAddress] = useState<string | null>(null);
   const [cryptoAmount, setCryptoAmount] = useState<string | null>(null);
   const [loadingAddress, setLoadingAddress] = useState(false);
+  const [cryptoExpiresAt, setCryptoExpiresAt] = useState<string | null>(null);
+  const [cryptoAsset, setCryptoAsset] = useState<string | null>(null);
+  const [addressCopied, setAddressCopied] = useState(false);
+  const [countdownText, setCountdownText] = useState<string | null>(null);
+
+  // Dynamic crypto token catalog
+  const [cryptoTokens, setCryptoTokens] = useState<CryptoToken[]>([]);
+  const [loadingTokens, setLoadingTokens] = useState(true);
+  const [selectedNetworkId, setSelectedNetworkId] = useState<string | null>(null);
 
 
   const formatCurrency = useCallback((value: number, currency: string) => {
@@ -83,10 +115,10 @@ export default function DynamicCheckoutPage() {
         const res = await fetch(`/api/payments/${txId}/status`);
         const data = await res.json();
 
-        if (data.status === "SUCCESS") {
+        if (data.status === "SETTLED") {
           stopPolling();
           setStep("success");
-        } else if (data.status === "FAILED") {
+        } else if (data.status === "FAILED" || data.status === "EXPIRED") {
           stopPolling();
           setErrorMessage(data.error_details?.message || "Payment failed");
           setStep("failed");
@@ -104,7 +136,7 @@ export default function DynamicCheckoutPage() {
     };
   }, [stopPolling]);
 
-  // Fetch session details on load
+  // Fetch session details and crypto tokens on load
   useEffect(() => {
     if (!sessionId) return;
 
@@ -127,10 +159,25 @@ export default function DynamicCheckoutPage() {
       }
     }
 
+    async function fetchTokens() {
+      try {
+        const res = await fetch("/api/payments/crypto-tokens");
+        if (res.ok) {
+          const data: CryptoToken[] = await res.json();
+          setCryptoTokens(data);
+        }
+      } catch {
+        // Non-blocking — crypto options simply won't render
+      } finally {
+        setLoadingTokens(false);
+      }
+    }
+
     fetchSession();
+    fetchTokens();
   }, [sessionId]);
 
-  const handleMethodSelect = (method: "card" | "momo" | "usdc" | "usdt") => {
+  const handleMethodSelect = (method: "card" | "momo" | "crypto", tokenSymbol?: string, defaultNetworkId?: string) => {
     setPaymentMethod(method);
     setStep("details");
     setOtpRequired(false);
@@ -138,18 +185,24 @@ export default function DynamicCheckoutPage() {
     setOtpMessage("");
     setCryptoAddress(null);
     setCryptoAmount(null);
+    setCryptoExpiresAt(null);
+    setCryptoAsset(tokenSymbol || null);
+    setSelectedNetworkId(defaultNetworkId || null);
+    setAddressCopied(false);
   };
 
   const handleGetCryptoAddress = async () => {
     if (!sessionDetails) return;
     setLoadingAddress(true);
+    setErrorMessage("");
     
     try {
       const res = await fetch(`/api/payments/${sessionDetails.session_id}/crypto-address`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          currency: paymentMethod === "usdt" ? "USDT" : "USDC",
+          currency: cryptoAsset,
+          networkId: selectedNetworkId,
         }),
       });
 
@@ -163,6 +216,8 @@ export default function DynamicCheckoutPage() {
 
       setCryptoAddress(data.address);
       setCryptoAmount(data.amount);
+      setCryptoExpiresAt(data.expires_at);
+      setCryptoAsset(data.asset);
       setLoadingAddress(false);
     } catch {
       setErrorMessage("Something went wrong. Please try again.");
@@ -170,9 +225,33 @@ export default function DynamicCheckoutPage() {
     }
   };
 
-  const handleCryptoPaymentConfirm = () => {
-    // User confirms they have paid, proceed with payment submission
-    handlePaymentSubmit();
+  const handleCryptoPaymentConfirm = async () => {
+    if (!sessionDetails) return;
+    setStep("processing");
+    setProcessingMessage("Confirming payment... Waiting for blockchain settlement.");
+    setErrorMessage("");
+
+    try {
+      const res = await fetch(`/api/payments/${sessionDetails.session_id}/crypto-confirm`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok && res.status !== 202) {
+        setErrorMessage(data.error || data.message || "Confirmation failed");
+        setStep("failed");
+        return;
+      }
+
+      setTransactionId(data.transaction_id);
+      setProcessingMessage(data.message || "Waiting for blockchain confirmation...");
+      pollStatus(data.transaction_id);
+    } catch {
+      setErrorMessage("Something went wrong. Please try again.");
+      setStep("failed");
+    }
   };
 
   useEffect(() => {
@@ -180,6 +259,37 @@ export default function DynamicCheckoutPage() {
     setOtpCode("");
     setOtpMessage("");
   }, [phoneNumber, momoNetwork]);
+
+  // Address lease countdown timer
+  useEffect(() => {
+    if (!cryptoExpiresAt) {
+      setCountdownText(null);
+      return;
+    }
+
+    const updateCountdown = () => {
+      const now = Date.now();
+      const expiry = new Date(cryptoExpiresAt).getTime();
+      const diff = expiry - now;
+
+      if (diff <= 0) {
+        setCountdownText("Expired");
+        setCryptoAddress(null);
+        setCryptoAmount(null);
+        setCryptoExpiresAt(null);
+        setCryptoAsset(null);
+        return;
+      }
+
+      const mins = Math.floor(diff / 60000);
+      const secs = Math.floor((diff % 60000) / 1000);
+      setCountdownText(`${mins}m ${secs.toString().padStart(2, "0")}s`);
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [cryptoExpiresAt]);
 
   const handlePaymentSubmit = async () => {
     if (!sessionDetails) return;
@@ -312,14 +422,9 @@ export default function DynamicCheckoutPage() {
             <p className="mt-2 text-sm text-[color:var(--trite-muted)]">
               {sessionError || "The requested payment session is no longer active."}
             </p>
-            <div className="mt-8">
-              <Link
-                href="/"
-                className="inline-block rounded-xl bg-[color:var(--trite-ink)] px-8 py-3 text-sm font-semibold text-white hover:bg-black text-center"
-              >
-                Back to Home
-              </Link>
-            </div>
+            <p className="mt-8 text-sm text-[color:var(--trite-muted)]">
+              Please contact the merchant who sent you this link for a new payment session.
+            </p>
           </div>
         </main>
 
@@ -334,6 +439,9 @@ export default function DynamicCheckoutPage() {
 
   // Active session render
   const formattedAmount = formatCurrency(sessionDetails.amount, sessionDetails.currency);
+  const formattedTotal = formatCurrency(sessionDetails.total_amount, sessionDetails.currency);
+  const formattedFee = formatCurrency(sessionDetails.processing_fee, sessionDetails.currency);
+  const customerBearsFee = sessionDetails.fee_bearer === "CUSTOMER";
   const stablecoinEquivalentFormatted = formatCurrency(sessionDetails.stablecoin_equivalent, "USDT");
 
   return (
@@ -377,9 +485,14 @@ export default function DynamicCheckoutPage() {
                   {sessionDetails.merchant_name}
                 </span>
                 <span className="text-xl sm:text-2xl font-black text-white">
-                  {formattedAmount}
+                  {formattedTotal}
                 </span>
               </div>
+              {customerBearsFee && (
+                <p className="mt-1 text-[11px] sm:text-xs text-white/70">
+                  Order: {formattedAmount} + Fee: {formattedFee}
+                </p>
+              )}
               {sessionDetails.description && (
                 <p className="mt-2 text-xs sm:text-sm text-white/70 border-t border-white/20 pt-2">
                   {sessionDetails.description}
@@ -447,50 +560,67 @@ export default function DynamicCheckoutPage() {
                 <ChevronRightIcon className="h-4 w-4 sm:h-5 sm:w-5 text-[color:var(--trite-muted)] shrink-0" />
               </button>
 
-              {/* Card Payment */}
-              <button
-                onClick={() => handleMethodSelect("card")}
-                className="flex w-full items-center gap-3 sm:gap-4 rounded-xl bg-gray-100 p-3 sm:p-4 hover:bg-gray-200 transition-all text-left"
-              >
-                <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full overflow-hidden bg-white shrink-0">
-                  <Image src="/images/Credit-Card.jpg" alt="Card Payment" width={40} height={40} className="object-cover" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <span className="block font-semibold text-sm sm:text-base text-[color:var(--trite-ink)]">Card Payment</span>
-                  <span className="text-xs sm:text-sm text-[color:var(--trite-muted)]">Visa, Mastercard</span>
-                </div>
-                <ChevronRightIcon className="h-4 w-4 sm:h-5 sm:w-5 text-[color:var(--trite-muted)] shrink-0" />
-              </button>
+              {/* Card Payment (admin-gated until the acquiring bank is live) */}
+              {sessionDetails.card_enabled && (
+                <button
+                  onClick={() => handleMethodSelect("card")}
+                  className="flex w-full items-center gap-3 sm:gap-4 rounded-xl bg-gray-100 p-3 sm:p-4 hover:bg-gray-200 transition-all text-left"
+                >
+                  <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full overflow-hidden bg-white shrink-0">
+                    <Image src="/images/Credit-Card.jpg" alt="Card Payment" width={40} height={40} className="object-cover" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="block font-semibold text-sm sm:text-base text-[color:var(--trite-ink)]">Card Payment</span>
+                    <span className="text-xs sm:text-sm text-[color:var(--trite-muted)]">Visa, Mastercard</span>
+                  </div>
+                  <ChevronRightIcon className="h-4 w-4 sm:h-5 sm:w-5 text-[color:var(--trite-muted)] shrink-0" />
+                </button>
+              )}
 
-              {/* USDC */}
-              <button
-                onClick={() => handleMethodSelect("usdc")}
-                className="flex w-full items-center gap-3 sm:gap-4 rounded-xl bg-gray-100 p-3 sm:p-4 hover:bg-gray-200 transition-all text-left"
-              >
-                <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full overflow-hidden bg-white shrink-0">
-                  <Image src="/images/USDC.jpg" alt="USDC" width={40} height={40} className="object-cover" />
+              {/* Dynamic Crypto Tokens (admin-gated; e.g. off during a provider incident) */}
+              {sessionDetails.crypto_enabled && (loadingTokens ? (
+                <div className="flex w-full items-center gap-3 sm:gap-4 rounded-xl bg-gray-100 p-3 sm:p-4 animate-pulse">
+                  <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gray-200 shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 w-32 rounded bg-gray-200" />
+                    <div className="h-3 w-24 rounded bg-gray-200" />
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <span className="block font-semibold text-sm sm:text-base text-[color:var(--trite-ink)]">USDC (Stablecoin)</span>
-                  <span className="text-xs sm:text-sm text-[color:var(--trite-muted)]">ERC-20, Fast settlement</span>
-                </div>
-                <ChevronRightIcon className="h-4 w-4 sm:h-5 sm:w-5 text-[color:var(--trite-muted)] shrink-0" />
-              </button>
-
-              {/* USDT */}
-              <button
-                onClick={() => handleMethodSelect("usdt")}
-                className="flex w-full items-center gap-3 sm:gap-4 rounded-xl bg-gray-100 p-3 sm:p-4 hover:bg-gray-200 transition-all text-left"
-              >
-                <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full overflow-hidden bg-white shrink-0">
-                  <Image src="/images/USDT.jpg" alt="USDT" width={40} height={40} className="object-cover" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <span className="block font-semibold text-sm sm:text-base text-[color:var(--trite-ink)]">USDT (Tether)</span>
-                  <span className="text-xs sm:text-sm text-[color:var(--trite-muted)]">TRC-20, Low fees</span>
-                </div>
-                <ChevronRightIcon className="h-4 w-4 sm:h-5 sm:w-5 text-[color:var(--trite-muted)] shrink-0" />
-              </button>
+              ) : (
+                cryptoTokens.map((token) => (
+                  <button
+                    key={token.id}
+                    onClick={() =>
+                      handleMethodSelect(
+                        "crypto",
+                        token.symbol,
+                        token.networks[0]?.networkId
+                      )
+                    }
+                    className="flex w-full items-center gap-3 sm:gap-4 rounded-xl bg-gray-100 p-3 sm:p-4 hover:bg-gray-200 transition-all text-left"
+                  >
+                    <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full overflow-hidden bg-white shrink-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={token.logo || `/images/${token.symbol}.jpg`}
+                        alt={token.symbol}
+                        width={40}
+                        height={40}
+                        className="object-cover h-10 w-10 sm:h-12 sm:w-12"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="block font-semibold text-sm sm:text-base text-[color:var(--trite-ink)]">
+                        {token.name} ({token.symbol})
+                      </span>
+                      <span className="text-xs sm:text-sm text-[color:var(--trite-muted)]">
+                        {token.networks.map((n) => n.networkName).join(", ")}
+                      </span>
+                    </div>
+                    <ChevronRightIcon className="h-4 w-4 sm:h-5 sm:w-5 text-[color:var(--trite-muted)] shrink-0" />
+                  </button>
+                ))
+              ))}
             </div>
           </div>
         )}
@@ -562,7 +692,7 @@ export default function DynamicCheckoutPage() {
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     disabled={otpRequired}
-                    placeholder="+233 XX XXX XXXX"
+                    placeholder="02XX XXX XXX"
                     className="mt-2 w-full rounded-xl border border-black/20 px-3 py-3 sm:px-4 sm:py-3.5 text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:border-[#22c55e] transition-all disabled:bg-gray-50 disabled:text-gray-500"
                   />
                   {!otpRequired && (
@@ -626,7 +756,7 @@ export default function DynamicCheckoutPage() {
             )}
 
             {/* Stablecoin Forms */}
-            {(paymentMethod === "usdc" || paymentMethod === "usdt") && (
+            {paymentMethod === "crypto" && cryptoAsset && (
               <div className="mt-6 space-y-4">
                 <div className="rounded-xl bg-[#22c55e]/10 p-4 border border-[#22c55e]/20">
                   <div className="flex items-center gap-3">
@@ -636,9 +766,38 @@ export default function DynamicCheckoutPage() {
                     </span>
                   </div>
                   <p className="mt-2 text-xs text-[color:var(--trite-muted)] leading-relaxed">
-                    You will pay {paymentMethod === "usdt" ? "USDT" : "USDC"} {sessionDetails.stablecoin_equivalent.toFixed(2)} equivalent. Request for a destination address below.
+                    You will pay the {cryptoAsset} equivalent. Select a network and request for a destination address below.
                   </p>
                 </div>
+
+                {/* Network Picker */}
+                {(() => {
+                  const tokenObj = cryptoTokens.find((t) => t.symbol === cryptoAsset);
+                  if (tokenObj && tokenObj.networks.length > 1 && !cryptoAddress) {
+                    return (
+                      <div>
+                        <label className="text-sm font-semibold text-[color:var(--trite-ink)]">Select Network</label>
+                        <div className="mt-2 grid grid-cols-2 gap-2">
+                          {tokenObj.networks.map((net) => (
+                            <button
+                              key={net.networkId}
+                              type="button"
+                              onClick={() => setSelectedNetworkId(net.networkId)}
+                              className={`rounded-lg border px-3 py-2.5 text-sm font-semibold transition-all ${
+                                selectedNetworkId === net.networkId
+                                  ? "border-[#22c55e] bg-[#22c55e]/10 text-[#22c55e] ring-2 ring-[#22c55e]/30"
+                                  : "border-black/10 bg-white text-[color:var(--trite-ink)] hover:bg-gray-50"
+                              }`}
+                            >
+                              {net.networkName}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
 
                 {!cryptoAddress ? (
                   <button
@@ -650,13 +809,29 @@ export default function DynamicCheckoutPage() {
                   </button>
                 ) : (
                   <div className="space-y-4">
+                    <div className="flex justify-center">
+                      <div className="p-3 bg-white rounded-xl border border-black/10">
+                        <QRCodeSVG value={cryptoAddress} size={160} />
+                      </div>
+                    </div>
                     <div className="rounded-xl bg-white border border-black/10 p-4 space-y-3">
                       <div>
                         <label className="text-xs font-semibold text-[color:var(--trite-muted)] uppercase tracking-wider">
                           Destination Address
                         </label>
-                        <div className="mt-1 p-3 bg-gray-50 rounded-lg border border-gray-200 break-all">
+                        <div className="mt-1 p-3 bg-gray-50 rounded-lg border border-gray-200 break-all flex items-start justify-between gap-2">
                           <p className="text-sm font-mono text-[color:var(--trite-ink)]">{cryptoAddress}</p>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(cryptoAddress || "");
+                              setAddressCopied(true);
+                              setTimeout(() => setAddressCopied(false), 2000);
+                            }}
+                            className="shrink-0 rounded-md bg-[#22c55e]/10 px-2 py-1 text-xs font-semibold text-[#22c55e] hover:bg-[#22c55e]/20 transition-colors"
+                          >
+                            {addressCopied ? "Copied!" : "Copy"}
+                          </button>
                         </div>
                       </div>
                       <div>
@@ -665,10 +840,18 @@ export default function DynamicCheckoutPage() {
                         </label>
                         <div className="mt-1 p-3 bg-gray-50 rounded-lg border border-gray-200">
                           <p className="text-lg font-bold text-[#22c55e]">
-                            {cryptoAmount} {paymentMethod === "usdt" ? "USDT" : "USDC"}
+                            {cryptoAmount} {cryptoAsset || ""}
                           </p>
                         </div>
                       </div>
+                      {cryptoExpiresAt && (
+                        <div className="flex items-center gap-2 text-xs">
+                          <ClockIcon className="h-3.5 w-3.5 text-[color:var(--trite-muted)]" />
+                          <span className="text-[color:var(--trite-muted)]">
+                            Address expires: {countdownText || new Date(cryptoExpiresAt).toLocaleTimeString()}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -680,13 +863,21 @@ export default function DynamicCheckoutPage() {
               <div className="flex justify-between text-sm">
                 <span className="text-[color:var(--trite-muted)]">Fees & Surcharges</span>
                 <span className="font-semibold text-[color:var(--trite-ink)]">
-                  {formatCurrency(sessionDetails.processing_fee, sessionDetails.currency)}
+                  {formattedFee}
                 </span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-[color:var(--trite-muted)]">Network Gas fee</span>
-                <span className="font-semibold text-[#22c55e]">{sessionDetails.network_gas}</span>
-              </div>
+              {/*{paymentMethod !== "momo" && paymentMethod !== "card" && (*/}
+              {/*  <div className="flex justify-between text-sm">*/}
+              {/*    <span className="text-[color:var(--trite-muted)]">Network Gas fee</span>*/}
+              {/*    <span className="font-semibold text-[#22c55e]">{sessionDetails.network_gas}</span>*/}
+              {/*  </div>*/}
+              {/*)}*/}
+              {customerBearsFee && (
+                <div className="flex justify-between text-sm border-t border-dashed border-black/5 pt-2">
+                  <span className="font-semibold text-[color:var(--trite-ink)]">Total</span>
+                  <span className="font-bold text-[color:var(--trite-ink)]">{formattedTotal}</span>
+                </div>
+              )}
               {paymentMethod !== "momo" && paymentMethod !== "card" && (
                 <div className="flex justify-between text-sm border-t border-dashed border-black/5 pt-2">
                   <span className="text-[color:var(--trite-muted)]">Stablecoin equivalent</span>
@@ -697,11 +888,11 @@ export default function DynamicCheckoutPage() {
 
             {/* CTAs */}
             <button
-              onClick={(paymentMethod === "usdc" || paymentMethod === "usdt") && cryptoAddress ? handleCryptoPaymentConfirm : handlePaymentSubmit}
-              disabled={(paymentMethod === "usdc" || paymentMethod === "usdt") && !cryptoAddress}
+              onClick={paymentMethod === "crypto" && cryptoAddress ? handleCryptoPaymentConfirm : handlePaymentSubmit}
+              disabled={paymentMethod === "crypto" && !cryptoAddress}
               className="mt-6 w-full rounded-xl bg-[#22c55e] py-4 text-sm font-bold text-white hover:bg-[#1ea74f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              I Have Paid
+              {paymentMethod === "crypto" ? (cryptoAddress ? "I Have Paid" : "Generate Address First") : "Make Payment"}
             </button>
 
             <button
@@ -741,7 +932,7 @@ export default function DynamicCheckoutPage() {
               Payment Successful!
             </h2>
             <p className="mt-2 text-xs sm:text-sm text-[color:var(--trite-muted)]">
-              Your payment of {formattedAmount} has been successfully settled.
+              Your payment of {formattedTotal} has been successfully settled.
             </p>
             <div className="mt-6 rounded-xl bg-black/[0.02] p-4 text-left space-y-2">
               <div className="flex justify-between text-sm">
@@ -769,13 +960,22 @@ export default function DynamicCheckoutPage() {
                 >
                   Return to Merchant
                 </a>
+              ) : receiptDismissed ? (
+                <p className="text-sm text-[color:var(--trite-muted)]">
+                  Payment complete — you may now close this window.
+                </p>
               ) : (
-                <Link
-                  href="/"
+                <button
+                  onClick={() => {
+                    // Only works when the tab was script-opened; otherwise
+                    // fall through to the close-this-window message.
+                    window.close();
+                    setReceiptDismissed(true);
+                  }}
                   className="block w-full rounded-xl bg-[color:var(--trite-ink)] py-3.5 text-sm font-semibold text-white hover:bg-black text-center transition-colors"
                 >
                   Done
-                </Link>
+                </button>
               )}
             </div>
           </div>
@@ -916,6 +1116,15 @@ function LockIcon({ className }: { className?: string }) {
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
       <rect x="5" y="11" width="14" height="10" rx="2" />
       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+  );
+}
+
+function ClockIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
     </svg>
   );
 }

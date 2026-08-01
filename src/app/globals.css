@@ -225,6 +225,32 @@ select {
   padding-right: 2.25rem !important;
 }
 
+/* Dark-theme select override — e.g. the Live Auditing Console refresh-rate
+   dropdown. The block above forces a white/black light-theme select
+   everywhere; without this the text gets squeezed and clipped inside a
+   compact dark control. Kept as an explicit opt-in class so it never leaks
+   into the default light selects used across the rest of the app. */
+select.console-select {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+  font-size: 0.625rem !important;   /* 10px */
+  font-weight: 700 !important;
+  line-height: 1.4 !important;
+  padding: 0.375rem 1.5rem 0.375rem 0.5rem !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' fill-opacity='0.5' d='M6 8L1 3h10z'/%3E%3C/svg%3E") !important;
+  background-position: right 0.5rem center !important;
+}
+
+select.console-select:focus {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+select.console-select option {
+  background-color: #171717;
+  color: #ffffff;
+}
+
 /* --- Remove all box shadows from cards and containers in merchant and admin portals and add thin border --- */
 .merchant-portal .shadow-sm,
 .merchant-portal .shadow,

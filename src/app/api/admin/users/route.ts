@@ -2,6 +2,7 @@
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
 import { requireAdmin } from "@/lib/guards";
+import { fromMinorUnits } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,6 +19,10 @@ export async function GET(request: NextRequest) {
     let query = db("users")
       .leftJoin("merchants", "users.id", "merchants.user_id")
       .leftJoin("admin_profiles", "users.id", "admin_profiles.user_id")
+      .leftJoin("ledger_account_balances", function () {
+        this.on("merchants.id", "=", "ledger_account_balances.owner_id")
+          .andOnVal("ledger_account_balances.account_type", "=", "MERCHANT_FLOAT");
+      })
       .select(
         "users.id",
         "users.email",
@@ -29,7 +34,7 @@ export async function GET(request: NextRequest) {
         "merchants.business_name",
         "merchants.merchant_display_id",
         "merchants.tier as merchant_tier",
-        "merchants.available_balance",
+        "ledger_account_balances.balance as available_balance",
         "admin_profiles.admin_id_display"
       );
 
@@ -58,9 +63,14 @@ export async function GET(request: NextRequest) {
       .orderBy("users.created_at", "desc")
       .limit(per_page)
       .offset((page - 1) * per_page);
+      
+    const formattedUsers = users.map((u: any) => ({
+      ...u,
+      available_balance: u.available_balance != null ? fromMinorUnits(u.available_balance) : null,
+    }));
 
     return Response.json({
-      data: users,
+      data: formattedUsers,
       pagination: {
         page,
         per_page,

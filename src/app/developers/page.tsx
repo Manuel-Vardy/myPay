@@ -157,54 +157,45 @@ export default function DevelopersPage() {
                 {
                   icon: <Server className="h-8 w-8" />,
                   title: "REST APIs",
-                  description: "Powerful, simple REST APIs for all your payment needs."
+                  description: "Powerful, simple REST APIs for all your payment needs.",
+                  href: "/api-docs#getting-started"
                 },
                 {
                   icon: <Database className="h-8 w-8" />,
                   title: "Webhooks",
-                  description: "Real-time event notifications to keep your systems in sync."
+                  description: "Real-time event notifications to keep your systems in sync.",
+                  href: "/api-docs#webhooks"
                 },
                 {
                   icon: <Terminal className="h-8 w-8" />,
                   title: "SDKs",
-                  description: "Official SDKs for multiple programming languages and platforms."
-                },
-                {
-                  icon: <Code2 className="h-8 w-8" />,
-                  title: "Sandbox Environment",
-                  description: "Test your integrations in a safe, isolated environment."
+                  description: "Official SDKs for multiple programming languages and platforms.",
+                  href: "/api-docs#sdk"
                 },
                 {
                   icon: <ShieldCheck className="h-8 w-8" />,
                   title: "Authentication",
-                  description: "Secure, token-based authentication for all requests."
-                },
-                {
-                  icon: <BookOpen className="h-8 w-8" />,
-                  title: "Payment Guides",
-                  description: "Step-by-step guides to help you get started quickly."
+                  description: "Secure, token-based authentication for all requests.",
+                  href: "/api-docs#authentication"
                 },
                 {
                   icon: <Terminal className="h-8 w-8" />,
                   title: "API Reference",
-                  description: "Comprehensive documentation for all endpoints."
+                  description: "Comprehensive documentation for all endpoints.",
+                  href: "/api-docs#create-session"
                 },
                 {
                   icon: <Code2 className="h-8 w-8" />,
                   title: "Sample Code",
-                  description: "Ready-to-use code examples to accelerate development."
-                },
-                {
-                  icon: <Zap className="h-8 w-8" />,
-                  title: "Status Dashboard",
-                  description: "Real-time status updates for our platform and APIs."
+                  description: "Ready-to-use code examples to accelerate development.",
+                  href: "/api-docs#create-session"
                 }
               ].map((item, index) => (
                 <Link
                   key={item.title}
-                  href="/api-docs"
+                  href={item.href}
                   className={`animate-on-scroll group flex items-start gap-6 py-8 transition-all duration-300 hover:translate-x-2 ${
-                    index < 6 ? 'border-b border-white/30' : ''
+                    index < 3 ? 'border-b border-white/30' : ''
                   } ${
                     index % 3 !== 2 ? 'border-r border-white/30' : ''
                   } px-4`}

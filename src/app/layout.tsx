@@ -15,6 +15,18 @@ export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
   title: "Trite",
   description: "Financial Services Company",
+  manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/trite-fav.png", type: "image/png", sizes: "512x512" },
+      { url: "/icon.png", type: "image/png" },
+    ],
+    shortcut: ["/favicon.ico"],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
   openGraph: {
     type: "website",
     siteName: "Trite",

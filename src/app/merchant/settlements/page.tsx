@@ -24,10 +24,28 @@ export type APISettlement = {
   gross_amount: number;
   fees: number;
   net_amount: number;
-  status: "PENDING" | "COMPLETED" | "FAILED";
+  status: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED" | "CANCELLED";
   account_id?: string;
   account?: APISettlementAccount | null;
   created_at: string;
+};
+
+type WithdrawalRequest = {
+  id: string;
+  request_id_display: string;
+  amount: number;
+  currency: string;
+  status: "PENDING" | "PROCESSING" | "APPROVED" | "REJECTED" | "FAILED";
+  account: {
+    provider_name: string;
+    account_name: string;
+    account_number: string;
+    account_type: string;
+  } | null;
+  review_note: string | null;
+  failure_reason: string | null;
+  created_at: string;
+  reviewed_at: string | null;
 };
 
 // SVG Icons
@@ -49,6 +67,7 @@ export default function SettlementsPage() {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [adding, setAdding] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [kycStatus, setKycStatus] = useState<string | null | undefined>(undefined);
 
   const [form, setForm] = useState({
     account_type: "BANK",
@@ -77,6 +96,14 @@ export default function SettlementsPage() {
       .catch(() => {});
   }, []);
 
+  // Fetch KYC status for gating warnings
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => setKycStatus(d.kyc_status ?? null))
+      .catch(() => {});
+  }, []);
+
   const MOBILE_NETWORKS = ["MTN", "TELECEL", "AT"] as const;
 
   const { data: fetchRes, loading, error } = useMerchantFetch<{ 
@@ -90,8 +117,16 @@ export default function SettlementsPage() {
 
   const { data: accountsRes, loading: accountsLoading } = useMerchantFetch<{ data: APISettlementAccount[] }>("/api/merchant/settlement-accounts");
 
+  const { data: withdrawRes } = useMerchantFetch<{ data: WithdrawalRequest[] }>("/api/merchant/withdraw");
+
   const settlements = fetchRes?.data ?? [];
   const accounts = accountsRes?.data ?? [];
+  const withdrawalRequests = withdrawRes?.data ?? [];
+
+  // Filter to only show active (non-terminal) withdrawal requests
+  const pendingWithdrawals = withdrawalRequests.filter(
+    (w) => w.status === "PENDING" || w.status === "PROCESSING"
+  );
 
   // Derived metrics from summary API
   let totalSettlements = 0;
@@ -149,6 +184,8 @@ export default function SettlementsPage() {
       setAdding(false);
     }
   };
+
+  const isKycApproved = kycStatus === "APPROVED";
 
   return (
     <div className="px-4 py-5 sm:p-6">
@@ -268,6 +305,100 @@ export default function SettlementsPage() {
         )}
       </div>
 
+      {/* Pending Withdrawal Requests — only show if any exist */}
+      {pendingWithdrawals.length > 0 && (
+        <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-[color:var(--trite-ink)]">Pending Withdrawals</h2>
+              <p className="text-xs text-[color:var(--trite-muted)]">
+                {pendingWithdrawals.length} request{pendingWithdrawals.length !== 1 ? "s" : ""} awaiting admin approval
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-amber-500" />
+              </span>
+              <span className="text-xs font-semibold text-amber-600">
+                {formatGHS(pendingWithdrawals.reduce((sum, w) => sum + w.amount, 0))} held
+              </span>
+            </div>
+          </div>
+
+          {/* KYC warning */}
+          {kycStatus !== undefined && !isKycApproved && (
+            <div className="mb-4 flex items-start gap-3 rounded-xl bg-amber-50 p-3.5 ring-1 ring-amber-200/60">
+              <svg className="h-5 w-5 shrink-0 text-amber-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <div className="text-sm text-amber-800">
+                <span className="font-bold">Withdrawals are on hold.</span>{" "}
+                Your identity verification (KYC) is not yet approved. Pending withdrawals will not be processed until your account is fully verified.{" "}
+                <button
+                  onClick={() => router.push("/merchant/settings")}
+                  className="font-bold underline underline-offset-2 hover:text-amber-900 transition-colors"
+                >
+                  Complete verification →
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[600px]">
+              <thead className="bg-[#f8f9fa]">
+                <tr className="text-left border-b border-black/5">
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Date</th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Request ID</th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Destination</th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Status</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">Amount</th>
+                </tr>
+              </thead>
+              <tbody className="text-sm">
+                {pendingWithdrawals.map((w) => (
+                  <tr key={w.id} className="border-b border-black/5 last:border-b-0 hover:bg-[#f8f9fa] transition-colors">
+                    <td className="px-4 py-3.5">
+                      <div className="font-semibold text-[color:var(--trite-ink)]">
+                        {new Date(w.created_at).toLocaleDateString("en-GH", { month: "short", day: "numeric" })}
+                      </div>
+                      <div className="text-[10px] text-[color:var(--trite-muted)]">
+                        {new Date(w.created_at).toLocaleTimeString("en-GH", { hour: "2-digit", minute: "2-digit" })}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <span className="font-mono text-xs font-medium text-[color:var(--trite-ink)]">{w.request_id_display}</span>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      {w.account ? (
+                        <div>
+                          <div className="font-medium text-[color:var(--trite-ink)]">{w.account.provider_name}</div>
+                          <div className="text-xs text-[color:var(--trite-muted)]">{w.account.account_number}</div>
+                        </div>
+                      ) : (
+                        <span className="text-[color:var(--trite-muted)] italic">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-wide uppercase ${
+                        w.status === "PROCESSING" ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-700"
+                      }`}>
+                        <span className={`h-1.5 w-1.5 rounded-full ${
+                          w.status === "PROCESSING" ? "bg-blue-500" : "bg-amber-500 animate-pulse"
+                        }`} />
+                        {w.status === "PENDING" ? "Awaiting Approval" : "Processing"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3.5 text-right font-bold text-[color:var(--trite-ink)]">{formatGHS(w.amount)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
         <div className="mb-6 flex flex-wrap items-center gap-2">
           <button onClick={() => setLedgerFilter("all")} className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${ledgerFilter === "all" ? "bg-[color:var(--trite-ink)] text-white" : "bg-black/[0.04] text-[color:var(--trite-ink)] hover:bg-black/[0.06]"}`}>All</button>
@@ -309,9 +440,19 @@ export default function SettlementsPage() {
                   </td>
                   <td className="px-5 py-4">
                     <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-wide uppercase ${
-                      s.status === "COMPLETED" ? "bg-[color:var(--trite-lime)] text-white" : "bg-amber-100 text-amber-700"
+                      s.status === "COMPLETED"  ? "bg-[color:var(--trite-lime)] text-white" :
+                      s.status === "PROCESSING" ? "bg-blue-100 text-blue-700" :
+                      s.status === "PENDING"    ? "bg-amber-100 text-amber-700" :
+                      s.status === "FAILED"     ? "bg-red-100 text-red-600" :
+                                                  "bg-gray-100 text-gray-500"
                     }`}>
-                      <span className={`h-1.5 w-1.5 rounded-full ${s.status === "COMPLETED" ? "bg-white" : "bg-amber-500"}`} />
+                      <span className={`h-1.5 w-1.5 rounded-full ${
+                        s.status === "COMPLETED"  ? "bg-white" :
+                        s.status === "PROCESSING" ? "bg-blue-500" :
+                        s.status === "PENDING"    ? "bg-amber-500" :
+                        s.status === "FAILED"     ? "bg-red-500" :
+                                                    "bg-gray-400"
+                      }`} />
                       {s.status}
                     </span>
                   </td>

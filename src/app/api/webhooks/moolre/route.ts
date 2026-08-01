@@ -4,6 +4,8 @@
 // Each provider gets its own webhook route under /api/webhooks/<provider>.
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
+import { chargeTransactionFee } from "@/lib/fees";
+import { settleMomoPayment, failMomoPayment } from "@/lib/payments/settle-momo";
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,22 +25,24 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "Missing externalref" }, { status: 400 });
     }
 
-    // --- Map Moolre txstatus to internal status ---
-    let internalStatus: "SUCCESS" | "FAILED" | "PROCESSING";
+    // --- Map Moolre txstatus to internal transaction_status enum values ---
+    // Provider "success" maps to SETTLED, matching the crypto settlement
+    // path (funds are credited to the merchant float immediately below).
+    let internalStatus: "SETTLED" | "FAILED" | "INITIATED";
     switch (txstatus) {
       case 1:
-        internalStatus = "SUCCESS";
+        internalStatus = "SETTLED";
         break;
       case 2:
         internalStatus = "FAILED";
         break;
       default:
         // 0 or unknown — still processing, nothing to update
-        internalStatus = "PROCESSING";
+        internalStatus = "INITIATED";
     }
 
     // Only update if we have a terminal status
-    if (internalStatus === "PROCESSING") {
+    if (internalStatus === "INITIATED") {
       return Response.json({ received: true, status: "still_processing" });
     }
 
@@ -55,46 +59,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Don't re-process already terminal transactions
-    if (transaction.status === "SUCCESS" || transaction.status === "FAILED") {
+    if (transaction.status === "SETTLED" || transaction.status === "FAILED") {
       return Response.json({ received: true, status: "already_terminal" });
     }
 
-    // --- Update in a DB transaction ---
-    await db.transaction(async (trx) => {
-      // Update the transaction
-      await trx("transactions")
-        .where({ id: transaction.id })
-        .update({
-          status: internalStatus,
-          metadata: JSON.stringify({
-            ...JSON.parse(transaction.metadata || "{}"),
-            moolre_transaction_id: transactionid,
-            moolre_webhook_received_at: new Date().toISOString(),
-          }),
-          updated_at: new Date(),
-        });
-
-      // Update the associated payment session
-      if (internalStatus === "SUCCESS") {
-        await trx("payment_sessions")
-          .where({ transaction_id: transaction.id })
-          .update({ status: "COMPLETED", updated_at: new Date() });
-
-        // Credit the merchant's available balance
-        await trx("merchants")
-          .where({ id: transaction.merchant_id })
-          .increment("available_balance", Number(transaction.amount));
-      }
-
-      // Log the event
-      await trx("system_logs").insert({
-        level: "INFO",
+    if (internalStatus === "SETTLED") {
+      await settleMomoPayment({
+        transactionId: transaction.id,
+        providerRef: transactionid,
+        providerName: "Moolre",
         source: "WEBHOOK_MOOLRE",
-        event_description:
-          `Moolre webhook: tx ${transaction.tx_id_display} → ${internalStatus}` +
-          ` | amount=${amount} | payer=${payer} | moolre_id=${transactionid}`,
       });
-    });
+    } else if (internalStatus === "FAILED") {
+      await failMomoPayment({
+        transactionId: transaction.id,
+        providerRef: transactionid,
+        providerName: "Moolre",
+        source: "WEBHOOK_MOOLRE",
+      });
+    }
 
     // Moolre expects a 200 OK to stop retrying
     return Response.json({ received: true, status: internalStatus.toLowerCase() });

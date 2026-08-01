@@ -1,5 +1,6 @@
 "use client";
 
+import { Toaster } from "sonner";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -8,9 +9,12 @@ import {
   LayoutGrid,
   Users,
   Receipt,
+  Banknote,
+  HandCoins,
   ShieldCheck,
   FileText,
   Key,
+  TrendingUp,
   HelpCircle,
   Settings,
   LogOut,
@@ -22,8 +26,11 @@ import {
 
 const sidebarItems = [
   { id: "dashboard", label: "Dashboard", href: "/admin", icon: LayoutGrid },
-  { id: "users", label: "Users", href: "/admin/users", icon: Users },
+  { id: "merchants", label: "Merchants", href: "/admin/merchants", icon: Users },
   { id: "transactions", label: "Transactions", href: "/admin/transactions", icon: Receipt },
+  { id: "settlements", label: "Settlements", href: "/admin/settlements", icon: Banknote },
+  { id: "withdrawals", label: "Withdrawals", href: "/admin/withdrawals", icon: HandCoins },
+  { id: "revenue", label: "Revenue", href: "/admin/revenue", icon: TrendingUp },
   { id: "kyc", label: "KYC Center", href: "/admin/kyc", icon: ShieldCheck },
   { id: "logs", label: "Logs", href: "/admin/logs", icon: FileText },
   { id: "roles", label: "Roles", href: "/admin/roles", icon: Key },
@@ -326,6 +333,7 @@ export default function AdminDashboardLayout({
           </div>
         </>
       )}
+      <Toaster position="top-right" richColors />
     </div>
   );
 }

@@ -16,6 +16,8 @@ export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [mfaToken, setMfaToken] = useState(["", "", "", "", "", ""]);
   const [mfaUserId, setMfaUserId] = useState("");
+  const [useBackupCode, setUseBackupCode] = useState(false);
+  const [backupCode, setBackupCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const mfaInputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -60,14 +62,13 @@ export default function AdminLoginPage() {
   const handleMfaSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
 
-    const token = mfaToken.join("");
-    if (token.length !== 6) {
-      setError("Please enter the full 6-digit code");
-      setLoading(false);
+    const token = useBackupCode ? backupCode.trim() : mfaToken.join("");
+    if (useBackupCode ? !token : token.length !== 6) {
+      setError(useBackupCode ? "Enter a backup code" : "Please enter the full 6-digit code");
       return;
     }
+    setLoading(true);
 
     try {
       const res = await fetch("/api/auth/mfa", {
@@ -81,6 +82,7 @@ export default function AdminLoginPage() {
       if (!res.ok) {
         setError(data.error || "Invalid verification code");
         setMfaToken(["", "", "", "", "", ""]);
+        setBackupCode("");
         mfaInputRefs.current[0]?.focus();
         setLoading(false);
         return;
@@ -273,22 +275,32 @@ export default function AdminLoginPage() {
                   </div>
                 </div>
 
-                {/* 6-digit code inputs */}
-                <div className="flex justify-center gap-2 sm:gap-3">
-                  {mfaToken.map((digit, idx) => (
-                    <input
-                      key={idx}
-                      ref={(el) => { mfaInputRefs.current[idx] = el; }}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      value={digit}
-                      onChange={(e) => handleMfaInput(idx, e.target.value)}
-                      onKeyDown={(e) => handleMfaKeyDown(idx, e)}
-                      className="h-14 w-11 rounded-xl border border-black/10 bg-white text-center text-xl font-semibold text-[color:var(--trite-ink)] outline-none transition-all focus:border-[color:var(--trite-lime-strong)] focus:ring-2 focus:ring-[color:var(--trite-lime-strong)]/30 sm:h-16 sm:w-14"
-                    />
-                  ))}
-                </div>
+                {useBackupCode ? (
+                  <input
+                    type="text"
+                    autoFocus
+                    value={backupCode}
+                    onChange={(e) => setBackupCode(e.target.value.toUpperCase())}
+                    placeholder="XXXX-XXXX"
+                    className="h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-center text-lg font-semibold tracking-widest text-[color:var(--trite-ink)] outline-none transition-all focus:border-[color:var(--trite-lime-strong)] focus:ring-2 focus:ring-[color:var(--trite-lime-strong)]/30"
+                  />
+                ) : (
+                  <div className="flex justify-center gap-2 sm:gap-3">
+                    {mfaToken.map((digit, idx) => (
+                      <input
+                        key={idx}
+                        ref={(el) => { mfaInputRefs.current[idx] = el; }}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) => handleMfaInput(idx, e.target.value)}
+                        onKeyDown={(e) => handleMfaKeyDown(idx, e)}
+                        className="h-14 w-11 rounded-xl border border-black/10 bg-white text-center text-xl font-semibold text-[color:var(--trite-ink)] outline-none transition-all focus:border-[color:var(--trite-lime-strong)] focus:ring-2 focus:ring-[color:var(--trite-lime-strong)]/30 sm:h-16 sm:w-14"
+                      />
+                    ))}
+                  </div>
+                )}
 
                 <button
                   className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[color:var(--trite-ink)] px-6 text-sm font-semibold text-white hover:bg-black focus:outline-none focus:ring-2 focus:ring-[color:var(--trite-lime-strong)] focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
@@ -308,8 +320,23 @@ export default function AdminLoginPage() {
                 <button
                   type="button"
                   onClick={() => {
+                    setUseBackupCode(!useBackupCode);
+                    setError("");
+                    setMfaToken(["", "", "", "", "", ""]);
+                    setBackupCode("");
+                  }}
+                  className="w-full text-center text-xs font-medium text-[color:var(--trite-muted)] hover:text-[color:var(--trite-ink)]"
+                >
+                  {useBackupCode ? "Use authenticator app instead" : "Use a backup code instead"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
                     setStep("credentials");
                     setMfaToken(["", "", "", "", "", ""]);
+                    setBackupCode("");
+                    setUseBackupCode(false);
                     setError("");
                   }}
                   className="w-full text-center text-xs font-medium text-[color:var(--trite-muted)] hover:text-[color:var(--trite-ink)]"

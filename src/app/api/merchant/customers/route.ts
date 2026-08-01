@@ -1,7 +1,7 @@
 // GET & POST /api/merchant/customers — customer directory for a merchant
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
-import { getSession } from "@/lib/session";
+import { requireVerifiedMerchant } from "@/lib/guards";
 import { hashPassword } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
@@ -13,16 +13,9 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get("sort") || "recent"; // recent | volume | name
     const tier = searchParams.get("tier"); // standard | enterprise | institutional
 
-    const session = await getSession();
-    if (!session || session.role !== "MERCHANT") {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const merchantUser = await db("merchants").where({ user_id: session.userId }).first();
-    if (!merchantUser) {
-      return Response.json({ error: "Merchant profile not found" }, { status: 404 });
-    }
-    const merchant_id = merchantUser.id;
+    const guard = await requireVerifiedMerchant();
+    if (guard.error) return guard.error;
+    const merchant_id = guard.merchant.id;
 
     // --- Main query: customers joined with users for profile info ---
     let query = db("customers")
@@ -145,16 +138,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getSession();
-    if (!session || session.role !== "MERCHANT") {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const merchantUser = await db("merchants").where({ user_id: session.userId }).first();
-    if (!merchantUser) {
-      return Response.json({ error: "Merchant profile not found" }, { status: 404 });
-    }
-    const merchant_id = merchantUser.id;
+    const guard = await requireVerifiedMerchant();
+    if (guard.error) return guard.error;
+    const merchant_id = guard.merchant.id;
 
     const body = await request.json();
     const { name, email, tier, phone } = body;

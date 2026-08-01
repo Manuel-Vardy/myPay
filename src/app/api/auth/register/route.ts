@@ -3,6 +3,10 @@ import { type NextRequest } from "next/server";
 import db from "@/lib/db";
 import { hashPassword } from "@/lib/auth";
 import { createSession } from "@/lib/session";
+import { generateToken, hashToken } from "@/lib/tokens";
+import { sendVerificationEmail, DASHBOARD_BASE_URL } from "@/lib/email";
+
+const EMAIL_VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,6 +32,9 @@ export async function POST(request: NextRequest) {
     // Hash password with bcrypt
     const password_hash = await hashPassword(password);
 
+    // Email verification token — separate from the KYC-driven `status` field
+    const verificationToken = generateToken();
+
     // Create user + merchant in a transaction
     const result = await db.transaction(async (trx) => {
       const [user] = await trx("users")
@@ -37,7 +44,9 @@ export async function POST(request: NextRequest) {
           first_name,
           last_name,
           role: "MERCHANT",
-          status: "PENDING", // requires KYC approval
+          status: "PENDING_VERIFICATION", // requires KYC approval
+          email_verification_token: hashToken(verificationToken),
+          email_verification_expires: new Date(Date.now() + EMAIL_VERIFICATION_TTL_MS),
         })
         .returning("*");
 
@@ -61,7 +70,7 @@ export async function POST(request: NextRequest) {
       await trx("kyc_records").insert({
         user_id: user.id,
         identity_id,
-        tier: "MERCHANT",
+        tier: "ENHANCED",
         status: "PENDING",
       });
 
@@ -73,8 +82,24 @@ export async function POST(request: NextRequest) {
         actor_id: user.id,
       });
 
+      // Register the merchant account with the Triton crypto provider
+      try {
+        const { getCryptoProvider } = require("@/lib/payments");
+        const crypto = getCryptoProvider();
+        await crypto.registerAccount(merchant.id);
+      } catch (tritonErr) {
+        // Log error but do not fail registration
+        console.error("Failed to auto-register merchant on Triton on signup:", tritonErr);
+      }
+
       return { user, merchant };
     });
+
+    // Send the verification email — signup succeeds regardless of delivery outcome.
+    const verifyUrl = `${DASHBOARD_BASE_URL}/verify-email?token=${verificationToken}`;
+    sendVerificationEmail(result.user.email, verifyUrl).catch((err) =>
+      console.error("Failed to send verification email on signup:", err)
+    );
 
     // Create session for the new user
     const token = await createSession(result.user.id, result.user.role);

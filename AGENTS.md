@@ -137,3 +137,14 @@ export async function GET(request: NextRequest) {
 ### 6.4 Client-Side Fetching & State
 - Admin and Merchant portals query their respective endpoints via custom wrapper hooks (`useAdminFetch` / `useMerchantFetch`).
 - These hooks automatically forward credentials and handle loading/error states in React components.
+
+### 6.5 Triton Crypto Microservice Integration
+- **Dynamic Token Catalog**: The checkout page fetches supported tokens and networks dynamically from `/api/payments/crypto-tokens` and `/api/payments/crypto-networks`. The user selects a specific network (e.g. `base`, `bsc`, `ethereum`, `solana`) before generating a deposit address.
+- **Address Generation**: Calls `/api/payments/[sessionId]/crypto-address` with the chosen `currency` and `networkId`. The backend uses `toRail(symbol, networkId)` to determine the payment rail (e.g., `USDC_BASE`).
+- **Self-Healing Registration**: If the Triton microservice throws a `404` (merchant not registered) when creating an invoice, the backend automatically registers the merchant account on Triton on-the-fly and retries the invoice creation seamlessly.
+- **Payment Rail Sync**: DB schema migration `0017` extends the `payment_rail` PostgreSQL enum to support dynamic rails like `USDC_BASE`, `USDT_SOLANA`, etc., derived dynamically as `${symbol}_${networkId.toUpperCase()}`.
+
+### 6.6 Minor Units Conversion
+- **Database Precision**: Amounts inside the database are stored as `bigint` representation of minor units (e.g., cents for USD, pesewas for GHS).
+- **Formatting Helpers**: The `@/lib/utils` exports `fromMinorUnits` to safely format `bigint` or integer strings back into standard decimal numbers before sending them to the client or rendering transaction logs (e.g. `fromMinorUnits(session.amount)`).
+

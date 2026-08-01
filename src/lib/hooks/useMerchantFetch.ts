@@ -7,6 +7,9 @@ export function useMerchantFetch<T>(path: string, params?: Record<string, string
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [tick, setTick] = useState(0);
+  const mutate = () => setTick(t => t + 1);
+
   const serializedParams = JSON.stringify(params);
 
   useEffect(() => {
@@ -33,7 +36,7 @@ export function useMerchantFetch<T>(path: string, params?: Record<string, string
       .catch((e) => setError("Failed to load data: " + e.message))
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [path, serializedParams]);
+  }, [path, serializedParams, tick]);
 
-  return { data, loading, error };
+  return { data, loading, error, mutate };
 }

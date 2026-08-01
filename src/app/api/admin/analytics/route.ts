@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     // Regional performance: volume by merchant region
     const regionalVolume = await db("transactions")
       .join("merchants", "transactions.merchant_id", "merchants.id")
-      .where("transactions.status", "SUCCESS")
+      .where("transactions.status", "SETTLED")
       .where("transactions.created_at", ">=", dateFilter)
       .whereNotNull("merchants.region")
       .select("merchants.region")

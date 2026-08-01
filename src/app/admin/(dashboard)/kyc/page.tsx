@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAdminFetch } from "@/lib/hooks/useAdminFetch";
 import {
   Search,
@@ -39,6 +40,7 @@ type ActivityItem = {
 
 
 export default function AdminKycPage() {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
 
@@ -262,7 +264,10 @@ export default function AdminKycPage() {
                       >
                         {updatingId === k.id ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-red-600 border-t-transparent" /> : <XIcon className="h-4 w-4" />}
                       </button>
-                      <button className="flex h-8 w-8 items-center justify-center rounded-full bg-black/[0.04] text-[color:var(--trite-muted)] hover:bg-black/[0.08]">
+                      <button 
+                        onClick={() => router.push(`/admin/kyc/${k.id}`)}
+                        className="flex h-8 w-8 items-center justify-center rounded-full bg-black/[0.04] text-[color:var(--trite-muted)] hover:bg-black/[0.08]"
+                      >
                         <ChevronRightIcon className="h-4 w-4" />
                       </button>
                     </div>

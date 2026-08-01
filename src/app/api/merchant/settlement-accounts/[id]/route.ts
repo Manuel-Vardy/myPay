@@ -1,16 +1,15 @@
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
-import { getSession } from "@/lib/session";
+import { requireMerchant } from "@/lib/guards";
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getSession();
-    if (!session || session.role !== "MERCHANT") {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const guard = await requireMerchant();
+    if (guard.error) return guard.error;
+    const session = guard.session;
 
     const merchantUser = await db("merchants").where({ user_id: session.userId }).first();
     if (!merchantUser) {

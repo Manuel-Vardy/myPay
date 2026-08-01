@@ -9,7 +9,8 @@ type PaymentLink = {
   merchant_id: string;
   title: string;
   description: string | null;
-  amount: number;
+  /** null = customer enters the amount at checkout */
+  amount: number | null;
   currency: string;
   redirect_url: string | null;
   is_active: boolean;
@@ -84,7 +85,10 @@ export default function PaymentLinksPage() {
 
   // Copy URL to clipboard
   const handleCopyLink = (displayId: string) => {
-    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+    // Shared links must open on the checkout deployment, not the dashboard
+    const baseUrl =
+      process.env.NEXT_PUBLIC_CHECKOUT_BASE_URL ||
+      (typeof window !== "undefined" ? window.location.origin : "");
     const fullUrl = `${baseUrl}/lnk/${displayId}`;
     navigator.clipboard.writeText(fullUrl);
     triggerToast("Payment link copied to clipboard!");
@@ -97,8 +101,9 @@ export default function PaymentLinksPage() {
       setActionError("Title is required");
       return;
     }
-    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-      setActionError("A valid positive amount is required");
+    // Empty amount = customer enters the amount at checkout
+    if (amount && (isNaN(Number(amount)) || Number(amount) <= 0)) {
+      setActionError("Amount must be a positive number when provided");
       return;
     }
 
@@ -112,7 +117,7 @@ export default function PaymentLinksPage() {
         body: JSON.stringify({
           title,
           description: description || undefined,
-          amount: Number(amount),
+          amount: amount ? Number(amount) : null,
           currency,
           redirect_url: redirectUrl || undefined,
           expires_at: expiresAt || undefined,
@@ -313,7 +318,13 @@ export default function PaymentLinksPage() {
                       )}
                     </td>
                     <td className="py-4 px-4 font-semibold text-[color:var(--trite-ink)]">
-                      {formatAmount(link.amount, link.currency)}
+                      {link.amount === null ? (
+                        <span className="text-xs font-medium text-[color:var(--trite-muted)] italic">
+                          Customer decides
+                        </span>
+                      ) : (
+                        formatAmount(link.amount, link.currency)
+                      )}
                     </td>
                     <td className="py-4 px-4">
                       <code className="text-xs bg-black/[0.04] px-2 py-1 rounded font-mono text-[color:var(--trite-ink)]">
@@ -449,13 +460,12 @@ export default function PaymentLinksPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-[color:var(--trite-muted)] mb-1">
-                    Amount
+                    Amount (Optional)
                   </label>
                   <input
                     type="number"
                     step="0.01"
-                    required
-                    placeholder="0.00"
+                    placeholder="Blank — customer enters amount"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     className="w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm outline-none focus:border-[#22c55e] transition-all text-gray-900"

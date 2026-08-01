@@ -48,7 +48,10 @@ export interface CheckStatusParams {
   externalRef: string;
 }
 
-export type ProviderTxStatus = "PENDING" | "SUCCESS" | "FAILED";
+// NOT_FOUND: the provider has no transaction under our reference — the
+// payment was never created on their side (abandoned USSD prompt, OTP never
+// completed). Distinct from PENDING so callers can decide how long to wait.
+export type ProviderTxStatus = "PENDING" | "SUCCESS" | "FAILED" | "NOT_FOUND";
 
 export interface CheckStatusResult {
   /** Normalised status. */

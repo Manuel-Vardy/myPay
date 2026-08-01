@@ -13,6 +13,7 @@ export interface SessionPayload extends JWTPayload {
   userId: string;
   role: UserRole;
   expiresAt: string; // ISO date string
+  sessionId?: string; // user_sessions row id (absent on legacy tokens)
 }
 
 /**
@@ -48,7 +49,8 @@ export async function decrypt(
  */
 export async function createSession(
   userId: string,
-  role: UserRole
+  role: UserRole,
+  sessionId?: string
 ): Promise<string> {
   const expiresAt = new Date(
     Date.now() + SESSION_TTL_DAYS * 24 * 60 * 60 * 1000
@@ -58,6 +60,7 @@ export async function createSession(
     userId,
     role,
     expiresAt: expiresAt.toISOString(),
+    ...(sessionId && { sessionId }),
   };
 
   const token = await encrypt(payload);

@@ -1,7 +1,8 @@
 // GET /api/merchant/settlements — settlement history for a merchant
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
-import { getSession } from "@/lib/session";
+import { requireVerifiedMerchant } from "@/lib/guards";
+import { fromMinorUnits } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,16 +10,9 @@ export async function GET(request: NextRequest) {
     const page = Math.max(1, Number(searchParams.get("page") || 1));
     const per_page = Math.min(50, Math.max(1, Number(searchParams.get("per_page") || 20)));
     const status = searchParams.get("status"); // PENDING, COMPLETED, FAILED
-    const session = await getSession();
-    if (!session || session.role !== "MERCHANT") {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const merchantUser = await db("merchants").where({ user_id: session.userId }).first();
-    if (!merchantUser) {
-      return Response.json({ error: "Merchant profile not found" }, { status: 404 });
-    }
-    const merchant_id = merchantUser.id;
+    const guard = await requireVerifiedMerchant();
+    if (guard.error) return guard.error;
+    const merchant_id = guard.merchant.id;
 
     let query = db("settlements").where({ merchant_id });
     if (status) query = query.where("status", status);
@@ -42,6 +36,9 @@ export async function GET(request: NextRequest) {
       const acc = s.account_id ? accountMap.get(s.account_id) : null;
       return {
         ...s,
+        gross_amount: s.gross_amount != null ? fromMinorUnits(s.gross_amount) : null,
+        fees: s.fees != null ? fromMinorUnits(s.fees) : null,
+        net_amount: s.net_amount != null ? fromMinorUnits(s.net_amount) : null,
         account: acc ? {
           ...acc,
           account_number: `****${String(acc.account_number).slice(-4)}`
@@ -50,7 +47,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Summary totals
-    const summary = await db("settlements")
+    const rawSummary = await db("settlements")
       .where({ merchant_id })
       .select("status")
       .sum("gross_amount as gross")
@@ -58,6 +55,13 @@ export async function GET(request: NextRequest) {
       .sum("net_amount as net")
       .count("id as count")
       .groupBy("status");
+
+    const summary = rawSummary.map((s: any) => ({
+      ...s,
+      gross: s.gross != null ? fromMinorUnits(s.gross) : null,
+      fees: s.fees != null ? fromMinorUnits(s.fees) : null,
+      net: s.net != null ? fromMinorUnits(s.net) : null,
+    }));
 
     return Response.json({
       data: settlements,

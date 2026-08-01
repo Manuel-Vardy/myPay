@@ -15,6 +15,7 @@ import type {
   CheckStatusResult,
   ProviderTxStatus,
 } from "./types";
+import { fromMinorUnits } from "@/lib/utils";
 
 // ---------- Moolre-specific constants ----------
 
@@ -32,6 +33,10 @@ function mapTxStatus(txstatus: number): ProviderTxStatus {
       return "SUCCESS";
     case 2:
       return "FAILED";
+    case 3:
+      // Moolre answers SS07 "Transaction not found" with txstatus 3 when no
+      // transaction exists under this externalref.
+      return "NOT_FOUND";
     default:
       return "PENDING"; // 0 or anything unexpected
   }
@@ -78,7 +83,7 @@ export class MoolreProvider implements MobileMoneyProvider {
       channel,
       currency: params.currency,
       payer: params.phoneNumber,
-      amount: params.amount,
+      amount: fromMinorUnits(params.amount),
       externalref: params.externalRef,
       accountnumber: this.accountNumber,
       ...(params.reference && { reference: params.reference }),
@@ -226,6 +231,83 @@ export class MoolreProvider implements MobileMoneyProvider {
       return {
         status: "PENDING",
         message: error instanceof Error ? error.message : "Network error checking status",
+        rawResponse: { error: String(error) },
+      };
+    }
+  }
+
+  // ---- Initiate Transfer (Settlement) ----
+
+  /**
+   * Maps a free-text provider name to a Moolre transfer channel.
+   * Transfer channels: 1=MTN, 6=Telecel, 7=AT, 2=Instant Bank Transfer.
+   * 
+   * @throws Error if provider is not supported for transfers yet.
+   */
+  private mapTransferChannel(providerName: string): string {
+    const normalized = providerName.toLowerCase();
+    if (normalized.includes("mtn")) return "1";
+    if (normalized.includes("telecel") || normalized.includes("vodafone")) return "6";
+    if (normalized.includes("at") || normalized.includes("airteltigo")) return "7";
+    
+    throw new Error(`Unsupported transfer provider: ${providerName}`);
+  }
+
+  async initiateTransfer(params: {
+    providerName: string;
+    currency: string;
+    amount: number; // minor units
+    receiver: string;
+    externalRef: string;
+    sublistid?: string;
+    reference?: string;
+  }): Promise<{ success: boolean; message: string; providerRef?: string; rawResponse: any }> {
+    const channel = this.mapTransferChannel(params.providerName);
+
+    const body: Record<string, unknown> = {
+      type: 1,
+      channel,
+      currency: params.currency,
+      amount: fromMinorUnits(params.amount).toString(),
+      receiver: params.receiver,
+      externalref: params.externalRef,
+      accountnumber: this.accountNumber,
+      ...(params.sublistid && { sublistid: params.sublistid }),
+      ...(params.reference && { reference: params.reference }),
+    };
+
+    try {
+      const response = await fetch("https://api.moolre.com/open/transact/transfer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-USER": this.apiUser,
+          "X-API-KEY": this.apiKey, // Transfer uses Private Key
+        },
+        body: JSON.stringify(body),
+      });
+
+      const data = await response.json();
+
+      // Successful initiation — code OBGH01 and status 1
+      if (data.status === "1" && data.code === "OBGH01" && data.data) {
+        return {
+          success: true,
+          providerRef: data.data.transactionid,
+          message: data.message ? (Array.isArray(data.message) ? data.message.join(" ") : data.message) : "Transfer successful",
+          rawResponse: data,
+        };
+      }
+
+      return {
+        success: false,
+        message: data.message ? (Array.isArray(data.message) ? data.message.join(" ") : data.message) : "Transfer failed",
+        rawResponse: data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : "Network error initiating transfer",
         rawResponse: { error: String(error) },
       };
     }

@@ -1,23 +1,12 @@
-"use client";
-
 import Image from "next/image";
-import Link from "next/link";
-import { useState } from "react";
 
 export default function PayBasePage() {
-  const [demoSessionId, setDemoSessionId] = useState("");
-
-  const generateDemoSession = () => {
-    const sessionId = `demo-${Date.now()}`;
-    setDemoSessionId(sessionId);
-  };
-
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-[#f6f7fb] to-white flex flex-col justify-between overflow-hidden">
       {/* Green gradient glows */}
       <div className="absolute -top-32 -right-32 w-[400px] h-[400px] bg-[#22c55e]/10 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute -bottom-32 -left-32 w-[400px] h-[400px] bg-[#22c55e]/10 rounded-full blur-[100px] pointer-events-none" />
-      
+
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-black/5 bg-white/80 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
@@ -25,17 +14,12 @@ export default function PayBasePage() {
             <Image src="/tritee-logo.png" alt="Trite logo" width={90} height={21} priority />
           </div>
           <div className="flex items-center gap-3">
-            <Link 
-              href="/" 
-              className="text-sm text-[#22c55e] hover:text-[#16a34a] font-medium"
-            >
-              Back to Home
-            </Link>
+            <span className="text-sm text-[color:var(--trite-muted,#6b7280)]">Secure Checkout</span>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto flex flex-col items-center justify-center flex-1 max-w-2xl px-4 py-12 sm:px-6 relative z-10">
+      <main className="mx-auto flex flex-col items-center justify-center flex-1 max-w-xl px-4 py-12 sm:px-6 relative z-10">
         <div className="rounded-2xl bg-white p-8 sm:p-12 ring-1 ring-black/5 text-center w-full">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#22c55e]/10 mb-6">
             <svg className="h-8 w-8 text-[#22c55e]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -44,69 +28,18 @@ export default function PayBasePage() {
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
-            Trite Payment System
+            No Active Payment Session
           </h1>
-          
-          <p className="text-gray-600 mb-8 leading-relaxed">
-            Our payment system works with secure session IDs. To make a payment, you need a valid session ID from a merchant.
+
+          <p className="text-gray-600 leading-relaxed">
+            Payments on Trite are made through secure links provided by a merchant.
+            If you are trying to pay for something, please use the payment link the
+            merchant shared with you.
           </p>
-
-          <div className="space-y-6">
-            {/* Demo Section */}
-            <div className="border border-gray-200 rounded-xl p-6">
-              <h3 className="font-semibold text-gray-900 mb-3">
-                Try Demo Payment
-              </h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Generate a demo session to test our payment interface
-              </p>
-              <div className="space-y-3">
-                <button
-                  onClick={generateDemoSession}
-                  className="w-full bg-[#22c55e] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#16a34a] transition-colors"
-                >
-                  Generate Demo Session
-                </button>
-                
-                {demoSessionId && (
-                  <div className="bg-gray-50 rounded-lg p-4 text-left">
-                    <p className="text-xs text-gray-500 mb-1">Demo Session ID:</p>
-                    <p className="font-mono text-sm text-gray-900 mb-3 break-all">
-                      {demoSessionId}
-                    </p>
-                    <Link
-                      href={`/pay/${demoSessionId}`}
-                      className="inline-block bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
-                    >
-                      Open Demo Payment →
-                    </Link>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Developer Info */}
-            <div className="border border-gray-200 rounded-xl p-6 text-left">
-              <h3 className="font-semibold text-gray-900 mb-3">
-                For Developers
-              </h3>
-              <div className="space-y-3 text-sm text-gray-600">
-                <p>
-                  <strong>URL Format:</strong> <code className="bg-gray-100 px-2 py-1 rounded text-xs">/pay/[sessionId]</code>
-                </p>
-                <p>
-                  <strong>Example:</strong> <code className="bg-gray-100 px-2 py-1 rounded text-xs">/pay/sess_abc123xyz</code>
-                </p>
-                <p>
-                  Sessions are created through the API and should contain merchant information, amount, and payment details.
-                </p>
-              </div>
-            </div>
-          </div>
 
           <div className="mt-8 pt-6 border-t border-gray-100">
             <p className="text-xs text-gray-500">
-              Need help? <Link href="/contact" className="text-[#22c55e] hover:underline">Contact our support team</Link>
+              Need help? <a href="mailto:support@trite.tech" className="text-[#22c55e] hover:underline">Contact our support team</a>
             </p>
           </div>
         </div>

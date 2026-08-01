@@ -64,8 +64,8 @@ export async function seed(knex: Knex): Promise<void> {
 
   // --- Transactions ---
   const txIds = Array.from({ length: 10 }, () => crypto.randomUUID());
-  const methods = ["CARD", "MOBILE_MONEY", "BANK_TRANSFER", "SWIFT", "CRYPTO"];
-  const statuses = ["SUCCESS", "SUCCESS", "SUCCESS", "PENDING", "FAILED"];
+  const methods = ["CARD", "MOBILE_MONEY", "BANK_TRANSFER", "USSD", "CRYPTO"];
+  const statuses = ["SETTLED", "SETTLED", "SETTLED", "INITIATED", "FAILED"];
   const flags = ["NONE", "NONE", "NONE", "NONE", "MEDIUM", "HIGH"];
 
   await knex("transactions").insert(
@@ -73,10 +73,10 @@ export async function seed(knex: Knex): Promise<void> {
       id,
       tx_id_display: `TX-${Date.now().toString(36).toUpperCase()}-${i}`,
       merchant_id: m(i),
-      amount: [124500, 240.5, 85000, 1120.99, 45000, 3200, 8900, 250000, 15000, 7500][i],
+      amount: [124500, 24050, 85000, 112099, 45000, 32000, 89000, 250000, 150000, 75000][i],
       currency: "GHS",
-      stablecoin_amount: null,
-      stablecoin_currency: null,
+      crypto_amount: null,
+      crypto_currency: null,
       method: methods[i % methods.length],
       status: statuses[i % statuses.length],
       flag_level: flags[i % flags.length],
@@ -111,9 +111,8 @@ export async function seed(knex: Knex): Promise<void> {
       id: crypto.randomUUID(),
       user_id: user.id,
       identity_id: `TR-${8829 - i}-KYC-${i + 1}`,
-      tier: ["PREMIUM", "STANDARD", "MERCHANT", "STANDARD", "MERCHANT", "PREMIUM"][i],
-      status: ["PENDING", "PENDING", "FLAGGED", "PENDING", "PENDING", "FLAGGED"][i],
-      documents: "[]",
+      tier: ["PREMIUM", "STANDARD", "ENHANCED", "STANDARD", "ENHANCED", "PREMIUM"][i],
+      status: ["PENDING", "PENDING", "IN_REVIEW", "PENDING", "PENDING", "IN_REVIEW"][i],
       process_time_ms: [252000, 840000, null, 180000, 300000, null][i],
       region: "GH",
       submitted_at: knex.raw(`NOW() - INTERVAL '${[2, 14, 60, 180, 240, 300][i]} minutes'`),
@@ -123,23 +122,23 @@ export async function seed(knex: Knex): Promise<void> {
   // --- Support Tickets ---
   const merchantIds = merchants.map((m) => m.id);
   await knex("support_tickets").insert([
-    { id: crypto.randomUUID(), ticket_id_display: "TKT-00001", merchant_id: merchantIds[0], issue_type: "GATEWAY_TIMEOUT", priority: "HIGH", status: "IN_PROGRESS", description: "504 timeouts on /authorize endpoint since 09:00 UTC.", messages: "[]" },
-    { id: crypto.randomUUID(), ticket_id_display: "TKT-00002", merchant_id: merchantIds[1], issue_type: "SETTLEMENT", priority: "MEDIUM", status: "OPEN", description: "Batch settlement shows GH₵12,450 less than expected.", messages: "[]" },
-    { id: crypto.randomUUID(), ticket_id_display: "TKT-00003", merchant_id: merchantIds[2], issue_type: "KYC_UPLOAD", priority: "HIGH", status: "IN_PROGRESS", description: "Users unable to upload documents larger than 5MB.", messages: "[]" },
-    { id: crypto.randomUUID(), ticket_id_display: "TKT-00004", merchant_id: merchantIds[3], issue_type: "PAYMENT", priority: "HIGH", status: "OPEN", description: "Webhooks delayed by 15-20 minutes.", messages: "[]" },
-    { id: crypto.randomUUID(), ticket_id_display: "TKT-00005", merchant_id: merchantIds[4], issue_type: "SETTLEMENT", priority: "MEDIUM", status: "RESOLVED", description: "Refund processed twice. Need to reverse duplicate.", messages: "[]" },
+    { id: crypto.randomUUID(), ticket_id_display: "TKT-00001", merchant_id: merchantIds[0], issue_type: "INTEGRATION_SUPPORT", priority: "HIGH", status: "IN_PROGRESS", description: "504 timeouts on /authorize endpoint since 09:00 UTC." },
+    { id: crypto.randomUUID(), ticket_id_display: "TKT-00002", merchant_id: merchantIds[1], issue_type: "SETTLEMENT_ISSUE", priority: "MEDIUM", status: "OPEN", description: "Batch settlement shows GH₵12,450 less than expected." },
+    { id: crypto.randomUUID(), ticket_id_display: "TKT-00003", merchant_id: merchantIds[2], issue_type: "KYC_QUERY", priority: "HIGH", status: "IN_PROGRESS", description: "Users unable to upload documents larger than 5MB." },
+    { id: crypto.randomUUID(), ticket_id_display: "TKT-00004", merchant_id: merchantIds[3], issue_type: "PAYMENT_DISPUTE", priority: "HIGH", status: "OPEN", description: "Webhooks delayed by 15-20 minutes." },
+    { id: crypto.randomUUID(), ticket_id_display: "TKT-00005", merchant_id: merchantIds[4], issue_type: "SETTLEMENT_ISSUE", priority: "MEDIUM", status: "RESOLVED", description: "Refund processed twice. Need to reverse duplicate." },
   ]);
 
   // --- System Logs ---
   const logEntries = [
     { level: "CRITICAL", source: "AUTH_CORE_V2", event_description: "Failed brute-force attempt from IP 192.168.1.104 on admin portal" },
     { level: "ERROR", source: "GATEWAY_API", event_description: "Timeout exceeded during handshake with external payment processor" },
-    { level: "WARNING", source: "DB_CLUSTER_B", event_description: "Query execution time exceeded threshold (842ms) - KYC table scan" },
+    { level: "WARN", source: "DB_CLUSTER_B", event_description: "Query execution time exceeded threshold (842ms) - KYC table scan" },
     { level: "INFO", source: "KYC_HANDLER", event_description: "Identity verification completed for user_id: TR-99428-X" },
     { level: "INFO", source: "WEB_APP_SERVER", event_description: "Health check heart-beat acknowledged. Cluster integrity nominal" },
     { level: "CRITICAL", source: "SYSTEM_KERNEL", event_description: "Unexpected kernel panic in background scheduler - auto-recovery initiated" },
     { level: "INFO", source: "AUTH_CORE_V2", event_description: "Admin login session created for user: admin@trite.io" },
-    { level: "WARNING", source: "TRANSACTION_ENGINE", event_description: "High volume alert: 450 transactions/minute detected on mobile money gateway" },
+    { level: "WARN", source: "TRANSACTION_ENGINE", event_description: "High volume alert: 450 transactions/minute detected on mobile money gateway" },
     { level: "ERROR", source: "NOTIFICATION_SERVICE", event_description: "SMS gateway timeout - MTN Ghana API returning 503 errors" },
     { level: "INFO", source: "SETTLEMENT_CORE", event_description: "Batch settlement completed: GH₵2.4M processed to 14 merchant accounts" },
   ];

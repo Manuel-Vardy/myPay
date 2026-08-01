@@ -1,21 +1,15 @@
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
-import { getSession } from "@/lib/session";
+import { requireVerifiedMerchant, requireActiveMerchant } from "@/lib/guards";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getSession();
-    if (!session || session.role !== "MERCHANT") {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const merchantUser = await db("merchants").where({ user_id: session.userId }).first();
-    if (!merchantUser) {
-      return Response.json({ error: "Merchant profile not found" }, { status: 404 });
-    }
+    const guard = await requireVerifiedMerchant();
+    if (guard.error) return guard.error;
+    const { merchant } = guard;
 
     const accounts = await db("settlement_accounts")
-      .where({ merchant_id: merchantUser.id })
+      .where({ merchant_id: merchant.id })
       .orderBy("created_at", "desc");
 
     // Mask account numbers for security in the response
@@ -33,15 +27,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getSession();
-    if (!session || session.role !== "MERCHANT") {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const merchantUser = await db("merchants").where({ user_id: session.userId }).first();
-    if (!merchantUser) {
-      return Response.json({ error: "Merchant profile not found" }, { status: 404 });
-    }
+    const guard = await requireActiveMerchant();
+    if (guard.error) return guard.error;
+    const { merchant } = guard;
 
     const body = await request.json();
     const { account_type, provider_name, account_name, account_number, branch_code, is_default } = body;
@@ -53,17 +41,17 @@ export async function POST(request: NextRequest) {
     // If this is set as default, unset other defaults
     if (is_default) {
       await db("settlement_accounts")
-        .where({ merchant_id: merchantUser.id })
+        .where({ merchant_id: merchant.id })
         .update({ is_default: false });
     }
 
     // Check if this is the first account, making it the default if so
-    const existingAccounts = await db("settlement_accounts").where({ merchant_id: merchantUser.id }).count("id as cnt").first();
+    const existingAccounts = await db("settlement_accounts").where({ merchant_id: merchant.id }).count("id as cnt").first();
     const count = Number((existingAccounts as any)?.cnt || 0);
 
     const [newAccount] = await db("settlement_accounts")
       .insert({
-        merchant_id: merchantUser.id,
+        merchant_id: merchant.id,
         account_type,
         provider_name,
         account_name,

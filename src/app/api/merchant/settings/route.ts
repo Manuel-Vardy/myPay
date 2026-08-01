@@ -1,18 +1,17 @@
-// GET /api/merchant/settings — merchant Configuration (webhooks, API keys, email)
+// GET /api/merchant/settings — merchant profile + notification configuration
 // PUT /api/merchant/settings — update merchant settings
+// API keys live at /api/merchant/api-keys; webhooks at /api/merchant/webhook-endpoint
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
-import { getSession } from "@/lib/session";
-import crypto from "crypto";
+import { requireMerchant, requireVerifiedMerchant } from "@/lib/guards";
 
 import bcrypt from "bcryptjs";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getSession();
-    if (!session || session.role !== "MERCHANT") {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const guard = await requireMerchant();
+    if (guard.error) return guard.error;
+    const session = guard.session;
 
     const merchantUser = await db("merchants").where({ user_id: session.userId }).first();
     if (!merchantUser) {
@@ -31,18 +30,6 @@ export async function GET(request: NextRequest) {
       return Response.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Mask API key values — only show prefix
-    const maskedKeys = (merchant.api_keys || []).map(
-      (key: { key_id: string; label: string; prefix: string; created_at: string; last_used: string | null; is_active: boolean }) => ({
-        key_id: key.key_id,
-        label: key.label,
-        prefix: key.prefix,
-        created_at: key.created_at,
-        last_used: key.last_used,
-        is_active: key.is_active,
-      })
-    );
-
     return Response.json({
       user: {
         ...user,
@@ -50,16 +37,15 @@ export async function GET(request: NextRequest) {
       },
       merchant_display_id: merchant.merchant_display_id,
       business_name: merchant.business_name,
+      fee_bearer: merchant.fee_bearer,
       notification_email: merchant.notification_email,
       notification_settings: merchant.notification_settings,
       region: merchant.region,
-      webhook_config: {
-        url: merchant.webhook_config?.url || null,
-        events: merchant.webhook_config?.events || [],
-        // Don't expose the secret
-      },
-      api_keys: maskedKeys,
-      active_key_count: maskedKeys.filter((k: { is_active: boolean }) => k.is_active).length,
+      business_address_line1: merchant.business_address_line1,
+      business_address_line2: merchant.business_address_line2,
+      business_city: merchant.business_city,
+      business_region: merchant.business_region,
+      business_country: merchant.business_country,
     });
   } catch (error) {
     console.error("Merchant settings GET error:", error);
@@ -73,45 +59,29 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { 
-      webhook_url, 
-      webhook_events, 
-      notification_email, 
+    const {
+      notification_email,
       notification_settings,
-      generate_api_key,
       business_name,
+      fee_bearer,
       region,
+      business_address_line1,
+      business_address_line2,
+      business_city,
+      business_region,
+      business_country,
       user_data,
       password_change
     } = body;
 
-    const session = await getSession();
-    if (!session || session.role !== "MERCHANT") {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const merchantUser = await db("merchants").where({ user_id: session.userId }).first();
-    if (!merchantUser) {
-      return Response.json({ error: "Merchant profile not found" }, { status: 404 });
-    }
-    const merchant_id = merchantUser.id;
-
-    const merchant = await db("merchants").where({ id: merchant_id }).first();
-    if (!merchant) {
-      return Response.json({ error: "Merchant not found" }, { status: 404 });
-    }
+    const guard = await requireVerifiedMerchant();
+    if (guard.error) return guard.error;
+    const session = guard.session;
+    const merchant = guard.merchant;
+    const merchant_id = merchant.id;
 
     // Update merchant fields
     const merchantUpdates: Record<string, unknown> = {};
-
-    if (webhook_url !== undefined || webhook_events !== undefined) {
-      const currentConfig = merchant.webhook_config || {};
-      merchantUpdates.webhook_config = JSON.stringify({
-        ...currentConfig,
-        ...(webhook_url !== undefined && { url: webhook_url }),
-        ...(webhook_events !== undefined && { events: webhook_events }),
-      });
-    }
 
     if (notification_email !== undefined) {
       merchantUpdates.notification_email = notification_email;
@@ -125,26 +95,25 @@ export async function PUT(request: NextRequest) {
       merchantUpdates.business_name = business_name;
     }
 
+    if (fee_bearer !== undefined) {
+      if (!["MERCHANT", "CUSTOMER"].includes(fee_bearer)) {
+        return Response.json(
+          { error: "fee_bearer must be MERCHANT or CUSTOMER" },
+          { status: 400 }
+        );
+      }
+      merchantUpdates.fee_bearer = fee_bearer;
+    }
+
     if (region !== undefined) {
       merchantUpdates.region = region;
     }
 
-    // Generate new API key
-    let newKey = null;
-    if (generate_api_key) {
-      const rawKey = `trite_${crypto.randomBytes(32).toString("hex")}`;
-      newKey = {
-        key_id: crypto.randomUUID(),
-        label: generate_api_key.label || `Key ${(merchant.api_keys || []).length + 1}`,
-        prefix: rawKey.substring(0, 12),
-        created_at: new Date().toISOString(),
-        last_used: null,
-        is_active: true,
-      };
-
-      const existingKeys = merchant.api_keys || [];
-      merchantUpdates.api_keys = JSON.stringify([...existingKeys, newKey]);
-    }
+    if (business_address_line1 !== undefined) merchantUpdates.business_address_line1 = business_address_line1;
+    if (business_address_line2 !== undefined) merchantUpdates.business_address_line2 = business_address_line2;
+    if (business_city !== undefined) merchantUpdates.business_city = business_city;
+    if (business_region !== undefined) merchantUpdates.business_region = business_region;
+    if (business_country !== undefined) merchantUpdates.business_country = business_country;
 
     if (Object.keys(merchantUpdates).length > 0) {
       await db("merchants")
@@ -158,7 +127,10 @@ export async function PUT(request: NextRequest) {
     // Update user fields
     const userUpdates: Record<string, unknown> = {};
     if (user_data) {
-      const fields = ["first_name", "last_name", "mobile_number", "city", "country", "two_factor_enabled", "passkeys"];
+      // two_factor_enabled is intentionally excluded — it can only be flipped
+      // via /api/auth/mfa/confirm (enable) or /api/auth/mfa/disable (disable),
+      // both of which require actual proof (a live code / the password).
+      const fields = ["first_name", "last_name", "mobile_number", "city", "country", "passkeys"];
       fields.forEach(field => {
         if (user_data[field] !== undefined) {
           if (field === "passkeys") {
@@ -192,16 +164,7 @@ export async function PUT(request: NextRequest) {
         });
     }
 
-    return Response.json({
-      message: "Settings updated successfully",
-      ...(newKey && {
-        new_api_key: {
-          key_id: newKey.key_id,
-          prefix: newKey.prefix,
-          full_key: `trite_${newKey.key_id}`,
-        },
-      }),
-    });
+    return Response.json({ message: "Settings updated successfully" });
   } catch (error) {
     console.error("Merchant settings PUT error:", error);
     return Response.json(

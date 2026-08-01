@@ -172,12 +172,12 @@ export default function AdminDashboardPage() {
                       </td>
                       <td className="py-4 pr-4">
                         <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${
-                          tx.status === "SUCCESS" ? "bg-emerald-50 text-emerald-700" :
-                          tx.status === "PENDING" ? "bg-blue-50 text-blue-700" : "bg-amber-50 text-amber-700"
+                          tx.status === "SETTLED" || tx.status === "CAPTURED" ? "bg-emerald-50 text-emerald-700" :
+                          tx.status === "AUTHORIZED" || tx.status === "AUTHENTICATED" ? "bg-blue-50 text-blue-700" : "bg-amber-50 text-amber-700"
                         }`}>
                           <span className={`h-1.5 w-1.5 rounded-full ${
-                            tx.status === "SUCCESS" ? "bg-emerald-500" :
-                            tx.status === "PENDING" ? "bg-blue-500" : "bg-amber-500"
+                            tx.status === "SETTLED" || tx.status === "CAPTURED" ? "bg-emerald-500" :
+                            tx.status === "AUTHORIZED" || tx.status === "AUTHENTICATED" ? "bg-blue-500" : "bg-amber-500"
                           }`} />
                           {tx.status}
                         </span>

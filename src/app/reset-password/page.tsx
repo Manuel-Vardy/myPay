@@ -52,13 +52,7 @@ function ResetPasswordContent() {
       if (res.ok) {
         setSuccess(true);
       } else {
-        // Fallback for demo/testing when backend API is not yet implemented by colleague
-        if (res.status === 404) {
-          console.warn("Reset Password API route (POST /api/auth/reset-password) returned 404. Simulating success for frontend testing.");
-          setSuccess(true);
-        } else {
-          throw new Error(data.error || "Failed to reset password. Please try again.");
-        }
+        throw new Error(data.error || "Failed to reset password. Please try again.");
       }
     } catch (err: any) {
       setError(err.message || "Something went wrong. Please try again.");

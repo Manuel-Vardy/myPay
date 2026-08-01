@@ -4,39 +4,104 @@
 
 // ---------- Enums ----------
 
-export type UserRole = "ADMIN" | "MERCHANT" | "USER";
-export type UserStatus = "ACTIVE" | "SUSPENDED" | "PENDING";
+export type UserRole = "SUPER_ADMIN" | "ADMIN" | "MERCHANT" | "CUSTOMER" | "SUPPORT";
+export type UserStatus = "ACTIVE" | "SUSPENDED" | "PENDING_VERIFICATION" | "DEACTIVATED";
 
-export type MerchantTier = "STANDARD" | "PREMIUM" | "ENTERPRISE" | "INSTITUTIONAL";
+export type MerchantTier = "STANDARD" | "PREMIUM" | "ENTERPRISE";
+
+export type FeeBearer = "MERCHANT" | "CUSTOMER";
 
 export type PaymentMethod =
   | "CARD"
-  | "CRYPTO"
-  | "ACH"
-  | "SWIFT"
   | "MOBILE_MONEY"
   | "BANK_TRANSFER"
-  | "DIGITAL_WALLET";
+  | "USSD"
+  | "CRYPTO";
 
-export type TransactionStatus = "PENDING" | "PROCESSING" | "SUCCESS" | "FAILED" | "REFUNDED";
-export type FlagLevel = "NONE" | "LOW" | "MEDIUM" | "HIGH";
+export type PaymentRail =
+  | "VISA"
+  | "MASTERCARD"
+  | "MTN_MOMO"
+  | "AT_MONEY"
+  | "TELECEL_CASH"
+  | "GHIPSS_NIP"
+  | "USDT_TRC20"
+  | "USDT_ERC20"
+  | "USDC_ERC20"
+  | "USDC_BASE"
+  | "USDC_BSC"
+  | "USDC_ETHEREUM"
+  | "USDC_SOLANA"
+  | "USDT_BASE"
+  | "USDT_BSC"
+  | "USDT_ETHEREUM"
+  | "USDT_SOLANA";
 
-export type SettlementStatus = "PENDING" | "COMPLETED" | "FAILED";
-export type SessionStatus = "ACTIVE" | "COMPLETED" | "EXPIRED";
+export type TransactionStatus =
+  | "INITIATED"
+  | "PENDING_AUTH"
+  | "AUTHENTICATED"
+  | "AUTHORIZED"
+  | "CAPTURED"
+  | "PARTIALLY_CAPTURED"
+  | "PENDING_SETTLEMENT"
+  | "SETTLED"
+  | "FAILED"
+  | "CANCELLED"
+  | "EXPIRED"
+  | "REVERSED";
 
-export type KycTier = "STANDARD" | "PREMIUM" | "MERCHANT";
-export type KycStatus = "PENDING" | "APPROVED" | "REJECTED" | "FLAGGED" | "EXPIRED";
+export type FlagLevel = "NONE" | "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 
-export type TicketIssueType = "GATEWAY_TIMEOUT" | "KYC_UPLOAD" | "PAYMENT" | "SETTLEMENT" | "ACCOUNT" | "OTHER";
+export type SettlementStatus = "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED" | "CANCELLED";
+export type SessionStatus = "ACTIVE" | "COMPLETED" | "EXPIRED" | "CANCELLED";
+
+export type KycTier = "STANDARD" | "ENHANCED" | "PREMIUM";
+export type KycStatus = "PENDING" | "IN_REVIEW" | "APPROVED" | "REJECTED" | "EXPIRED";
+
+export type TicketIssueType = "PAYMENT_DISPUTE" | "SETTLEMENT_ISSUE" | "ACCOUNT_ACCESS" | "KYC_QUERY" | "INTEGRATION_SUPPORT" | "CHARGEBACK" | "OTHER";
 export type TicketPriority = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
-export type TicketStatus = "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
+export type TicketStatus = "OPEN" | "IN_PROGRESS" | "AWAITING_MERCHANT" | "RESOLVED" | "CLOSED";
 
-export type LogLevel = "INFO" | "WARNING" | "ERROR" | "CRITICAL";
+export type LogLevel = "DEBUG" | "INFO" | "WARN" | "ERROR" | "CRITICAL";
 
-export type CustomerTier = "standard" | "enterprise" | "institutional";
-export type CustomerStatus = "active" | "inactive";
+export type FeeType =
+  | "PAYMENT_PROCESSING"
+  | "PAYMENT_GATEWAY"
+  | "CROSS_BORDER"
+  | "CRYPTO_NETWORK_GAS"
+  | "THREE_DS_AUTH"
+  | "CHARGEBACK"
+  | "REFUND_PROCESSING"
+  | "SETTLEMENT_TRANSFER"
+  | "SETTLEMENT_FX"
+  | "EARLY_SETTLEMENT"
+  | "SETTLEMENT_MINIMUM_SHORTFALL"
+  | "MONTHLY_PLATFORM"
+  | "API_CALL_OVERAGE"
+  | "DISPUTE_MANAGEMENT"
+  | "KYC_VERIFICATION";
+
+export type FeeCalculationMethod =
+  | "FLAT"
+  | "PERCENTAGE"
+  | "FLAT_PLUS_PERCENTAGE"
+  | "TIERED";
+
+export type FeeApplicability =
+  | "ALL_MERCHANTS"
+  | "MERCHANT_TIER"
+  | "MERCHANT_SPECIFIC";
+
+export type CustomerTier = "STANDARD" | "PREMIUM";
+export type CustomerStatus = "ACTIVE" | "BLOCKED";
 
 // ---------- Database Row Types ----------
+
+export interface TwoFactorBackupCode {
+  hash: string;
+  used_at: string | null;
+}
 
 export interface User {
   id: string;
@@ -45,8 +110,15 @@ export interface User {
   role: UserRole;
   two_factor_enabled: boolean;
   two_factor_secret: string | null;
+  two_factor_pending_secret: string | null;
+  two_factor_backup_codes: TwoFactorBackupCode[] | null;
   status: UserStatus;
   last_login: Date | null;
+  email_verified_at: Date | null;
+  email_verification_token: string | null;
+  email_verification_expires: Date | null;
+  password_reset_token: string | null;
+  password_reset_expires: Date | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -55,6 +127,12 @@ export interface AdminProfile {
   id: string;
   user_id: string;
   admin_id_display: string;
+  notification_settings?: {
+    systemAlerts: boolean;
+    newRegistrations: boolean;
+    complianceFlags: boolean;
+    largeTransactions: boolean;
+  };
   created_at: Date;
   updated_at: Date;
 }
@@ -65,9 +143,13 @@ export interface Merchant {
   business_name: string;
   merchant_display_id: string;
   tier: MerchantTier;
+  fee_bearer: FeeBearer;
   region: string | null;
-  available_balance: number;
-  balance_currency: string;
+  business_address_line1: string | null;
+  business_address_line2: string | null;
+  business_city: string | null;
+  business_region: string | null;
+  business_country: string | null;
   api_keys: ApiKeyEntry[];
   webhook_config: WebhookConfig;
   notification_email: string | null;
@@ -88,6 +170,54 @@ export interface WebhookConfig {
   url?: string;
   secret?: string;
   events?: string[];
+}
+
+// --- API integrations (migration 0026) ---
+// ApiKeyEntry/WebhookConfig above describe the legacy merchants JSONB columns
+// and go away when those columns are dropped.
+
+export interface ApiKeyRow {
+  id: string;
+  merchant_id: string;
+  key_hash: string; // sha256 hex of the raw key — never the key itself
+  prefix: string;
+  label: string;
+  last_used_at: Date | null;
+  revoked_at: Date | null; // null = active
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface WebhookEndpointRow {
+  id: string;
+  merchant_id: string;
+  url: string;
+  secret: string;
+  events: string[];
+  is_active: boolean;
+  secret_rotated_at: Date | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export type WebhookEventStatus = "PENDING" | "DELIVERED" | "FAILED" | "EXHAUSTED";
+
+export interface WebhookEventRow {
+  id: string;
+  merchant_id: string;
+  transaction_id: string | null;
+  event_type: string;
+  payload: Record<string, unknown>;
+  endpoint_url: string;
+  status: WebhookEventStatus;
+  attempt_count: number;
+  last_attempt_at: Date | null;
+  next_retry_at: Date | null;
+  delivered_at: Date | null;
+  last_error: string | null;
+  response_status: number | null;
+  created_at: Date;
+  updated_at: Date;
 }
 
 export interface Role {
@@ -112,22 +242,95 @@ export interface Transaction {
   tx_id_display: string;
   merchant_id: string;
   customer_id: string | null;
+  payment_session_id: string | null;
   amount: number;
   currency: string;
-  stablecoin_amount: number | null;
-  stablecoin_currency: string | null;
+  crypto_amount: number | null;
+  crypto_currency: string | null;
   method: PaymentMethod;
+  rail: PaymentRail | null;
   status: TransactionStatus;
   flag_level: FlagLevel;
   gateway_node: string | null;
-  network_hash: string | null;
+  gateway_reference: string | null;
+  crypto_network_hash: string | null;
   processing_fee: number;
+  /** Pre-fee order amount fees are calculated against, when `amount` was
+   *  inflated to include a customer-paid fee. Null when fee is merchant-borne. */
+  fee_basis_amount: number | null;
   network_gas: number;
+  failure_reason: string | null;
   payer_email: string | null;
   payer_wallet_address: string | null;
+  payer_phone: string | null;
+  card_token: string | null;
+  card_last_four: string | null;
+  card_brand: string | null;
+  momo_reference: string | null;
+  three_ds_session_id: string | null;
+  three_ds_status: string | null;
+  idempotency_key: string | null;
   metadata: Record<string, unknown>;
   created_at: Date;
   updated_at: Date;
+}
+
+export interface TransactionEvent {
+  id: string;
+  transaction_id: string;
+  from_status: TransactionStatus | null;
+  to_status: TransactionStatus;
+  triggered_by: string;
+  raw_payload: Record<string, unknown> | null;
+  created_at: Date;
+}
+
+export interface FeeSchedule {
+  id: string;
+  fee_type: FeeType;
+  description: string | null;
+  calculation_method: FeeCalculationMethod;
+  flat_amount: number; // minor units
+  percentage_rate: number; // 1.5 = 1.5%
+  currency: string;
+  minimum_amount: number | null;
+  maximum_amount: number | null;
+  applicability: FeeApplicability;
+  merchant_tier: MerchantTier | null;
+  merchant_id: string | null;
+  applicable_rails: PaymentRail[] | null;
+  applicable_methods: PaymentMethod[] | null;
+  tiered_bands: TieredBand[] | null;
+  is_active: boolean;
+  valid_from: Date;
+  valid_until: Date | null;
+  created_by: string | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface TieredBand {
+  from: number; // minor units, inclusive
+  to: number | null; // minor units, inclusive; null = unbounded
+  rate: number; // percentage e.g. 1.5
+}
+
+export interface FeeLedgerRow {
+  id: string;
+  fee_schedule_id: string | null;
+  fee_type: FeeType;
+  transaction_id: string | null;
+  settlement_id: string | null;
+  merchant_id: string;
+  amount: number; // minor units
+  currency: string;
+  flat_amount_applied: number | null;
+  percentage_rate_applied: number | null;
+  basis_amount: number | null;
+  is_waived: boolean;
+  waived_by: string | null;
+  waiver_reason: string | null;
+  created_at: Date;
 }
 
 export interface Settlement {
@@ -153,8 +356,9 @@ export interface PaymentSession {
   currency: string;
   description: string | null;
   redirect_url: string | null;
+  cancel_url: string | null;
   status: SessionStatus;
-  transaction_id: string | null;
+  metadata: Record<string, unknown>;
   expires_at: Date;
   created_at: Date;
   updated_at: Date;
@@ -182,7 +386,6 @@ export interface KycRecord {
   identity_id: string;
   tier: KycTier;
   status: KycStatus;
-  documents: KycDocument[];
   process_time_ms: number | null;
   region: string | null;
   review_notes: string | null;
@@ -194,9 +397,14 @@ export interface KycRecord {
 }
 
 export interface KycDocument {
-  type: string;
-  url: string;
-  uploaded_at: string;
+  id: string;
+  kyc_id: string;
+  doc_type: string;
+  storage_key: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  rejection_reason: string | null;
+  reviewed_at: Date | null;
+  created_at: Date;
 }
 
 export interface Customer {

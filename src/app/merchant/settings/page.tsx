@@ -5,6 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useMerchantFetch } from "@/lib/hooks/useMerchantFetch";
+import { KycTab } from "./KycTab";
+import { MfaSetupModal } from "@/components/mfa-setup-modal";
+import { MfaDisableModal } from "@/components/mfa-disable-modal";
 
 
 type SettingsData = {
@@ -22,6 +25,7 @@ type SettingsData = {
   };
   merchant_display_id: string;
   business_name: string;
+  fee_bearer: "MERCHANT" | "CUSTOMER";
   notification_email: string | null;
   notification_settings: {
     transactions: boolean;
@@ -29,12 +33,52 @@ type SettingsData = {
     marketing: boolean;
   };
   region: string | null;
-  api_keys: { key_id: string; label: string; prefix: string; is_active: boolean; last_used: string | null }[];
-  active_key_count: number;
-  webhook_config: { url: string | null; events: string[] };
+  business_address_line1: string | null;
+  business_address_line2: string | null;
+  business_city: string | null;
+  business_region: string | null;
+  business_country: string | null;
 };
 
-type SubTab = "general" | "notifications" | "security" | "integrations";
+type ApiKeyRow = {
+  id: string;
+  label: string;
+  prefix: string;
+  last_used_at: string | null;
+  revoked_at: string | null;
+  created_at: string;
+};
+
+type WebhookEndpointData = {
+  url: string;
+  secret: string;
+  events: string[];
+  is_active: boolean;
+  secret_rotated_at: string | null;
+};
+
+type WebhookDelivery = {
+  id: string;
+  event_type: string;
+  status: "PENDING" | "DELIVERED" | "FAILED" | "EXHAUSTED";
+  attempt_count: number;
+  response_status: number | null;
+  last_error: string | null;
+  delivered_at: string | null;
+  created_at: string;
+};
+
+type SubTab = "general" | "kyc" | "notifications" | "security" | "integrations";
+
+type Passkey = { id: string; name: string; created_at: string };
+
+type UserSession = {
+  id: string;
+  user_agent: string | null;
+  ip_address: string | null;
+  created_at: string;
+  last_seen_at: string;
+};
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -46,15 +90,31 @@ export default function SettingsPage() {
     marketing: false,
   });
   const [user, setUser] = useState<Partial<SettingsData["user"]>>({});
+  const [mfaSetupOpen, setMfaSetupOpen] = useState(false);
+  const [mfaDisableOpen, setMfaDisableOpen] = useState(false);
   const [business_name, setBusinessName] = useState("");
+  const [feeBearer, setFeeBearer] = useState<"MERCHANT" | "CUSTOMER">("MERCHANT");
   const [email, setEmail] = useState("");
   const [region, setRegion] = useState("Greater Accra (Ghana)");
+  const [businessAddressLine1, setBusinessAddressLine1] = useState("");
+  const [businessAddressLine2, setBusinessAddressLine2] = useState("");
+  const [businessCity, setBusinessCity] = useState("");
+  const [businessRegion, setBusinessRegion] = useState("");
+  const [businessCountry, setBusinessCountry] = useState("GH");
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [webhookUrl, setWebhookUrl] = useState("");
   const [webhookEvents, setWebhookEvents] = useState<string[]>([]);
+  const [secretRevealed, setSecretRevealed] = useState(false);
   const [newKeyLabel, setNewKeyLabel] = useState("");
   const [generatedKey, setGeneratedKey] = useState<{ id: string; key: string } | null>(null);
-  const [apiKeys, setApiKeys] = useState<{ key_id: string; label: string; prefix: string; is_active: boolean; last_used: string | null }[]>([]);
+  // Accepting-payments master switch
+  const [paymentsPaused, setPaymentsPaused] = useState(false);
+  const [pausedByAdmin, setPausedByAdmin] = useState(false);
+  const [pauseReason, setPauseReason] = useState<string | null>(null);
+  const [activeSessionCount, setActiveSessionCount] = useState(0);
+  const [pauseSaving, setPauseSaving] = useState(false);
+  const [pauseError, setPauseError] = useState<string | null>(null);
+  const [pauseNotice, setPauseNotice] = useState<string | null>(null);
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
@@ -64,33 +124,131 @@ export default function SettingsPage() {
 
   const [passwords, setPasswords] = useState({ current: "", new: "", confirm: "" });
   const [passkeyName, setPasskeyName] = useState("");
+  const [passkeys, setPasskeys] = useState<Passkey[]>([]);
+  const [passkeyBusy, setPasskeyBusy] = useState(false);
 
   const { data: settings } = useMerchantFetch<SettingsData>("/api/merchant/settings");
+  const { data: sessionsData, mutate: refreshSessions } = useMerchantFetch<{
+    data: UserSession[];
+    current_session_id: string | null;
+  }>("/api/merchant/settings/sessions");
+  const activeSessions = sessionsData?.data ?? [];
+
+  const { data: keysData, mutate: refreshKeys } = useMerchantFetch<{
+    api_keys: ApiKeyRow[];
+    active_key_count: number;
+  }>("/api/merchant/api-keys");
+  const apiKeys = keysData?.api_keys ?? [];
+
+  const { data: webhookData, mutate: refreshWebhook } = useMerchantFetch<{
+    endpoint: WebhookEndpointData | null;
+    available_events: string[];
+  }>("/api/merchant/webhook-endpoint");
+
+  const { data: deliveriesData, mutate: refreshDeliveries } = useMerchantFetch<{
+    deliveries: WebhookDelivery[];
+  }>("/api/merchant/webhook-deliveries");
+  const deliveries = deliveriesData?.deliveries ?? [];
 
   useEffect(() => {
     if (settings) {
       setUser(settings.user);
       setBusinessName(settings.business_name);
+      setFeeBearer(settings.fee_bearer ?? "MERCHANT");
       setEmail(settings.notification_email ?? "");
       setRegion(settings.region ?? "Greater Accra (Ghana)");
-      setWebhookUrl(settings.webhook_config?.url ?? "");
-      setWebhookEvents(settings.webhook_config?.events ?? []);
-      if (settings.api_keys) setApiKeys(settings.api_keys);
+      setBusinessAddressLine1(settings.business_address_line1 ?? "");
+      setBusinessAddressLine2(settings.business_address_line2 ?? "");
+      setBusinessCity(settings.business_city ?? "");
+      setBusinessRegion(settings.business_region ?? "");
+      setBusinessCountry(settings.business_country ?? "GH");
       if (settings.notification_settings) {
         setNotifications(settings.notification_settings);
       }
+      setPasskeys(Array.isArray(settings.user.passkeys) ? settings.user.passkeys : []);
     }
   }, [settings]);
+
+  useEffect(() => {
+    if (webhookData?.endpoint) {
+      setWebhookUrl(webhookData.endpoint.url ?? "");
+      setWebhookEvents(webhookData.endpoint.events ?? []);
+    }
+  }, [webhookData]);
+
+  useEffect(() => {
+    refreshPaymentControls();
+  }, []);
+
+  async function refreshPaymentControls() {
+    try {
+      const res = await fetch("/api/merchant/payment-controls");
+      if (!res.ok) return;
+      const data = await res.json();
+      setPaymentsPaused(!!data.paused);
+      setPausedByAdmin(!!data.paused_by_admin);
+      setPauseReason(data.reason ?? null);
+      setActiveSessionCount(Number(data.active_sessions || 0));
+    } catch {
+      // Non-blocking — the rest of settings still works
+    }
+  }
+
+  async function handleTogglePayments() {
+    const pausing = !paymentsPaused;
+    if (pausing) {
+      const ok = confirm(
+        activeSessionCount > 0
+          ? `Stop accepting payments?\n\nNew payments will be refused on every channel — API, payment links, and checkout. ${activeSessionCount} checkout${activeSessionCount === 1 ? "" : "s"} already open will be cancelled.`
+          : "Stop accepting payments?\n\nNew payments will be refused on every channel — API, payment links, and checkout."
+      );
+      if (!ok) return;
+    }
+
+    setPauseSaving(true);
+    setPauseError(null);
+    setPauseNotice(null);
+    try {
+      const res = await fetch("/api/merchant/payment-controls", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paused: pausing }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setPauseError(json.error || "Could not update payment acceptance.");
+        return;
+      }
+      setPaymentsPaused(pausing);
+      setPauseNotice(
+        pausing
+          ? `Payments stopped.${json.sessions_expired ? ` ${json.sessions_expired} open checkout${json.sessions_expired === 1 ? " was" : "s were"} cancelled.` : ""}`
+          : "Payments resumed."
+      );
+      refreshPaymentControls();
+      setTimeout(() => setPauseNotice(null), 6000);
+    } catch {
+      setPauseError("Network error.");
+    } finally {
+      setPauseSaving(false);
+    }
+  }
 
   async function handleUpdateProfile() {
     setSaving(true);
     const res = await fetch("/api/merchant/settings", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         notification_email: email,
         business_name: business_name,
+        fee_bearer: feeBearer,
         region: region,
+        business_address_line1: businessAddressLine1,
+        business_address_line2: businessAddressLine2,
+        business_city: businessCity,
+        business_region: businessRegion,
+        business_country: businessCountry,
         user_data: {
           first_name: user.first_name,
           last_name: user.last_name,
@@ -126,22 +284,12 @@ export default function SettingsPage() {
     setTimeout(() => setSaveMsg(""), 3000);
   }
 
-  async function handleUpdate2FA(enabled: boolean) {
-    setSaving(true);
-    const res = await fetch("/api/merchant/settings", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        user_data: { two_factor_enabled: enabled }
-      }),
-    });
-    const json = await res.json();
-    if (res.ok) {
-      setUser(u => ({ ...u, two_factor_enabled: enabled }));
+  function handle2FAClick() {
+    if (user.two_factor_enabled) {
+      setMfaDisableOpen(true);
+    } else {
+      setMfaSetupOpen(true);
     }
-    setSaveMsg(json.message ?? json.error ?? "");
-    setSaving(false);
-    setTimeout(() => setSaveMsg(""), 3000);
   }
 
   async function handleUpdatePassword() {
@@ -170,62 +318,155 @@ export default function SettingsPage() {
     setTimeout(() => setSaveMsg(""), 3000);
   }
 
-  async function handleSaveWebhooks() {
-    setSaving(true);
-    const res = await fetch("/api/merchant/settings", {
-      method: "PUT",
+  async function handleRegisterPasskey() {
+    setPasskeyBusy(true);
+    try {
+      if (!window.PublicKeyCredential) {
+        throw new Error("Passkeys are not supported in this browser");
+      }
+      const challenge = crypto.getRandomValues(new Uint8Array(32));
+      const credential = (await navigator.credentials.create({
+        publicKey: {
+          challenge,
+          rp: { name: "Trite PSP" },
+          user: {
+            id: new TextEncoder().encode(user.id || "merchant"),
+            name: user.email || "merchant",
+            displayName: passkeyName || user.email || "Merchant",
+          },
+          pubKeyCredParams: [
+            { alg: -7, type: "public-key" },
+            { alg: -257, type: "public-key" },
+          ],
+          authenticatorSelection: { residentKey: "preferred", userVerification: "preferred" },
+          timeout: 60000,
+        },
+      })) as PublicKeyCredential | null;
+      if (!credential) throw new Error("Passkey creation was cancelled");
+
+      const transports =
+        (credential.response as AuthenticatorAttestationResponse).getTransports?.() ?? [];
+      const res = await fetch("/api/merchant/settings/passkeys", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          credential_id: credential.id,
+          name: passkeyName || "My Passkey",
+          transports,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to save passkey");
+      setPasskeys(json.data);
+      setSaveMsg(json.message || "Passkey added");
+      setPasskeyModal(false);
+      setPasskeyName("");
+    } catch (e) {
+      setSaveMsg(e instanceof Error ? e.message : "Passkey registration failed");
+    } finally {
+      setPasskeyBusy(false);
+      setTimeout(() => setSaveMsg(""), 4000);
+    }
+  }
+
+  async function handleRemovePasskey(credentialId: string) {
+    const res = await fetch("/api/merchant/settings/passkeys", {
+      method: "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        webhook_url: webhookUrl,
-        webhook_events: webhookEvents
-      }),
+      body: JSON.stringify({ credential_id: credentialId }),
     });
     const json = await res.json();
+    if (res.ok) setPasskeys(json.data);
     setSaveMsg(json.message ?? json.error ?? "");
+    setTimeout(() => setSaveMsg(""), 3000);
+  }
+
+  async function handleRevokeSession(sessionId: string) {
+    const res = await fetch("/api/merchant/settings/sessions", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId }),
+    });
+    const json = await res.json();
+    if (res.ok) refreshSessions();
+    setSaveMsg(res.ok ? "Session revoked" : json.error ?? "Failed to revoke session");
+    setTimeout(() => setSaveMsg(""), 3000);
+  }
+
+  async function handleSaveWebhooks() {
+    setSaving(true);
+    const res = await fetch("/api/merchant/webhook-endpoint", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: webhookUrl, events: webhookEvents }),
+    });
+    const json = await res.json();
+    if (res.ok) refreshWebhook();
+    setSaveMsg(res.ok ? "Webhook configuration saved" : json.error ?? "");
+    setSaving(false);
+    setTimeout(() => setSaveMsg(""), 3000);
+  }
+
+  async function handleRotateSecret() {
+    if (!confirm("Rotate the signing secret? Deliveries signed with the old secret will stop verifying immediately.")) return;
+    setSaving(true);
+    const res = await fetch("/api/merchant/webhook-endpoint/rotate-secret", {
+      method: "POST",
+    });
+    const json = await res.json();
+    if (res.ok) {
+      refreshWebhook();
+      setSecretRevealed(true);
+    }
+    setSaveMsg(res.ok ? "Signing secret rotated" : json.error ?? "");
     setSaving(false);
     setTimeout(() => setSaveMsg(""), 3000);
   }
 
   async function handleGenerateKey() {
     setSaving(true);
-    const res = await fetch("/api/merchant/settings", {
-      method: "PUT",
+    const res = await fetch("/api/merchant/api-keys", {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        generate_api_key: { label: newKeyLabel }
-      }),
+      body: JSON.stringify({ label: newKeyLabel }),
     });
     const json = await res.json();
-    if (res.ok && json.new_api_key) {
-      setGeneratedKey({ id: json.new_api_key.key_id, key: json.new_api_key.full_key });
-      setApiKeys(prev => [{
-        key_id: json.new_api_key.key_id,
-        label: newKeyLabel,
-        prefix: json.new_api_key.full_key.substring(0, 12),
-        is_active: true,
-        last_used: null
-      }, ...prev]);
+    if (res.ok && json.full_key) {
+      setGeneratedKey({ id: json.key.id, key: json.full_key });
       setNewKeyLabel("");
+      refreshKeys();
     }
-    setSaveMsg(json.message ?? json.error ?? "");
+    setSaveMsg(res.ok ? "API key created" : json.error ?? "");
     setSaving(false);
     setTimeout(() => setSaveMsg(""), 3000);
   }
 
   async function handleRevokeKey(keyId: string) {
-    if (!confirm("Are you sure you want to revoke this API key? This action is irreversible.")) return;
-    
+    if (!confirm("Are you sure you want to revoke this API key? Requests using it will stop working immediately.")) return;
+
     setSaving(true);
-    const res = await fetch(`/api/merchant/settings/keys/${keyId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ }),
+    const res = await fetch(`/api/merchant/api-keys/${keyId}`, { method: "DELETE" });
+    const json = await res.json();
+    if (res.ok) refreshKeys();
+    setSaveMsg(json.message ?? json.error ?? "");
+    setSaving(false);
+    setTimeout(() => setSaveMsg(""), 3000);
+  }
+
+  async function handleRedeliver(deliveryId: string) {
+    setSaving(true);
+    const res = await fetch(`/api/merchant/webhook-deliveries/${deliveryId}/redeliver`, {
+      method: "POST",
     });
     const json = await res.json();
-    if (res.ok) {
-      setApiKeys(prev => prev.map(k => k.key_id === keyId ? { ...k, is_active: false } : k));
-    }
-    setSaveMsg(json.message ?? json.error ?? "");
+    if (res.ok) refreshDeliveries();
+    setSaveMsg(
+      res.ok
+        ? json.delivered
+          ? "Delivered"
+          : "Redelivery attempted — see status"
+        : json.error ?? ""
+    );
     setSaving(false);
     setTimeout(() => setSaveMsg(""), 3000);
   }
@@ -255,6 +496,7 @@ export default function SettingsPage() {
           <div className="mb-8 flex border-b border-black/5">
             {[
               { id: "general", label: "General" },
+              { id: "kyc", label: "KYC" },
               { id: "notifications", label: "Notifications" },
               { id: "security", label: "Security" },
               { id: "integrations", label: "Integrations" },
@@ -423,13 +665,86 @@ export default function SettingsPage() {
                       </div>
                       <div>
                         <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
+                          Who Pays the Transaction Fee?
+                        </label>
+                        <select
+                          value={feeBearer}
+                          onChange={(e) => setFeeBearer(e.target.value as "MERCHANT" | "CUSTOMER")}
+                          className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none focus:border-blue-500"
+                        >
+                          <option value="MERCHANT">We absorb the fee</option>
+                          <option value="CUSTOMER">Pass fee to customer</option>
+                        </select>
+                        <p className="mt-1 text-xs text-[color:var(--trite-muted)]">
+                          {feeBearer === "CUSTOMER"
+                            ? "The processing fee is added to the total charged at checkout."
+                            : "The processing fee is deducted from your settlement, unchanged for the customer."}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
                           Region
                         </label>
                         <input
                           type="text"
                           value={region}
                           onChange={(e) => setRegion(e.target.value)}
-                          className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-500"
+                          className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
+                          Address Line 1
+                        </label>
+                        <input
+                          type="text"
+                          value={businessAddressLine1}
+                          onChange={(e) => setBusinessAddressLine1(e.target.value)}
+                          className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
+                          Address Line 2
+                        </label>
+                        <input
+                          type="text"
+                          value={businessAddressLine2}
+                          onChange={(e) => setBusinessAddressLine2(e.target.value)}
+                          className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
+                          City
+                        </label>
+                        <input
+                          type="text"
+                          value={businessCity}
+                          onChange={(e) => setBusinessCity(e.target.value)}
+                          className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
+                          Region/State
+                        </label>
+                        <input
+                          type="text"
+                          value={businessRegion}
+                          onChange={(e) => setBusinessRegion(e.target.value)}
+                          className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
+                          Country
+                        </label>
+                        <input
+                          type="text"
+                          value={businessCountry}
+                          onChange={(e) => setBusinessCountry(e.target.value)}
+                          className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none"
                         />
                       </div>
                     </div>
@@ -447,6 +762,8 @@ export default function SettingsPage() {
                   </div>
                 </>
               )}
+
+              {activeSubTab === "kyc" && <KycTab />}
 
               {activeSubTab === "notifications" && (
                 <div className="rounded-2xl bg-white p-6 ring-1 ring-black/5">
@@ -510,12 +827,12 @@ export default function SettingsPage() {
                       <div className="flex items-center justify-between py-2">
                         <div className="flex items-center gap-2">
                           <span className="font-medium text-[color:var(--trite-ink)]">2-Step Verification</span>
-                          <div className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600 uppercase">Email Confirmations</div>
+                          <div className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600 uppercase">Authenticator App</div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Toggle 
-                            checked={user.two_factor_enabled ?? false} 
-                            onChange={() => handleUpdate2FA(!user.two_factor_enabled)} 
+                          <Toggle
+                            checked={user.two_factor_enabled ?? false}
+                            onChange={handle2FAClick}
                           />
                           <span className="text-sm text-[color:var(--trite-muted)]">
                             {user.two_factor_enabled ? "Enabled" : "Disabled"}
@@ -523,49 +840,101 @@ export default function SettingsPage() {
                         </div>
                       </div>
                       <div className="border-t border-black/5" />
-                      <div className="flex items-center justify-between py-2">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-[color:var(--trite-ink)]">Passkeys</span>
+                      <div className="py-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-[color:var(--trite-ink)]">Passkeys</span>
+                            {passkeys.length > 0 && (
+                              <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-[color:var(--trite-muted)]">
+                                {passkeys.length}
+                              </span>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => setPasskeyModal(true)}
+                            className="inline-flex h-9 items-center justify-center rounded-lg border border-black/10 bg-white px-4 text-sm font-medium text-[color:var(--trite-ink)] hover:bg-gray-50"
+                          >
+                            Add Passkey
+                          </button>
                         </div>
-                        <button 
-                          onClick={() => setPasskeyModal(true)}
-                          className="inline-flex h-9 items-center justify-center rounded-lg border border-black/10 bg-white px-4 text-sm font-medium text-[color:var(--trite-ink)] hover:bg-gray-50"
-                        >
-                          Add Passkey
-                        </button>
+                        {passkeys.length > 0 && (
+                          <div className="mt-3 space-y-2">
+                            {passkeys.map((pk) => (
+                              <div key={pk.id} className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3">
+                                <div className="flex items-center gap-3">
+                                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white shadow-sm ring-1 ring-black/5">
+                                    <KeyIcon className="h-4 w-4 text-blue-600" />
+                                  </div>
+                                  <div>
+                                    <div className="text-sm font-medium text-[color:var(--trite-ink)]">{pk.name}</div>
+                                    <div className="text-[10px] text-[color:var(--trite-muted)]">
+                                      Added {new Date(pk.created_at).toLocaleDateString("en-GH", { day: "numeric", month: "short", year: "numeric" })}
+                                    </div>
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => handleRemovePasskey(pk.id)}
+                                  className="text-xs font-semibold text-red-600 hover:text-red-700"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
 
                   <div className="rounded-2xl bg-white p-6 ring-1 ring-black/5">
                     <h3 className="text-lg font-semibold text-[color:var(--trite-ink)]">Active Sessions</h3>
-                    <p className="mt-1 text-sm text-[color:var(--trite-muted)]">Manage your active instances across high-velocity nodes.</p>
-                    
+                    <p className="mt-1 text-sm text-[color:var(--trite-muted)]">Devices currently signed in to your account.</p>
+
                     <div className="mt-6 space-y-4">
-                      <div className="flex items-center justify-between rounded-xl bg-gray-50 p-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white shadow-sm ring-1 ring-black/5">
-                            <SmartphoneIcon className="h-5 w-5 text-blue-600" />
+                      {activeSessions.length === 0 && (
+                        <p className="rounded-xl bg-gray-50 p-4 text-sm text-[color:var(--trite-muted)]">
+                          No tracked sessions yet — sessions appear here after your next sign-in.
+                        </p>
+                      )}
+                      {activeSessions.map((s) => {
+                        const device = describeDevice(s.user_agent);
+                        const isCurrent = s.id === sessionsData?.current_session_id;
+                        return (
+                          <div key={s.id} className="flex items-center justify-between rounded-xl bg-gray-50 p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white shadow-sm ring-1 ring-black/5">
+                                {device.mobile ? (
+                                  <SmartphoneIcon className="h-5 w-5 text-blue-600" />
+                                ) : (
+                                  <MonitorIcon className="h-5 w-5 text-[color:var(--trite-muted)]" />
+                                )}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2 text-sm font-medium text-[color:var(--trite-ink)]">
+                                  {device.label}
+                                  {isCurrent && (
+                                    <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600">
+                                      This device
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-[10px] text-[color:var(--trite-muted)]">
+                                  {s.ip_address && s.ip_address !== "unknown" ? `${s.ip_address} • ` : ""}
+                                  {relativeTime(s.last_seen_at)}
+                                </div>
+                              </div>
+                            </div>
+                            {!isCurrent && (
+                              <button
+                                onClick={() => handleRevokeSession(s.id)}
+                                className="text-xs font-semibold text-red-600 hover:text-red-700"
+                              >
+                                Revoke
+                              </button>
+                            )}
                           </div>
-                          <div>
-                            <div className="text-sm font-medium text-[color:var(--trite-ink)]">iPhone 14 Pro</div>
-                            <div className="text-[10px] text-[color:var(--trite-muted)]">Accra, Ghana • Active Now</div>
-                          </div>
-                        </div>
-                        <button className="text-xs font-semibold text-red-600 hover:text-red-700">Revoke</button>
-                      </div>
-                      <div className="flex items-center justify-between rounded-xl bg-gray-50 p-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white shadow-sm ring-1 ring-black/5">
-                            <MonitorIcon className="h-5 w-5 text-[color:var(--trite-muted)]" />
-                          </div>
-                          <div>
-                            <div className="text-sm font-medium text-[color:var(--trite-ink)]">MacBook Pro M2</div>
-                            <div className="text-[10px] text-[color:var(--trite-muted)]">Accra, Ghana • 2 hours ago</div>
-                          </div>
-                        </div>
-                        <button className="text-xs font-semibold text-red-600 hover:text-red-700">Revoke</button>
-                      </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -584,33 +953,61 @@ export default function SettingsPage() {
                         <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
                           Endpoint URL
                         </label>
-                        <div className="mt-1 flex gap-2">
-                          <input
-                            type="url"
-                            value={webhookUrl}
-                            onChange={(e) => setWebhookUrl(e.target.value)}
-                            placeholder="https://your-api.com/webhooks"
-                            className="flex-1 rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none focus:border-blue-500"
-                          />
-                          <button
-                            onClick={handleSaveWebhooks}
-                            disabled={saving}
-                            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
-                          >
-                            Save
-                          </button>
-                        </div>
+                        <input
+                          type="url"
+                          value={webhookUrl}
+                          onChange={(e) => setWebhookUrl(e.target.value)}
+                          placeholder="https://your-api.com/webhooks"
+                          className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none focus:border-blue-500"
+                        />
                         <p className="mt-1 text-[10px] text-[color:var(--trite-muted)]">
-                          All event payloads will be sent to this URL as POST requests.
+                          All event payloads will be sent to this URL as signed POST requests.
                         </p>
                       </div>
+
+                      {webhookData?.endpoint && (
+                        <div>
+                          <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
+                            Signing Secret
+                          </label>
+                          <div className="mt-1 flex items-center gap-2 rounded-lg border border-black/10 bg-gray-50 px-3 py-2">
+                            <code className="flex-1 truncate font-mono text-xs text-[color:var(--trite-ink)]">
+                              {secretRevealed
+                                ? webhookData.endpoint.secret
+                                : `${webhookData.endpoint.secret.slice(0, 9)}${"•".repeat(24)}`}
+                            </code>
+                            <button
+                              onClick={() => setSecretRevealed((v) => !v)}
+                              className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+                            >
+                              {secretRevealed ? "Hide" : "Reveal"}
+                            </button>
+                            <button
+                              onClick={() => navigator.clipboard.writeText(webhookData.endpoint!.secret)}
+                              className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+                            >
+                              Copy
+                            </button>
+                            <button
+                              onClick={handleRotateSecret}
+                              disabled={saving}
+                              className="text-xs font-semibold text-red-600 hover:text-red-700 disabled:opacity-60"
+                            >
+                              Rotate
+                            </button>
+                          </div>
+                          <p className="mt-1 text-[10px] text-[color:var(--trite-muted)]">
+                            Verify the X-Trite-Signature header with this secret. See the API docs for details.
+                          </p>
+                        </div>
+                      )}
 
                       <div>
                         <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
                           Event Subscriptions
                         </label>
                         <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                          {["payment.success", "payment.failed", "payout.success", "payout.failed", "customer.created", "customer.verified"].map((event) => (
+                          {(webhookData?.available_events ?? ["payment.success", "payment.failed", "payout.success", "payout.failed"]).map((event) => (
                             <label key={event} className="flex items-center gap-2 rounded-lg border border-black/5 bg-gray-50 p-2 cursor-pointer hover:bg-gray-100">
                               <input
                                 type="checkbox"
@@ -626,7 +1023,68 @@ export default function SettingsPage() {
                           ))}
                         </div>
                       </div>
+
+                      <div className="flex justify-end border-t border-black/5 pt-4">
+                        <button
+                          onClick={handleSaveWebhooks}
+                          disabled={saving}
+                          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+                        >
+                          Save Webhook Configuration
+                        </button>
+                      </div>
                     </div>
+                  </div>
+
+                  {/* Accepting payments — the only control that stops money
+                      arriving on every channel at once. Revoking API keys
+                      closes just the API; links and checkout stay open. */}
+                  <div className={`rounded-2xl bg-white p-6 ring-1 ${paymentsPaused ? "ring-red-200" : "ring-black/5"}`}>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-3">
+                        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${paymentsPaused ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-600"}`}>
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                            {paymentsPaused ? (
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636a9 9 0 11-12.728 0M12 3v9" />
+                            ) : (
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            )}
+                          </svg>
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-[color:var(--trite-ink)]">
+                            {paymentsPaused ? "Payments stopped" : "Accepting payments"}
+                          </h3>
+                          <p className="mt-0.5 text-sm text-[color:var(--trite-muted)]">
+                            {paymentsPaused
+                              ? "Customers cannot pay you on any channel right now."
+                              : "Stop this to refuse new payments everywhere — API, payment links, and checkout — and cancel any checkouts already open."}
+                          </p>
+                          {paymentsPaused && pauseReason && (
+                            <p className="mt-2 text-sm text-[color:var(--trite-ink)]">Reason: {pauseReason}</p>
+                          )}
+                          {paymentsPaused && pausedByAdmin && (
+                            <p className="mt-2 text-sm text-red-600">
+                              Stopped by Trite — contact support to start accepting payments again.
+                            </p>
+                          )}
+                          {!paymentsPaused && activeSessionCount > 0 && (
+                            <p className="mt-2 text-xs text-[color:var(--trite-muted)]">
+                              {activeSessionCount} checkout{activeSessionCount === 1 ? "" : "s"} currently open
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        onClick={handleTogglePayments}
+                        disabled={pauseSaving || (paymentsPaused && pausedByAdmin)}
+                        className={`shrink-0 rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 transition-colors ${paymentsPaused ? "bg-emerald-600 hover:bg-emerald-700" : "bg-red-600 hover:bg-red-700"}`}
+                      >
+                        {pauseSaving ? "Saving…" : paymentsPaused ? "Start accepting" : "Stop payments"}
+                      </button>
+                    </div>
+                    {pauseError && <p className="mt-3 text-sm text-red-600">{pauseError}</p>}
+                    {pauseNotice && <p className="mt-3 text-sm text-emerald-700">{pauseNotice}</p>}
                   </div>
 
                   <div className="rounded-2xl bg-white p-6 ring-1 ring-black/5">
@@ -673,12 +1131,19 @@ export default function SettingsPage() {
                             </tr>
                           </thead>
                           <tbody className="text-xs divide-y divide-black/5 text-[color:var(--trite-ink)]">
+                            {apiKeys.length === 0 && (
+                              <tr>
+                                <td colSpan={5} className="px-4 py-6 text-center text-gray-400">
+                                  No API keys yet — create one below to call the API.
+                                </td>
+                              </tr>
+                            )}
                             {apiKeys.map((key) => (
-                              <tr key={key.key_id} className="hover:bg-gray-50/50">
+                              <tr key={key.id} className="hover:bg-gray-50/50">
                                 <td className="px-4 py-3 font-medium">{key.label}</td>
                                 <td className="px-4 py-3 font-mono text-gray-500">{key.prefix}...</td>
                                 <td className="px-4 py-3">
-                                  {key.is_active ? (
+                                  {!key.revoked_at ? (
                                     <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-semibold text-green-700">
                                       <div className="h-1 w-1 rounded-full bg-green-600" />
                                       Active
@@ -690,12 +1155,12 @@ export default function SettingsPage() {
                                   )}
                                 </td>
                                 <td className="px-4 py-3 text-gray-400">
-                                  {key.last_used ? new Date(key.last_used).toLocaleDateString() : "Never"}
+                                  {key.last_used_at ? new Date(key.last_used_at).toLocaleDateString() : "Never"}
                                 </td>
                                 <td className="px-4 py-3 text-right">
-                                  {key.is_active && (
-                                    <button 
-                                      onClick={() => handleRevokeKey(key.key_id)}
+                                  {!key.revoked_at && (
+                                    <button
+                                      onClick={() => handleRevokeKey(key.id)}
                                       className="text-red-500 hover:text-red-700 p-1"
                                     >
                                       <TrashIcon className="h-4 w-4" />
@@ -732,6 +1197,70 @@ export default function SettingsPage() {
                       </div>
                     </div>
                   </div>
+
+                  <div className="rounded-2xl bg-white p-6 ring-1 ring-black/5">
+                    <div className="flex items-center gap-2 mb-6">
+                      <GlobeIcon className="h-5 w-5 text-blue-600" />
+                      <h3 className="text-lg font-semibold text-[color:var(--trite-ink)]">Recent Webhook Deliveries</h3>
+                    </div>
+                    {deliveries.length === 0 ? (
+                      <p className="text-xs text-[color:var(--trite-muted)]">
+                        No deliveries yet. Events appear here once payments start flowing to your endpoint.
+                      </p>
+                    ) : (
+                      <div className="rounded-xl border border-black/5 overflow-hidden">
+                        <table className="w-full text-left">
+                          <thead className="bg-gray-50 border-b border-black/5">
+                            <tr className="text-[10px] uppercase tracking-wider text-[color:var(--trite-muted)] font-bold">
+                              <th className="px-4 py-3">Event</th>
+                              <th className="px-4 py-3">Status</th>
+                              <th className="px-4 py-3">Attempts</th>
+                              <th className="px-4 py-3">Response</th>
+                              <th className="px-4 py-3">Created</th>
+                              <th className="px-4 py-3 text-right">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody className="text-xs divide-y divide-black/5 text-[color:var(--trite-ink)]">
+                            {deliveries.map((d) => (
+                              <tr key={d.id} className="hover:bg-gray-50/50">
+                                <td className="px-4 py-3 font-mono">{d.event_type}</td>
+                                <td className="px-4 py-3">
+                                  <span
+                                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                                      d.status === "DELIVERED"
+                                        ? "bg-green-50 text-green-700"
+                                        : d.status === "PENDING"
+                                        ? "bg-amber-50 text-amber-700"
+                                        : "bg-red-50 text-red-700"
+                                    }`}
+                                    title={d.last_error ?? undefined}
+                                  >
+                                    {d.status}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 text-gray-400">{d.attempt_count}</td>
+                                <td className="px-4 py-3 text-gray-400">{d.response_status ?? "—"}</td>
+                                <td className="px-4 py-3 text-gray-400">
+                                  {new Date(d.created_at).toLocaleString()}
+                                </td>
+                                <td className="px-4 py-3 text-right">
+                                  {(d.status === "FAILED" || d.status === "EXHAUSTED") && (
+                                    <button
+                                      onClick={() => handleRedeliver(d.id)}
+                                      disabled={saving}
+                                      className="text-xs font-semibold text-blue-600 hover:text-blue-700 disabled:opacity-60"
+                                    >
+                                      Redeliver
+                                    </button>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -751,11 +1280,11 @@ export default function SettingsPage() {
                 <div className="mt-6">
                   <div className="flex items-center justify-between">
                     <span className="text-white/80 text-sm">Active API Keys</span>
-                    <span className="font-semibold text-sm">{settings?.active_key_count ?? 0}</span>
+                    <span className="font-semibold text-sm">{keysData?.active_key_count ?? 0}</span>
                   </div>
                   <div className="mt-3 space-y-2">
-                    {apiKeys.filter((k) => k.is_active).slice(0, 3).map((k) => (
-                      <div key={k.key_id} className="flex items-center justify-between rounded-lg bg-white/10 px-3 py-2 text-xs">
+                    {apiKeys.filter((k) => !k.revoked_at).slice(0, 3).map((k) => (
+                      <div key={k.id} className="flex items-center justify-between rounded-lg bg-white/10 px-3 py-2 text-xs">
                         <span className="text-white/80">{k.label}</span>
                         <span className="font-mono text-white/60">{k.prefix}…</span>
                       </div>
@@ -866,23 +1395,78 @@ export default function SettingsPage() {
                   >
                     Cancel
                   </button>
-                  <button 
-                    onClick={() => {
-                      setSaveMsg("Passkey flow coming soon");
-                      setPasskeyModal(false);
-                      setPasskeyName("");
-                      setTimeout(() => setSaveMsg(""), 3000);
-                    }}
-                    className="flex-1 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
+                  <button
+                    onClick={handleRegisterPasskey}
+                    disabled={passkeyBusy}
+                    className="flex-1 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
                   >
-                    Register
+                    {passkeyBusy ? "Waiting for device..." : "Register"}
                   </button>
                 </div>
               </div>
             </div>
           )}
+
+          <MfaSetupModal
+            isOpen={mfaSetupOpen}
+            onClose={() => setMfaSetupOpen(false)}
+            onEnabled={() => {
+              setUser((u) => ({ ...u, two_factor_enabled: true }));
+              setSaveMsg("2FA enabled successfully");
+              setTimeout(() => setSaveMsg(""), 3000);
+            }}
+          />
+
+          <MfaDisableModal
+            isOpen={mfaDisableOpen}
+            onClose={() => setMfaDisableOpen(false)}
+            onDisabled={() => {
+              setUser((u) => ({ ...u, two_factor_enabled: false }));
+              setSaveMsg("2FA disabled");
+              setTimeout(() => setSaveMsg(""), 3000);
+            }}
+          />
         </div>
   );
+}
+
+function describeDevice(ua: string | null): { label: string; mobile: boolean } {
+  if (!ua) return { label: "Unknown device", mobile: false };
+  const mobile = /iPhone|iPad|Android|Mobile/i.test(ua);
+  const os = /iPhone|iPad/i.test(ua)
+    ? "iPhone"
+    : /Android/i.test(ua)
+    ? "Android"
+    : /Macintosh|Mac OS X/i.test(ua)
+    ? "Mac"
+    : /Windows/i.test(ua)
+    ? "Windows"
+    : /Linux/i.test(ua)
+    ? "Linux"
+    : "Unknown OS";
+  const browser = /Edg\//i.test(ua)
+    ? "Edge"
+    : /OPR\//i.test(ua)
+    ? "Opera"
+    : /Chrome\//i.test(ua)
+    ? "Chrome"
+    : /Firefox\//i.test(ua)
+    ? "Firefox"
+    : /Safari\//i.test(ua)
+    ? "Safari"
+    : "Browser";
+  return { label: `${browser} on ${os}`, mobile };
+}
+
+function relativeTime(iso: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  if (diffMs < 2 * 60_000) return "Active now";
+  const mins = Math.floor(diffMs / 60_000);
+  if (mins < 60) return `${mins} min ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} day${days > 1 ? "s" : ""} ago`;
 }
 
 function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {

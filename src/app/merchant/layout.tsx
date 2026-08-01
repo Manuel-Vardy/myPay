@@ -143,13 +143,33 @@ export default function MerchantLayout({ children }: { children: React.ReactNode
     time: string;
     read: boolean;
   }[]>([]);
+  const [emailVerifiedAt, setEmailVerifiedAt] = useState<string | null | undefined>(undefined);
+  const [kycStatus, setKycStatus] = useState<string | null | undefined>(undefined);
+  const [resendState, setResendState] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  const isEmailVerified = !!emailVerifiedAt;
+  const isKycApproved = kycStatus === "APPROVED";
 
   useEffect(() => {
     fetch("/api/auth/me")
       .then((r) => r.json())
-      .then((d) => setProfile(d.user ? { ...d.user, merchant: d.merchant } : null))
+      .then((d) => {
+        setProfile(d.user ? { ...d.user, merchant: d.merchant } : null);
+        setEmailVerifiedAt(d.user?.email_verified_at ?? null);
+        setKycStatus(d.kyc_status ?? null);
+      })
       .catch(() => {});
   }, []);
+
+  const handleResendVerification = async () => {
+    setResendState("sending");
+    try {
+      const res = await fetch("/api/auth/resend-verification", { method: "POST" });
+      setResendState(res.ok ? "sent" : "error");
+    } catch {
+      setResendState("error");
+    }
+  };
 
   // Close sidebar on route change (mobile)
   useEffect(() => {
@@ -288,6 +308,68 @@ export default function MerchantLayout({ children }: { children: React.ReactNode
             </div>
           </div>
         </header>
+
+        {/* Verification Banners */}
+        {emailVerifiedAt !== undefined && !isEmailVerified && (
+          <div className="mx-4 mt-4 sm:mx-6 flex flex-col gap-3 rounded-2xl bg-amber-50 p-4 ring-1 ring-amber-200 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100">
+                <svg className="h-4 w-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <div className="text-sm text-amber-800">
+                <span className="font-bold">Verify your email to unlock features.</span>{" "}
+                Most portal features are locked until you verify your email address. Check your inbox for the verification link.
+              </div>
+            </div>
+            <button
+              onClick={handleResendVerification}
+              disabled={resendState === "sending" || resendState === "sent"}
+              className="inline-flex h-9 shrink-0 items-center justify-center rounded-lg bg-amber-700 px-4 text-xs font-semibold text-white hover:bg-amber-800 disabled:opacity-50 transition-colors"
+              type="button"
+            >
+              {resendState === "sending"
+                ? "Sending..."
+                : resendState === "sent"
+                ? "Email sent ✓"
+                : resendState === "error"
+                ? "Retry"
+                : "Resend email"}
+            </button>
+          </div>
+        )}
+
+        {isEmailVerified && kycStatus !== undefined && !isKycApproved && (
+          <div className="mx-4 mt-4 sm:mx-6 flex flex-col gap-3 rounded-2xl bg-blue-50 p-4 ring-1 ring-blue-200 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100">
+                <svg className="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <div className="text-sm text-blue-800">
+                <span className="font-bold">Complete identity verification.</span>{" "}
+                {kycStatus === "PENDING" || kycStatus === null
+                  ? "Submit your KYC documents to unlock payments, withdrawals, and API key creation."
+                  : kycStatus === "IN_REVIEW"
+                  ? "Your KYC documents are being reviewed. You'll be notified once verification is complete."
+                  : kycStatus === "REJECTED"
+                  ? "Your KYC verification was rejected. Please review the feedback and resubmit."
+                  : "Your KYC verification has expired. Please resubmit your documents."}
+              </div>
+            </div>
+            {(kycStatus === "PENDING" || kycStatus === null || kycStatus === "REJECTED" || kycStatus === "EXPIRED") && (
+              <button
+                onClick={() => router.push("/merchant/settings")}
+                className="inline-flex h-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700 transition-colors"
+                type="button"
+              >
+                {kycStatus === "REJECTED" || kycStatus === "EXPIRED" ? "Resubmit KYC" : "Start verification"}
+              </button>
+            )}
+          </div>
+        )}
 
         {children}
       </main>

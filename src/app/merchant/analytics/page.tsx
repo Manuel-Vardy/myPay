@@ -11,9 +11,14 @@ type AnalyticsData = {
   total_revenue: number;
   aov: number;
   conversion_rate: number;
+  success_rate: number;
+  total_transactions: number;
   method_mix: Record<string, { amount: number; count: number }>;
   revenue_by_region: Record<string, number>;
   revenue_trend: { date: string; amount: number }[];
+  prev_total_revenue: number;
+  prev_aov: number;
+  period: string;
 };
 
 type SettlementRow = {
@@ -27,12 +32,6 @@ type SettlementRow = {
   date_range_end: string;
 };
 
-const marketHubs = [
-  { code: "GH", name: "Ghana", volume: "₵2.1M", velocity: "High", color: "text-[color:var(--trite-lime-strong)]" },
-  { code: "NG", name: "Nigeria", volume: "₵892K", velocity: "Medium", color: "text-amber-500" },
-  { code: "ZA", name: "South Africa", volume: "₵512K", velocity: "Surging", color: "text-blue-500" },
-];
-
 export default function AnalyticsPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("analytics");
@@ -41,6 +40,15 @@ export default function AnalyticsPage() {
   const { data: analytics } = useMerchantFetch<AnalyticsData>("/api/merchant/analytics", { period });
   const { data: settlementData } = useMerchantFetch<{ data: SettlementRow[] }>("/api/merchant/settlements");
   const settlements = settlementData?.data ?? [];
+
+  // Revenue trend chart geometry (fractions of the chart area, 0..1)
+  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+  const trend = analytics?.revenue_trend ?? [];
+  const trendMax = Math.max(...trend.map((d) => d.amount), 1);
+  const trendPoints = trend.map((d, i) => ({
+    xf: trend.length > 1 ? i / (trend.length - 1) : 0.5,
+    yf: (150 - (d.amount / trendMax) * 140 - 5) / 150,
+  }));
 
   const formatGHS = (amount: number) => {
     return new Intl.NumberFormat("en-GH", {
@@ -62,7 +70,22 @@ export default function AnalyticsPage() {
                 Institutional Analytics
               </h1>
             </div>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1 rounded-lg bg-black/[0.04] p-1">
+                {(["7d", "30d", "90d"] as const).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setPeriod(p)}
+                    className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                      period === p
+                        ? "bg-white text-[color:var(--trite-ink)] shadow-sm"
+                        : "text-[color:var(--trite-muted)] hover:text-[color:var(--trite-ink)]"
+                    }`}
+                  >
+                    {p === "7d" ? "7 Days" : p === "30d" ? "30 Days" : "90 Days"}
+                  </button>
+                ))}
+              </div>
               <button className="flex h-10 items-center gap-2 rounded-lg border border-black/10 bg-white px-4 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-black/[0.02]">
                 <FileTextIcon className="h-4 w-4" />
                 Export PDF
@@ -78,22 +101,38 @@ export default function AnalyticsPage() {
             <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-[color:var(--trite-muted)]">Total Revenue</span>
-                <span className="rounded-full bg-[color:var(--trite-lime)] px-1.5 py-0.5 text-[10px] font-semibold text-white">
-                  +12.4%
-                </span>
+                {(() => {
+                  const change = analytics && analytics.prev_total_revenue > 0
+                    ? ((analytics.total_revenue - analytics.prev_total_revenue) / analytics.prev_total_revenue * 100).toFixed(1)
+                    : null;
+                  return change !== null ? (
+                    <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold text-white ${Number(change) >= 0 ? 'bg-[color:var(--trite-lime)]' : 'bg-red-500'}`}>
+                      {Number(change) >= 0 ? '+' : ''}{change}%
+                    </span>
+                  ) : null;
+                })()}
               </div>
               <div className="mt-2 text-2xl font-semibold text-[color:var(--trite-ink)]">
                 {formatGHS(analytics?.total_revenue ?? 0)}
               </div>
-              <div className="mt-1 text-xs text-[color:var(--trite-muted)]">vs last 30 days</div>
+              <div className="mt-1 text-xs text-[color:var(--trite-muted)]">
+                vs previous {period === "7d" ? "7 days" : period === "90d" ? "90 days" : "30 days"}
+              </div>
             </div>
 
             <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-[color:var(--trite-muted)]">Avg. Order Value</span>
-                <span className="rounded-full bg-[color:var(--trite-lime)] px-1.5 py-0.5 text-[10px] font-semibold text-white">
-                  +8%
-                </span>
+                {(() => {
+                  const change = analytics && analytics.prev_aov > 0
+                    ? ((analytics.aov - analytics.prev_aov) / analytics.prev_aov * 100).toFixed(1)
+                    : null;
+                  return change !== null ? (
+                    <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold text-white ${Number(change) >= 0 ? 'bg-[color:var(--trite-lime)]' : 'bg-red-500'}`}>
+                      {Number(change) >= 0 ? '+' : ''}{change}%
+                    </span>
+                  ) : null;
+                })()}
               </div>
               <div className="mt-2 text-2xl font-semibold text-[color:var(--trite-ink)]">
                 {formatGHS(analytics?.aov ?? 0)}
@@ -116,7 +155,7 @@ export default function AnalyticsPage() {
                 <span className="text-sm font-medium text-[color:var(--trite-muted)]">Success Rate</span>
               </div>
               <div className="mt-2 text-2xl font-semibold text-[color:var(--trite-ink)]">
-                {analytics ? `${analytics.conversion_rate}%` : "—"}
+                {analytics ? `${analytics.success_rate}%` : "—"}
               </div>
               <div className="mt-1 text-xs text-[color:var(--trite-muted)]">Across all gateways</div>
             </div>
@@ -133,39 +172,95 @@ export default function AnalyticsPage() {
                     Daily processed volume for current month
                   </div>
                 </div>
-                <button onClick={() => setPeriod("30d")} className="flex items-center gap-1 text-xs font-medium text-[color:var(--trite-muted)] hover:text-[color:var(--trite-ink)]">
-                  Last 30 Days
-                  <ChevronDownIcon className="h-3 w-3" />
-                </button>
+                <span className="text-xs font-medium text-[color:var(--trite-muted)]">
+                  {period === "7d" ? "Last 7 Days" : period === "30d" ? "Last 30 Days" : "Last 90 Days"}
+                </span>
               </div>
-              <div className="h-48 w-full">
-                <svg className="h-full w-full" viewBox="0 0 600 150" preserveAspectRatio="none">
-                  <defs>
-                    <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.3" />
-                      <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
-                    </linearGradient>
-                  </defs>
-                  <path
-                    d="M0,120 C50,110 100,90 150,95 C200,100 250,60 300,50 C350,40 400,70 450,80 C500,90 550,20 600,30 L600,150 L0,150 Z"
-                    fill="url(#chartGradient)"
-                  />
-                  <path
-                    d="M0,120 C50,110 100,90 150,95 C200,100 250,60 300,50 C350,40 400,70 450,80 C500,90 550,20 600,30"
-                    fill="none"
-                    stroke="#3b82f6"
-                    strokeWidth="2"
-                  />
-                  <circle cx="600" cy="30" r="4" fill="#3b82f6" />
-                </svg>
+              <div
+                className="relative h-48 w-full"
+                onMouseMove={(e) => {
+                  if (trend.length === 0) return;
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  if (!rect.width) return;
+                  const frac = (e.clientX - rect.left) / rect.width;
+                  setHoverIdx(Math.min(trend.length - 1, Math.max(0, Math.round(frac * (trend.length - 1)))));
+                }}
+                onMouseLeave={() => setHoverIdx(null)}
+              >
+                {analytics && trend.length > 0 ? (
+                  <>
+                    <svg className="h-full w-full" viewBox="0 0 600 150" preserveAspectRatio="none">
+                      <defs>
+                        <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.3" />
+                          <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+                        </linearGradient>
+                      </defs>
+                      {(() => {
+                        const points = trendPoints.map((p) => ({ x: p.xf * 600, y: p.yf * 150 }));
+                        let linePath = `M${points[0].x},${points[0].y}`;
+                        for (let i = 1; i < points.length; i++) {
+                          const cpx1 = points[i-1].x + (points[i].x - points[i-1].x) / 3;
+                          const cpx2 = points[i].x - (points[i].x - points[i-1].x) / 3;
+                          linePath += ` C${cpx1},${points[i-1].y} ${cpx2},${points[i].y} ${points[i].x},${points[i].y}`;
+                        }
+                        const areaPath = `${linePath} L600,150 L0,150 Z`;
+                        const lastPoint = points[points.length - 1];
+                        return (
+                          <>
+                            <path d={areaPath} fill="url(#chartGradient)" />
+                            <path d={linePath} fill="none" stroke="#3b82f6" strokeWidth="2" />
+                            <circle cx={lastPoint.x} cy={lastPoint.y} r="4" fill="#3b82f6" />
+                          </>
+                        );
+                      })()}
+                    </svg>
+                    {hoverIdx !== null && trendPoints[hoverIdx] && (
+                      <>
+                        <div
+                          className="pointer-events-none absolute inset-y-0 w-px bg-black/15"
+                          style={{ left: `${trendPoints[hoverIdx].xf * 100}%` }}
+                        />
+                        <div
+                          className="pointer-events-none absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-blue-600 shadow"
+                          style={{ left: `${trendPoints[hoverIdx].xf * 100}%`, top: `${trendPoints[hoverIdx].yf * 100}%` }}
+                        />
+                        <div
+                          className="pointer-events-none absolute z-10 -translate-x-1/2 whitespace-nowrap rounded-lg bg-[color:var(--trite-ink)] px-2.5 py-1.5 text-center shadow-lg"
+                          style={{
+                            left: `${Math.min(85, Math.max(15, trendPoints[hoverIdx].xf * 100))}%`,
+                            top: `${Math.max(0, trendPoints[hoverIdx].yf * 100 - 32)}%`,
+                          }}
+                        >
+                          <div className="text-[10px] text-white/70">
+                            {new Date(trend[hoverIdx].date).toLocaleDateString("en-GH", { day: "2-digit", month: "short", year: "numeric" })}
+                          </div>
+                          <div className="text-xs font-semibold text-white">{formatGHS(trend[hoverIdx].amount)}</div>
+                        </div>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex h-full items-center justify-center text-sm text-[color:var(--trite-muted)]">
+                    No revenue data for this period
+                  </div>
+                )}
               </div>
-              <div className="mt-4 flex justify-between text-xs text-[color:var(--trite-muted)]">
-                <span>01 NOV</span>
-                <span>07 NOV</span>
-                <span>14 NOV</span>
-                <span>21 NOV</span>
-                <span>28 NOV</span>
-              </div>
+              {analytics && analytics.revenue_trend.length > 0 && (
+                <div className="mt-4 flex justify-between text-xs text-[color:var(--trite-muted)]">
+                  {(() => {
+                    const trend = analytics.revenue_trend;
+                    const step = Math.max(1, Math.floor(trend.length / 4));
+                    const labels: string[] = [];
+                    for (let i = 0; i < trend.length; i += step) {
+                      labels.push(new Date(trend[i].date).toLocaleDateString("en-GH", { day: "2-digit", month: "short" }));
+                    }
+                    const lastLabel = new Date(trend[trend.length - 1].date).toLocaleDateString("en-GH", { day: "2-digit", month: "short" });
+                    if (labels[labels.length - 1] !== lastLabel) labels.push(lastLabel);
+                    return labels.map((l, i) => <span key={i}>{l.toUpperCase()}</span>);
+                  })()}
+                </div>
+              )}
             </div>
 
             <div className="rounded-2xl bg-gradient-to-br from-[#1a1f2e] to-[#0f1419] p-6 text-white">
@@ -201,8 +296,8 @@ export default function AnalyticsPage() {
                 Top Market Hubs
               </div>
               <div className="space-y-4">
-                {Object.entries(analytics?.revenue_by_region ?? {}).length > 0
-                  ? Object.entries(analytics!.revenue_by_region).map(([region, amount]) => (
+                {Object.entries(analytics?.revenue_by_region ?? {}).length > 0 ? (
+                  Object.entries(analytics!.revenue_by_region).map(([region, amount]) => (
                     <div key={region} className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-black/[0.04] text-xs font-semibold text-[color:var(--trite-ink)]">
@@ -215,20 +310,11 @@ export default function AnalyticsPage() {
                       </div>
                     </div>
                   ))
-                  : marketHubs.map((hub) => (
-                  <div key={hub.code} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-black/[0.04] text-xs font-semibold text-[color:var(--trite-ink)]">
-                        {hub.code}
-                      </div>
-                      <div>
-                        <div className="font-medium text-[color:var(--trite-ink)]">{hub.name}</div>
-                        <div className="text-xs text-[color:var(--trite-muted)]">{hub.volume} Volume</div>
-                      </div>
-                    </div>
-                    <div className={`text-xs font-semibold ${hub.color}`}>{hub.velocity} VELOCITY</div>
-                  </div>
-                ))}
+                ) : (
+                  <p className="py-6 text-center text-sm text-[color:var(--trite-muted)]">
+                    No regional volume for this period yet.
+                  </p>
+                )}
               </div>
             </div>
 

@@ -295,8 +295,16 @@ export default function CustomersPage() {
               </div>
               <div className="mt-3 h-1.5 w-full rounded-full bg-black/[0.04]">
                 <div
-                  className="h-1.5 rounded-full bg-[color:var(--trite-lime-strong)]"
-                  style={{ width: `${Math.min(100, Math.max(0, (acquisitionRate?.percentage ?? 0) + 50))}%` }}
+                  className="h-1.5 rounded-full bg-[color:var(--trite-lime-strong)] transition-all duration-500"
+                  style={{
+                    // This month's acquisitions relative to the stronger month
+                    width: `${acquisitionRate
+                      ? Math.round(
+                          (acquisitionRate.this_month /
+                            Math.max(acquisitionRate.this_month, acquisitionRate.last_month, 1)) * 100
+                        )
+                      : 0}%`,
+                  }}
                 />
               </div>
             </div>

@@ -81,7 +81,7 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable("system_logs", (table) => {
     table.bigIncrements("id").primary();
     table
-      .enum("level", ["INFO", "WARNING", "ERROR", "CRITICAL"], {
+      .enum("level", ["INFO", "WARN", "ERROR", "CRITICAL"], {
         useNative: true,
         enumName: "log_level",
       })

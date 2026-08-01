@@ -1,6 +1,8 @@
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
 import { requireMerchant } from "@/lib/guards";
+import { toMinorUnits } from "@/lib/utils";
+import { expireSessionsForLink } from "@/lib/payments/controls";
 
 // PATCH /api/merchant/payment-links/[id] - update payment link details or toggle status
 export async function PATCH(
@@ -43,10 +45,14 @@ export async function PATCH(
     }
 
     if (body.amount !== undefined) {
-      if (isNaN(Number(body.amount)) || Number(body.amount) <= 0) {
+      // null/empty clears the amount — customer enters it at checkout
+      if (body.amount === null || body.amount === "") {
+        updateData.amount = null;
+      } else if (isNaN(Number(body.amount)) || Number(body.amount) <= 0) {
         return Response.json({ error: "Amount must be a positive number" }, { status: 400 });
+      } else {
+        updateData.amount = toMinorUnits(body.amount);
       }
-      updateData.amount = Number(body.amount);
     }
 
     if (body.currency !== undefined) {
@@ -72,14 +78,23 @@ export async function PATCH(
       .update(updateData)
       .returning("*");
 
+    // Deactivating a link must also close the sessions it already minted —
+    // each one keeps accepting payments for its full 24h TTL otherwise.
+    let sessionsExpired = 0;
+    if (link.is_active && updatedLink.is_active === false) {
+      sessionsExpired = await expireSessionsForLink(id);
+    }
+
     await db("system_logs").insert({
       level: "INFO",
       source: "MERCHANT_PORTAL",
-      event_description: `Payment link updated: ${updatedLink.link_id_display} (is_active=${updatedLink.is_active}) by merchant ${merchant.merchant_display_id}`,
+      event_description:
+        `Payment link updated: ${updatedLink.link_id_display} (is_active=${updatedLink.is_active}) by merchant ${merchant.merchant_display_id}` +
+        (sessionsExpired ? ` — ${sessionsExpired} active session(s) expired` : ""),
       actor_id: merchant.user_id,
     });
 
-    return Response.json(updatedLink);
+    return Response.json({ ...updatedLink, sessions_expired: sessionsExpired });
   } catch (error) {
     console.error("Update payment link error:", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
@@ -112,16 +127,26 @@ export async function DELETE(
       return Response.json({ error: "Payment link not found" }, { status: 404 });
     }
 
+    // Expire the link's outstanding sessions BEFORE the row goes away — the
+    // FK is ON DELETE SET NULL, so afterwards they can't be found by link.
+    const sessionsExpired = await expireSessionsForLink(id);
+
     await db("payment_links").where({ id }).delete();
 
     await db("system_logs").insert({
       level: "INFO",
       source: "MERCHANT_PORTAL",
-      event_description: `Payment link deleted: ${link.link_id_display} by merchant ${merchant.merchant_display_id}`,
+      event_description:
+        `Payment link deleted: ${link.link_id_display} by merchant ${merchant.merchant_display_id}` +
+        (sessionsExpired ? ` — ${sessionsExpired} active session(s) expired` : ""),
       actor_id: merchant.user_id,
     });
 
-    return Response.json({ success: true, message: "Payment link deleted successfully" });
+    return Response.json({
+      success: true,
+      message: "Payment link deleted successfully",
+      sessions_expired: sessionsExpired,
+    });
   } catch (error) {
     console.error("Delete payment link error:", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });

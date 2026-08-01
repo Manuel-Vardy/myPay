@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useAdminFetch } from "@/lib/hooks/useAdminFetch";
+import TransactionDetailModal from "@/components/TransactionDetailModal";
 import {
   Search,
   Download,
@@ -15,19 +17,36 @@ import {
 
 type ApiTx = {
   id: string; tx_id_display: string; merchant_id: string;
+  business_name: string | null;
   amount: number; currency: string; method: string;
   status: string; flag_level: string; gateway_node: string | null;
   created_at: string;
 };
 
-type TxStatus = "success" | "pending" | "failed" | "flagged" | string;
+type TxStatus = "INITIATED" | "PENDING_AUTH" | "AUTHENTICATED" | "AUTHORIZED" | "CAPTURED" | "PARTIALLY_CAPTURED" | "PENDING_SETTLEMENT" | "SETTLED" | "FAILED" | "CANCELLED" | "EXPIRED" | "REVERSED" | string;
 
 
+// useSearchParams needs a Suspense boundary so the rest of the route can
+// still be prerendered (see next docs: use-search-params).
 export default function AdminTransactionsPage() {
+  return (
+    <Suspense fallback={null}>
+      <AdminTransactionsPageInner />
+    </Suspense>
+  );
+}
+
+function AdminTransactionsPageInner() {
+  // Deep-link filter from the merchant detail page ("View All →")
+  const urlParams = useSearchParams();
+  const [merchantFilter, setMerchantFilter] = useState<string | null>(
+    urlParams.get("merchant_id")
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [page, setPage] = useState(1);
+  const [detailTxId, setDetailTxId] = useState<string | null>(null);
 
   // ── Calendar date-range picker ────────────────────────────────────────────
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -84,24 +103,34 @@ export default function AdminTransactionsPage() {
 
   const params: Record<string, string> = { page: String(page), per_page: String(rowsPerPage) };
   if (searchQuery)           params.search   = searchQuery;
-  if (statusFilter !== "All") params.status  = statusFilter.toUpperCase();
+  if (statusFilter !== "All") params.status  = statusFilter;
+  if (merchantFilter)        params.merchant_id = merchantFilter;
   if (dateFrom)              params.date_from = dateFrom;
   if (dateTo)                params.date_to   = dateTo;
 
   const { data: txData } = useAdminFetch<{ data: ApiTx[]; pagination: { total: number; total_pages: number } }>("/api/admin/transactions", params);
   const transactions = txData?.data ?? [];
-  const pagination   = txData?.pagination;
+  const pagination = txData?.pagination;
 
   const formatAmount = (amount: number) =>
     `GH₵${amount.toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const getStatusColor = (status: TxStatus) => {
     switch (status) {
-      case "success": return "bg-emerald-100 text-emerald-700 border-emerald-200";
-      case "pending": return "bg-blue-100 text-blue-700 border-blue-200";
-      case "failed":  return "bg-red-100 text-red-700 border-red-200";
-      case "flagged": return "bg-amber-100 text-amber-700 border-amber-200";
-      default:        return "bg-gray-100 text-gray-700";
+      case "SETTLED":
+      case "CAPTURED":
+      case "PARTIALLY_CAPTURED": return "bg-emerald-100 text-emerald-700 border-emerald-200";
+      case "AUTHORIZED":
+      case "AUTHENTICATED": return "bg-blue-100 text-blue-700 border-blue-200";
+      case "INITIATED":
+      case "PENDING_AUTH":
+      case "PENDING_SETTLEMENT":
+        return "bg-amber-100 text-amber-700 border-amber-200";
+      case "FAILED":  return "bg-red-100 text-red-700 border-red-200";
+      case "CANCELLED":
+      case "EXPIRED":
+      case "REVERSED": return "bg-gray-100 text-gray-600 border-gray-200";
+      default: return "bg-gray-100 text-gray-700";
     }
   };
 
@@ -109,7 +138,7 @@ export default function AdminTransactionsPage() {
     if (!flag) return "";
     if (flag === "HIGH" || flag === "SUSPICIOUS") return "text-red-500";
     if (flag === "MISMATCH") return "text-amber-500";
-    if (flag === "LARGE")    return "text-blue-500";
+    if (flag === "LARGE") return "text-blue-500";
     return "text-gray-500";
   };
 
@@ -126,7 +155,7 @@ export default function AdminTransactionsPage() {
 
       {/* Filters — now 4 cols on desktop to accommodate the date picker */}
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Search */}
+        {/* Search Transaction ID */}
         <div className="rounded-2xl border border-black/5 bg-white p-5">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[color:var(--trite-muted)] mb-3">Search System</p>
           <div className="relative">
@@ -145,20 +174,30 @@ export default function AdminTransactionsPage() {
         <div className="rounded-2xl border border-black/5 bg-white p-5">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[color:var(--trite-muted)] mb-3">Status & Priority</p>
           <div className="flex flex-wrap gap-2">
-            {["All", "Success", "Failed", "Flagged"].map((status) => (
+            {([
+              { label: "All",        value: "All" },
+              { label: "Initiated",  value: "INITIATED" },
+              { label: "Settled",    value: "SETTLED" },
+              { label: "Authorized", value: "AUTHORIZED" },
+              { label: "Pending",    value: "PENDING_SETTLEMENT" },
+              { label: "Failed",     value: "FAILED" },
+              { label: "Cancelled",  value: "CANCELLED" },
+            ] as const).map(({ label, value }) => (
               <button
-                key={status}
-                onClick={() => setStatusFilter(status)}
+                key={value}
+                onClick={() => setStatusFilter(value)}
                 className={`rounded-lg px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all ${
-                  statusFilter === status
-                    ? status === "All"     ? "bg-[color:var(--trite-ink)] text-white"
-                    : status === "Success" ? "bg-emerald-600 text-white"
-                    : status === "Failed"  ? "bg-red-500 text-white"
-                    :                        "bg-amber-500 text-white"
+                  statusFilter === value
+                    ? value === "All"       ? "bg-[color:var(--trite-ink)] text-white"
+                    : value === "SETTLED"   ? "bg-emerald-600 text-white"
+                    : value === "AUTHORIZED"? "bg-blue-600 text-white"
+                    : value === "FAILED"    ? "bg-red-500 text-white"
+                    : value === "CANCELLED" ? "bg-gray-500 text-white"
+                    : "bg-amber-500 text-white"
                     : "bg-black/5 text-[color:var(--trite-muted)] hover:bg-black/10"
                 }`}
               >
-                {status}
+                {label}
               </button>
             ))}
           </div>
@@ -304,7 +343,19 @@ export default function AdminTransactionsPage() {
       <div className="mb-6 rounded-2xl border border-black/5 bg-white overflow-hidden">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-black/5 px-6 py-5">
           <div>
-            <h2 className="text-lg font-bold text-[color:var(--trite-ink)]">Live Ledger</h2>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-lg font-bold text-[color:var(--trite-ink)]">Live Ledger</h2>
+              {merchantFilter && (
+                <button
+                  onClick={() => { setMerchantFilter(null); setPage(1); }}
+                  title="Clear merchant filter"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-blue-700 hover:bg-blue-100 transition-colors"
+                >
+                  {transactions[0]?.business_name ?? `Merchant #${merchantFilter.slice(0, 8)}`}
+                  <span aria-hidden>✕</span>
+                </button>
+              )}
+            </div>
             <p className="text-xs text-[color:var(--trite-muted)] mt-1">
               Showing {pagination?.total === 0 ? 0 : (page - 1) * rowsPerPage + 1}–{Math.min(page * rowsPerPage, pagination?.total ?? 0)} of {pagination?.total ?? 0}
             </p>
@@ -377,7 +428,12 @@ export default function AdminTransactionsPage() {
                 <p className="text-[9px] font-medium text-[color:var(--trite-muted)]">
                   {new Date(tx.created_at).toLocaleString()}
                 </p>
-                <button className="text-[10px] font-bold uppercase tracking-widest text-blue-600">View Details</button>
+                <button
+                  onClick={() => setDetailTxId(tx.id)}
+                  className="text-[10px] font-bold uppercase tracking-widest text-blue-600"
+                >
+                  View Details
+                </button>
               </div>
             </div>
           ))}
@@ -399,7 +455,11 @@ export default function AdminTransactionsPage() {
             </thead>
             <tbody className="divide-y divide-black/5">
               {transactions.map((tx) => (
-                <tr key={tx.id} className="border-b border-black/5 last:border-0 hover:bg-black/[0.02]">
+                <tr
+                  key={tx.id}
+                  onClick={() => setDetailTxId(tx.id)}
+                  className="border-b border-black/5 last:border-0 hover:bg-black/[0.02] cursor-pointer"
+                >
                   <td className="py-4 px-6">
                     <div className="flex h-10 w-16 items-center justify-center rounded-lg bg-blue-50">
                       <span className="text-xs font-mono font-medium text-blue-600">{tx.tx_id_display.split("-")[1] ?? tx.tx_id_display.slice(0,6)}</span>
@@ -424,12 +484,15 @@ export default function AdminTransactionsPage() {
                       <MethodIcon method={tx.method} />
                       <span className="text-sm text-[color:var(--trite-muted)]">{tx.method}</span>
                     </div>
+                    <p className="mt-1 text-xs text-[color:var(--trite-muted)]">
+                      {new Date(tx.created_at).toLocaleString("en-GH", { dateStyle: "medium", timeStyle: "short" })}
+                    </p>
                   </td>
                   <td className="py-4 px-4">
                     <span className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1 text-xs font-medium capitalize ${getStatusColor(tx.status)}`}>
                       <span className={`h-1.5 w-1.5 rounded-full ${
-                        tx.status === "SUCCESS" ? "bg-emerald-500" :
-                        tx.status === "PENDING" ? "bg-blue-500" :
+                        tx.status === "SETTLED" || tx.status === "CAPTURED" ? "bg-emerald-500" :
+                        tx.status === "AUTHORIZED" || tx.status === "AUTHENTICATED" ? "bg-blue-500" :
                         tx.status === "FAILED"  ? "bg-red-500" : "bg-amber-500"
                       }`} />
                       {tx.status.toLowerCase()}
@@ -459,7 +522,9 @@ export default function AdminTransactionsPage() {
                 setRowsPerPage(Number(e.target.value));
                 setPage(1);
               }}
-              className="h-8 rounded-lg border border-black/10 bg-white px-2 text-sm outline-none"
+              // No fixed height: globals.css forces select padding/font-size with
+              // !important, so a Tailwind h-8/h-9 clips the value vertically.
+              className="rounded-lg border border-black/10 bg-white text-sm text-[color:var(--trite-ink)] outline-none"
             >
               <option value={15}>15</option>
               <option value={25}>25</option>
@@ -471,20 +536,32 @@ export default function AdminTransactionsPage() {
               {pagination?.total === 0 ? 0 : (page - 1) * rowsPerPage + 1}–{Math.min(page * rowsPerPage, pagination?.total ?? 0)} of {pagination?.total ?? 0}
             </span>
             <div className="flex items-center gap-1">
-              <button onClick={() => setPage(1)} disabled={page <= 1}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-sm text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50 transition-colors">
+              <button 
+                onClick={() => setPage(1)}
+                disabled={page <= 1}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-sm text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50 transition-colors"
+              >
                 &lt;&lt;
               </button>
-              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-sm text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50 transition-colors">
+              <button 
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page <= 1}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-sm text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50 transition-colors"
+              >
                 &lt;
               </button>
-              <button onClick={() => setPage(p => Math.min(pagination?.total_pages ?? 1, p + 1))} disabled={page >= (pagination?.total_pages ?? 1)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-sm text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50 transition-colors">
+              <button 
+                onClick={() => setPage(p => Math.min(pagination?.total_pages ?? 1, p + 1))}
+                disabled={page >= (pagination?.total_pages ?? 1)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-sm text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50 transition-colors"
+              >
                 &gt;
               </button>
-              <button onClick={() => setPage(pagination?.total_pages ?? 1)} disabled={page >= (pagination?.total_pages ?? 1)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-sm text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50 transition-colors">
+              <button 
+                onClick={() => setPage(pagination?.total_pages ?? 1)}
+                disabled={page >= (pagination?.total_pages ?? 1)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-sm text-[color:var(--trite-muted)] hover:bg-black/[0.02] disabled:opacity-50 transition-colors"
+              >
                 &gt;&gt;
               </button>
             </div>
@@ -493,9 +570,11 @@ export default function AdminTransactionsPage() {
       </div>
 
       {/* Bottom Section */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      {/* Liquidity Pulse card removed for now — its figures were hardcoded.
+          Restore from git history once it's backed by real reserve data. */}
+      <div className="grid grid-cols-1 gap-6">
         {/* Architect Insights */}
-        <div className="lg:col-span-2 rounded-2xl bg-[color:var(--trite-ink)] p-6 text-white">
+        <div className="rounded-2xl bg-[color:var(--trite-ink)] p-6 text-white">
           <p className="text-xs font-medium text-white/60 uppercase tracking-wide">Architect Insights</p>
           <h3 className="mt-3 text-xl font-semibold">Anomaly detection is operating at 99.8% precision.</h3>
           <div className="mt-4 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
@@ -506,34 +585,13 @@ export default function AdminTransactionsPage() {
           </div>
         </div>
 
-        {/* Liquidity Pulse */}
-        <div className="rounded-2xl border border-black/5 bg-white p-5">
-          <h3 className="text-sm font-semibold text-[color:var(--trite-ink)]">Liquidity Pulse</h3>
-          <div className="mt-4 space-y-3">
-            <div>
-              <div className="mb-1 flex items-center justify-between text-sm">
-                <span className="text-[color:var(--trite-muted)]">GHS Reserve</span>
-                <span className="font-medium text-[color:var(--trite-ink)]">GH₵24.5M</span>
-              </div>
-              <div className="h-2 rounded-full bg-black/5">
-                <div className="h-full w-[85%] rounded-full bg-blue-500" />
-              </div>
-            </div>
-            <div>
-              <div className="mb-1 flex items-center justify-between text-sm">
-                <span className="text-[color:var(--trite-muted)]">USD Equivalent</span>
-                <span className="font-medium text-[color:var(--trite-ink)]">$2.4M</span>
-              </div>
-              <div className="h-2 rounded-full bg-black/5">
-                <div className="h-full w-[45%] rounded-full bg-emerald-500" />
-              </div>
-            </div>
-          </div>
-          <button className="mt-4 text-sm font-medium text-blue-600 hover:text-blue-700">
-            Manage Gateways →
-          </button>
-        </div>
       </div>
+
+      <TransactionDetailModal
+        txId={detailTxId}
+        endpointBase="/api/admin/transactions"
+        onClose={() => setDetailTxId(null)}
+      />
     </>
   );
 }

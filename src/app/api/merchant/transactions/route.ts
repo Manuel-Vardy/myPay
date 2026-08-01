@@ -1,7 +1,8 @@
 // GET /api/merchant/transactions — paginated transaction list for a merchant
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
-import { getSession } from "@/lib/session";
+import { requireVerifiedMerchant } from "@/lib/guards";
+import { fromMinorUnits } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,21 +16,24 @@ export async function GET(request: NextRequest) {
     const date_from = searchParams.get("date_from");
     const date_to = searchParams.get("date_to");
     const date_range = searchParams.get("dateRange");//7,30,90
-    const session = await getSession();
-    if (!session || session.role !== "MERCHANT") {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const merchantUser = await db("merchants").where({ user_id: session.userId }).first();
-    if (!merchantUser) {
-      return Response.json({ error: "Merchant profile not found" }, { status: 404 });
-    }
-    const merchant_id = merchantUser.id;
+    const guard = await requireVerifiedMerchant();
+    if (guard.error) return guard.error;
+    const merchant_id = guard.merchant.id;
 
     let query = db("transactions").where({ merchant_id });
 
     if (status) query = query.where("status", status);
-    if (currency) query = query.where("currency", currency);
+    if (currency) {
+      if (currency === "FIAT") {
+        query = query.whereIn("currency", ["GHS", "USD", "EUR", "NGN"]);
+      } else if (currency === "STABLECOIN") {
+        query = query.whereIn("currency", ["USDC", "USDT", "DAI", "BUSD"]);
+      } else if (currency === "CRYPTO") {
+        query = query.whereNotIn("currency", ["GHS", "USD", "EUR", "NGN", "USDC", "USDT", "DAI", "BUSD"]);
+      } else {
+        query = query.where("currency", currency);
+      }
+    }
     if (method) query = query.where("method", method);
     if (date_range) {
       const days = parseInt(date_range);
@@ -70,9 +74,9 @@ export async function GET(request: NextRequest) {
     statusStats.forEach(stat => {
       totalVolume += Number(stat.total_amount || 0);
       const count = Number(stat.count || 0);
-      if (stat.status === 'SUCCESS') completedCount += count;
+      if (stat.status === 'SETTLED') completedCount += count;
       else if (stat.status === 'FAILED') failedCount += count;
-      else pendingCount += count; // PENDING, PROCESSING
+      else pendingCount += count; // INITIATED, PENDING, PROCESSING
     });
 
     // Method Mix Aggregation
@@ -128,11 +132,16 @@ export async function GET(request: NextRequest) {
       .orderBy("created_at", "desc")
       .limit(per_page)
       .offset((page - 1) * per_page);
+      
+    const formattedTransactions = transactions.map((tx: any) => ({
+      ...tx,
+      amount: fromMinorUnits(tx.amount)
+    }));
 
     return Response.json({
-      data: transactions,
+      data: formattedTransactions,
       global_stats: {
-        total_volume: totalVolume,
+        total_volume: fromMinorUnits(totalVolume),
         completed_count: completedCount,
         pending_count: pendingCount,
         failed_count: failedCount,

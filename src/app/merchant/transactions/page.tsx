@@ -5,8 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useMerchantFetch } from "@/lib/hooks/useMerchantFetch";
+import TransactionDetailModal from "@/components/TransactionDetailModal";
 
-type TxStatus = "SUCCESS" | "PENDING" | "FAILED" | "PROCESSING";
+type TxStatus = "INITIATED" | "PENDING_AUTH" | "AUTHENTICATED" | "AUTHORIZED" | "CAPTURED" | "PARTIALLY_CAPTURED" | "PENDING_SETTLEMENT" | "SETTLED" | "FAILED" | "CANCELLED" | "EXPIRED" | "REVERSED" | string;
 type TxMethod = "CARD" | "MOBILE_MONEY" | "BANK_TRANSFER" | "CRYPTO" | string;
 
 
@@ -25,10 +26,10 @@ export default function TransactionsPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("transactions");
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string | "all" | "success" | "pending" | "failed">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "SETTLED" | "AUTHORIZED" | "FAILED" | "CANCELLED">("all");
   const [page, setPage] = useState(1);
   const [currencyFilter, setCurrencyFilter] = useState<"all" | "fiat" | "stablecoin" | "crypto">("all");
-  
+
   // Dynamic Calendar Date Filter States
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [dateFrom, setDateFrom] = useState<string>(() => new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
@@ -71,16 +72,17 @@ export default function TransactionsPage() {
 
     setDateFrom(fromStr);
     setDateTo(toStr);
-    
+
     const formattedStart = new Date(startDateInput).toLocaleDateString("en-GH", { month: "short", day: "numeric", year: "numeric" });
-    const formattedEnd = endDateInput 
+    const formattedEnd = endDateInput
       ? new Date(endDateInput).toLocaleDateString("en-GH", { month: "short", day: "numeric", year: "numeric" })
       : "Now";
-    
+
     setDatePresetLabel(`${formattedStart} - ${formattedEnd}`);
     setCalendarOpen(false);
     setPage(1);
   };
+  const [detailTxId, setDetailTxId] = useState<string | null>(null);
 
   // Build clean params — exclude empty/default values to match how dashboard fetches
   const fetchParams = useMemo(() => {
@@ -89,7 +91,7 @@ export default function TransactionsPage() {
       per_page: "10",
     };
     if (query) p.search = query;
-    if (statusFilter !== "all") p.status = statusFilter.toUpperCase();
+    if (statusFilter !== "all") p.status = statusFilter;
     if (currencyFilter !== "all") p.currency = currencyFilter.toUpperCase();
     if (dateFrom) p.date_from = dateFrom;
     if (dateTo) p.date_to = dateTo;
@@ -249,15 +251,16 @@ export default function TransactionsPage() {
                     className="rounded-lg border border-black/10 px-3 py-1.5 text-sm text-gray-900 outline-none focus:border-[color:var(--trite-lime-strong)]"
                 >
                   <option value="all">All Status</option>
-                  <option value="success">Success</option>
-                  <option value="pending">Pending</option>
-                  <option value="failed">Failed</option>
+                  <option value="SETTLED">Settled</option>
+                  <option value="AUTHORIZED">Authorized</option>
+                  <option value="FAILED">Failed</option>
+                  <option value="CANCELLED">Cancelled</option>
                 </select>
                 <div className="relative">
                   <button
                     type="button"
                     onClick={() => setCalendarOpen(!calendarOpen)}
-                    className="flex items-center gap-2 rounded-lg border border-black/10 px-3 py-1.5 text-sm text-gray-900 bg-white outline-none hover:bg-black/[0.02] focus:border-[color:var(--trite-lime-strong)] transition-all cursor-pointer"
+                    className="flex items-center gap-2 rounded-lg border border-black/10 px-3 py-3 text-sm text-gray-900 bg-white outline-none hover:bg-black/[0.02] focus:border-[color:var(--trite-lime-strong)] transition-all cursor-pointer"
                   >
                     <CalendarIcon className="h-4 w-4 text-[color:var(--trite-muted)]" />
                     <span>{datePresetLabel}</span>
@@ -406,22 +409,28 @@ export default function TransactionsPage() {
                   onClick={() => setStatusFilter("all")}
                 />
                 <FilterChip
-                  label="Completed"
-                  active={statusFilter === "success"}
-                  onClick={() => setStatusFilter("success")}
+                  label="Settled"
+                  active={statusFilter === "SETTLED"}
+                  onClick={() => setStatusFilter("SETTLED")}
                   variant="success"
                 />
                 <FilterChip
-                  label="Pending"
-                  active={statusFilter === "pending"}
-                  onClick={() => setStatusFilter("pending")}
+                  label="Authorized"
+                  active={statusFilter === "AUTHORIZED"}
+                  onClick={() => setStatusFilter("AUTHORIZED")}
                   variant="neutral"
                 />
                 <FilterChip
                   label="Failed"
-                  active={statusFilter === "failed"}
-                  onClick={() => setStatusFilter("failed")}
+                  active={statusFilter === "FAILED"}
+                  onClick={() => setStatusFilter("FAILED")}
                   variant="danger"
+                />
+                <FilterChip
+                  label="Cancelled"
+                  active={statusFilter === "CANCELLED"}
+                  onClick={() => setStatusFilter("CANCELLED")}
+                  variant="neutral"
                 />
               </div>
 
@@ -453,7 +462,11 @@ export default function TransactionsPage() {
                   {transactions.map((tx) => {
                     const d = new Date(tx.created_at);
                     return (
-                    <tr key={tx.id} className="border-b border-black/5 last:border-b-0">
+                    <tr
+                      key={tx.id}
+                      onClick={() => setDetailTxId(tx.id)}
+                      className="border-b border-black/5 last:border-b-0 hover:bg-black/[0.02] cursor-pointer"
+                    >
                       <td className="py-4 whitespace-nowrap">
                         <div className="font-medium text-[color:var(--trite-ink)]">
                           {d.toLocaleDateString("en-GH", { month: "short", day: "numeric", year: "numeric" })}
@@ -584,6 +597,12 @@ export default function TransactionsPage() {
             </div>
           </div>
         </div>
+
+      <TransactionDetailModal
+        txId={detailTxId}
+        endpointBase="/api/merchant/transactions"
+        onClose={() => setDetailTxId(null)}
+      />
     </>
   );
 }
@@ -621,9 +640,10 @@ function FilterChip({
 
 function StatusBadge({ status }: { status: string }) {
   let color = "bg-gray-100 text-gray-700";
-  if (status === "SUCCESS") color = "bg-[color:var(--trite-lime)] text-white";
-  else if (status === "PENDING" || status === "PROCESSING") color = "bg-yellow-100 text-yellow-700";
+  if (status === "SETTLED" || status === "CAPTURED" || status === "PARTIALLY_CAPTURED") color = "bg-[color:var(--trite-lime)] text-white";
+  else if (status === "AUTHORIZED" || status === "AUTHENTICATED" || status === "INITIATED" || status === "PENDING_AUTH" || status === "PENDING_SETTLEMENT") color = "bg-yellow-100 text-yellow-700";
   else if (status === "FAILED") color = "bg-red-50 text-red-600";
+  else if (status === "CANCELLED" || status === "REVERSED" || status === "EXPIRED") color = "bg-gray-100 text-gray-500";
 
   return (
     <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${color}`}>

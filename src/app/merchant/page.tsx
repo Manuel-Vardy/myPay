@@ -12,18 +12,43 @@ import { useEffect } from "react";
 
 type DashboardData = {
   available_balance: number;
+  withdrawable_balance: number;
+  pending_withdrawal_total: number;
   balance_currency: string;
   daily_volume: number;
   total_transactions: number;
   gateway_health: "OPERATIONAL" | "DEGRADED" | "DOWN";
   merchant: { business_name: string; merchant_display_id: string; tier: string };
   stablecoin_holdings: { USDC: number; USDT: number; Total: number };
+  pending_settlements: number;
+  expected_payout: number;
+  settlement_schedule: {
+    payout_time: string; // "HH:MM" GMT
+    payout_threshold: number | null; // GHS; null = disabled
+    withdrawal_age_hours: number; // 0 = aging disabled
+  };
+  settlement_account: {
+    id: string;
+    provider_name: string;
+    account_number: string;
+    account_type: string;
+    account_name: string;
+  } | null;
   revenue_chart: {
     day: { label: string; value: number }[];
     week: { label: string; value: number }[];
     month: { label: string; value: number }[];
     year: { label: string; value: number }[];
   };
+};
+
+type SettlementAccount = {
+  id: string;
+  account_type: "BANK" | "MOBILE_WALLET";
+  provider_name: string;
+  account_name: string;
+  account_number: string;
+  is_default: boolean;
 };
 
 type TxRow = {
@@ -61,46 +86,118 @@ export default function DashboardPage() {
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [withdrawMethod, setWithdrawMethod] = useState("bank");
   const [txFilter, setTxFilter] = useState<"all" | "fiat" | "stablecoin" | "crypto">("all");
-  const [txStatus, setTxStatus] = useState<"all" | "success" | "pending" | "failed">("all");
+  const [txStatus, setTxStatus] = useState<"all" | "SETTLED" | "AUTHORIZED" | "FAILED" | "CANCELLED">("all");
   const [txSearch, setTxSearch] = useState("");
   const [dateRange, setDateRange] = useState<"7d" | "30d" | "90d" | "all">("30d");
   const [chartPeriod, setChartPeriod] = useState<"day" | "week" | "month" | "year">("week");
-  const [convertModalOpen, setConvertModalOpen] = useState(false);
-  const [convertAmount, setConvertAmount] = useState("");
-  const [convertFrom, setConvertFrom] = useState<"USDC" | "USDT">("USDC");
+  const [withdrawAccount, setWithdrawAccount] = useState("");
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [withdrawing, setWithdrawing] = useState(false);
+  const [withdrawError, setWithdrawError] = useState<string | null>(null);
+  const [withdrawSuccess, setWithdrawSuccess] = useState<string | null>(null);
+  const [emailVerifiedAt, setEmailVerifiedAt] = useState<string | null>(null);
+  const [resendState, setResendState] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
-  const getGreetingData = () => {
-    const hour = new Date().getHours();
-    const name = dashData?.merchant?.business_name || "Merchant";
-    if (hour >= 5 && hour < 12) {
-      return {
-        title: `Good morning, ${name}!`,
-        description: "Hope your morning is off to a great start. We're ready to help you power secure global payments today.",
-      };
-    } else if (hour >= 12 && hour < 18) {
-      return {
-        title: `Good afternoon, ${name}!`,
-        description: "Hope your day is going wonderfully. Your Trite portal is running smoothly with excellent transaction success rates.",
-      };
-    } else if (hour >= 18 && hour < 22) {
-      return {
-        title: `Good evening, ${name}!`,
-        description: "We hope you're having a pleasant and relaxing finish to your day. Here's a quick look at today's achievements.",
-      };
-    } else {
-      return {
-        title: `Working late, ${name}?`,
-        description: "We're up with you. Your global payment infrastructure is running perfectly and secure in the background.",
-      };
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => setEmailVerifiedAt(d.user?.email_verified_at ?? null))
+      .catch(() => {});
+  }, []);
+
+  const handleResendVerification = async () => {
+    setResendState("sending");
+    try {
+      const res = await fetch("/api/auth/resend-verification", { method: "POST" });
+      setResendState(res.ok ? "sent" : "error");
+    } catch {
+      setResendState("error");
     }
   };
 
-  const { data: dashData } = useMerchantFetch<DashboardData>("/api/merchant/dashboard");
+    const getGreetingData = () => {
+        const hour = new Date().getHours();
+        const name = dashData?.merchant?.business_name || "";
+        if (hour >= 5 && hour < 12) {
+            return {
+                title: `Good morning, ${name}!`,
+                description: "Hope your morning is off to a great start. We're ready to help you power secure global payments today.",
+            };
+        } else if (hour >= 12 && hour < 18) {
+            return {
+                title: `Good afternoon, ${name}!`,
+                description: "Hope your day is going wonderfully. Your Trite portal is running smoothly with excellent transaction success rates.",
+            };
+        } else if (hour >= 18 && hour < 22) {
+            return {
+                title: `Good evening, ${name}!`,
+                description: "We hope you're having a pleasant and relaxing finish to your day. Here's a quick look at today's achievements.",
+            };
+        } else {
+            return {
+                title: `Working late, ${name}?`,
+                description: "We're up with you. Your global payment infrastructure is running perfectly and secure in the background.",
+            };
+        }
+    };
+  const { data: dashData, mutate: refreshDash } = useMerchantFetch<DashboardData>("/api/merchant/dashboard");
   const { data: txData } = useMerchantFetch<{ data: TxRow[] }>("/api/merchant/transactions", { per_page: "5" });
   const { data: settlementData } = useMerchantFetch<{ data: SettlementRow[] }>("/api/merchant/settlements");
+  const { data: accountsData } = useMerchantFetch<{ data: SettlementAccount[] }>("/api/merchant/settlement-accounts");
+  const settlementAccounts = accountsData?.data ?? [];
 
   const transactions = txData?.data ?? [];
   const greeting = getGreetingData();
+
+  const availableBalance = dashData?.available_balance ?? 0;
+  const withdrawableBalance = dashData?.withdrawable_balance ?? 0;
+  const agingHours = dashData?.settlement_schedule?.withdrawal_age_hours ?? 24;
+  const agingNote =
+    agingHours > 0
+      ? `Payments become withdrawable ${agingHours} hours after they are received.`
+      : null;
+
+  // Today's volume as a share of the best day this week
+  const dailyVolumePct = (() => {
+    const daily = dashData?.daily_volume ?? 0;
+    const weekPeak = Math.max(...(dashData?.revenue_chart?.week ?? []).map((d) => d.value), daily);
+    return weekPeak > 0 ? Math.round((daily / weekPeak) * 100) : 0;
+  })();
+
+  // Next scheduled payout from the platform schedule (times are GMT — Ghana time)
+  const nextPayoutLabel = (() => {
+    const time = dashData?.settlement_schedule?.payout_time;
+    if (!time) return "—";
+    const [hours, minutes] = time.split(":").map(Number);
+    const now = new Date();
+    const todayPayout = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), hours, minutes));
+    return `${now < todayPayout ? "Today" : "Tomorrow"} ${time} GMT`;
+  })();
+
+  const submitWithdraw = async () => {
+    setWithdrawing(true);
+    setWithdrawError(null);
+    setWithdrawSuccess(null);
+    try {
+      const res = await fetch("/api/merchant/withdraw", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: Number(withdrawAmount), account_id: withdrawAccount }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setWithdrawError(json.error || "Withdrawal failed");
+      } else {
+        setWithdrawSuccess(json.message || "Withdrawal initiated");
+        setWithdrawAmount("");
+        refreshDash();
+      }
+    } catch {
+      setWithdrawError("Network error — please try again");
+    } finally {
+      setWithdrawing(false);
+    }
+  };
 
   return (
     <>
@@ -123,8 +220,21 @@ export default function DashboardPage() {
                       Available Institutional Balance
                     </div>
                     <div className="mt-2 flex items-baseline gap-1">
-                      <span className="text-2xl font-bold sm:text-4xl">{formatGHS(dashData?.available_balance ?? 0)}</span>
+                      <span className="text-2xl font-bold sm:text-4xl">{formatGHS(availableBalance)}</span>
                     </div>
+                    <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                      <span className="text-[11px] font-semibold uppercase tracking-wide text-white/60">
+                        Available to withdraw
+                      </span>
+                      <span className="text-lg font-semibold text-[color:var(--trite-lime)]">
+                        {formatGHS(withdrawableBalance)}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-[11px] leading-4 text-white/50">
+                      {agingNote}
+                      {(dashData?.pending_withdrawal_total ?? 0) > 0 &&
+                        ` ${formatGHS(dashData!.pending_withdrawal_total)} is held by pending withdrawal requests.`}
+                    </p>
                   </div>
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
                     <WalletIcon className="h-5 w-5" />
@@ -132,7 +242,11 @@ export default function DashboardPage() {
                 </div>
                 <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                   <button
-                    onClick={() => setWithdrawModalOpen(true)}
+                    onClick={() => {
+                      setWithdrawError(null);
+                      setWithdrawSuccess(null);
+                      setWithdrawModalOpen(true);
+                    }}
                     className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-500 px-4 text-sm font-semibold text-white hover:bg-blue-600"
                     type="button"
                   >
@@ -152,10 +266,23 @@ export default function DashboardPage() {
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="text-sm font-medium text-white/80">Settlement Status</div>
-                    <div className="mt-2 text-2xl font-bold">Next: Today 18:00</div>
-                    <p className="mt-2 text-xs leading-5 text-white/80">
-                      Auto-settlement to GCB Bank account ending in 4421. Expected: {formatGHS(dashData ? Math.max(0, dashData.available_balance * 0.985) : 0)}
-                    </p>
+                    {dashData?.settlement_account ? (
+                      <>
+                        <div className="mt-2 text-2xl font-bold">Next: {nextPayoutLabel}</div>
+                        <p className="mt-2 text-xs leading-5 text-white/80">
+                          Auto-settlement to {dashData.settlement_account.provider_name} account ending in {dashData.settlement_account.account_number.replace(/\*+/, '')}. Expected: {formatGHS(dashData?.expected_payout ?? 0)}
+                          {dashData.settlement_schedule?.payout_threshold != null &&
+                            ` Pays out instantly once your balance reaches ${formatGHS(dashData.settlement_schedule.payout_threshold)}.`}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <div className="mt-2 text-2xl font-bold">Not Configured</div>
+                        <p className="mt-2 text-xs leading-5 text-white/80">
+                          No settlement account configured. Add one to enable auto-settlements.
+                        </p>
+                      </>
+                    )}
                   </div>
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
                     <HistoryIcon className="h-5 w-5 text-white" />
@@ -165,53 +292,53 @@ export default function DashboardPage() {
                   onClick={() => router.push("/merchant/settlements")}
                   className="mt-4 inline-flex h-9 items-center justify-center rounded-lg bg-[color:var(--trite-lime)] px-4 text-xs font-semibold text-white hover:bg-[color:var(--trite-lime-strong)]"
                 >
-                  Manage Settlements
+                  {dashData?.settlement_account ? 'Manage Settlements' : 'Add Settlement Account'}
                 </button>
               </div>
             </div>
 
             <div className="space-y-4">
               {/* Stablecoin Balance Card */}
-              <div className="rounded-2xl bg-gradient-to-br from-green-50 to-teal-50 p-5 ring-1 ring-green-200">
-                <div className="flex items-center justify-between">
-                  <div className="text-sm font-medium text-green-800">
-                    Stablecoin Holdings
-                  </div>
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100">
-                    <CoinIcon className="h-3 w-3 text-green-600" />
-                  </div>
-                </div>
-                <div className="mt-3 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-green-700">USDC</span>
-                    <span className="text-sm font-semibold text-green-900">
-                      ${(dashData?.stablecoin_holdings?.USDC ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-green-700">USDT</span>
-                    <span className="text-sm font-semibold text-green-900">
-                      ${(dashData?.stablecoin_holdings?.USDT ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                  <div className="mt-2 border-t border-green-200 pt-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-green-800">Total</span>
-                      <span className="text-lg font-semibold text-green-900">
-                        ${(dashData?.stablecoin_holdings?.Total ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-3 flex gap-2">
-                  <button
-                    onClick={() => setConvertModalOpen(true)}
-                    className="flex-1 rounded-lg bg-green-600 py-1.5 text-xs font-medium text-white hover:bg-green-700"
-                  >
-                    Convert to GHS
-                  </button>
-                </div>
-              </div>
+              {/*<div className="rounded-2xl bg-gradient-to-br from-green-50 to-teal-50 p-5 ring-1 ring-green-200">*/}
+              {/*  <div className="flex items-center justify-between">*/}
+              {/*    <div className="text-sm font-medium text-green-800">*/}
+              {/*      Stablecoin Holdings*/}
+              {/*    </div>*/}
+              {/*    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100">*/}
+              {/*      <CoinIcon className="h-3 w-3 text-green-600" />*/}
+              {/*    </div>*/}
+              {/*  </div>*/}
+              {/*  <div className="mt-3 space-y-2">*/}
+              {/*    <div className="flex items-center justify-between">*/}
+              {/*      <span className="text-xs text-green-700">USDC</span>*/}
+              {/*      <span className="text-sm font-semibold text-green-900">*/}
+              {/*        ${(dashData?.stablecoin_holdings?.USDC ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}*/}
+              {/*      </span>*/}
+              {/*    </div>*/}
+              {/*    <div className="flex items-center justify-between">*/}
+              {/*      <span className="text-xs text-green-700">USDT</span>*/}
+              {/*      <span className="text-sm font-semibold text-green-900">*/}
+              {/*        ${(dashData?.stablecoin_holdings?.USDT ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}*/}
+              {/*      </span>*/}
+              {/*    </div>*/}
+              {/*    <div className="mt-2 border-t border-green-200 pt-2">*/}
+              {/*      <div className="flex items-center justify-between">*/}
+              {/*        <span className="text-xs font-medium text-green-800">Total</span>*/}
+              {/*        <span className="text-lg font-semibold text-green-900">*/}
+              {/*          ${(dashData?.stablecoin_holdings?.Total ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}*/}
+              {/*        </span>*/}
+              {/*      </div>*/}
+              {/*    </div>*/}
+              {/*  </div>*/}
+              {/*  <div className="mt-3 flex gap-2">*/}
+              {/*    <button*/}
+              {/*      onClick={() => setConvertModalOpen(true)}*/}
+              {/*      className="flex-1 rounded-lg bg-green-600 py-1.5 text-xs font-medium text-white hover:bg-green-700"*/}
+              {/*    >*/}
+              {/*      Convert to GHS*/}
+              {/*    </button>*/}
+              {/*  </div>*/}
+              {/*</div>*/}
 
               <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
                 <div className="flex items-center justify-between">
@@ -219,16 +346,19 @@ export default function DashboardPage() {
                     Daily Volume
                   </div>
                   <span className="text-xs font-semibold text-[color:var(--trite-lime-strong)]">
-                    +10.4%
+                    {dailyVolumePct}%
                   </span>
                 </div>
                 <div className="mt-2 text-2xl font-semibold text-[color:var(--trite-ink)]">
                   {formatGHS(dashData?.daily_volume ?? 0)}
                 </div>
                 <div className="mt-2 h-2 w-full rounded-full bg-black/[0.04]">
-                  <div className="h-2 w-3/4 rounded-full bg-blue-500" />
+                  <div
+                    className="h-2 rounded-full bg-blue-500 transition-all duration-500"
+                    style={{ width: `${dailyVolumePct}%` }}
+                  />
                 </div>
-                <div className="mt-1 text-xs text-[color:var(--trite-muted)]">Last 24h</div>
+                <div className="mt-1 text-xs text-[color:var(--trite-muted)]">Last 24h vs best day this week</div>
               </div>
 
               <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
@@ -255,7 +385,7 @@ export default function DashboardPage() {
           <div className="mt-6 rounded-2xl bg-white p-6 ring-1 ring-black/5">
             {/* Enhanced Filters */}
             <div className="mb-4 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-              <div className="flex flex-1 items-center gap-2 rounded-lg border border-black/10 px-3 py-1.5 focus-within:border-[color:var(--trite-lime-strong)]">
+              <div className="flex flex-1 items-center gap-2 rounded-lg border border-black/10 px-3 py-3 focus-within:border-[color:var(--trite-lime-strong)]">
                 <SearchIcon className="h-4 w-4 text-[color:var(--trite-muted)]" />
                 <input
                   type="text"
@@ -281,9 +411,10 @@ export default function DashboardPage() {
                 className="rounded-lg border border-black/10 px-3 py-1.5 text-sm text-gray-900 outline-none focus:border-[color:var(--trite-lime-strong)]"
               >
                 <option value="all">All Status</option>
-                <option value="success">Success</option>
-                <option value="pending">Pending</option>
-                <option value="failed">Failed</option>
+                <option value="SETTLED">Settled</option>
+                <option value="AUTHORIZED">Authorized</option>
+                <option value="FAILED">Failed</option>
+                <option value="CANCELLED">Cancelled</option>
               </select>
               <select
                 value={dateRange}
@@ -331,7 +462,7 @@ export default function DashboardPage() {
                     if (txFilter === "stablecoin" && tx.method !== "CRYPTO" && tx.method !== "DIGITAL_WALLET") return false;
                     if (txFilter === "fiat" && (tx.method === "CRYPTO" || tx.method === "DIGITAL_WALLET")) return false;
                     if (txFilter === "crypto" && tx.method !== "CRYPTO") return false;
-                    if (txStatus !== "all" && tx.status.toLowerCase() !== txStatus) return false;
+                    if (txStatus !== "all" && tx.status !== txStatus) return false;
                     return true;
                   })
                   .map((tx) => {
@@ -378,11 +509,13 @@ export default function DashboardPage() {
                     <td className="py-4">
                       <span
                         className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
-                          tx.status === "SUCCESS"
+                          tx.status === "SETTLED" || tx.status === "CAPTURED" || tx.status === "PARTIALLY_CAPTURED"
                             ? "bg-[color:var(--trite-lime)] text-white"
-                            : tx.status === "PROCESSING" || tx.status === "PENDING"
+                            : tx.status === "AUTHORIZED" || tx.status === "AUTHENTICATED" || tx.status === "INITIATED" || tx.status === "PENDING_AUTH" || tx.status === "PENDING_SETTLEMENT"
                             ? "bg-yellow-100 text-yellow-700"
-                            : "bg-red-100 text-red-700"
+                            : tx.status === "FAILED"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-gray-100 text-gray-500"
                         }`}
                       >
                         {tx.status.toUpperCase()}
@@ -504,8 +637,11 @@ export default function DashboardPage() {
             </div>
 
             <div className="mb-6 rounded-xl bg-gray-50 p-4">
-              <div className="text-xs text-[color:var(--trite-muted)]">Available Balance</div>
-              <div className="text-2xl font-bold text-[color:var(--trite-ink)]">{formatGHS(dashData?.available_balance ?? 0)}</div>
+              <div className="text-xs text-[color:var(--trite-muted)]">Available to Withdraw</div>
+              <div className="text-2xl font-bold text-[color:var(--trite-ink)]">{formatGHS(withdrawableBalance)}</div>
+              <div className="mt-1 text-[11px] text-[color:var(--trite-muted)]">
+                Total balance {formatGHS(availableBalance)}.{agingNote ? ` ${agingNote}` : ""} Withdrawals are paid out once approved by an admin.
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -513,6 +649,8 @@ export default function DashboardPage() {
                 <label className="text-sm font-medium text-[color:var(--trite-ink)]">Withdrawal Amount (GHS)</label>
                 <input
                   type="number"
+                  value={withdrawAmount}
+                  onChange={(e) => setWithdrawAmount(e.target.value)}
                   placeholder="0.00"
                   className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-[color:var(--trite-ink)] placeholder:text-gray-400 outline-none focus:border-blue-500"
                 />
@@ -546,42 +684,47 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {withdrawMethod === "momo" && (
-                <div>
-                  <label className="text-sm font-medium text-[color:var(--trite-ink)]">Network Provider</label>
-                  <select className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none focus:border-blue-500">
-                    <option value="">Select network...</option>
-                    <option value="mtn">MTN Mobile Money</option>
-                    <option value="vodafone">Vodafone Cash</option>
-                    <option value="airteltigo">AirtelTigo Money</option>
-                  </select>
-                </div>
-              )}
-
               <div>
                 <label className="text-sm font-medium text-[color:var(--trite-ink)]">
-                  {withdrawMethod === "bank" ? "Destination Account" : "Mobile Money Number"}
+                  {withdrawMethod === "bank" ? "Destination Account" : "Mobile Money Account"}
                 </label>
-                <select className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none focus:border-blue-500">
-                  {withdrawMethod === "bank" ? (
-                    <>
-                      <option>GCB Bank - ****4421 (Kwame Asante)</option>
-                      <option>Ecobank - ****8829 (Kwame Asante)</option>
-                    </>
-                  ) : (
-                    <>
-                      <option>+233 24 XXX XXXX (MTN MoMo)</option>
-                      <option>+233 20 XXX XXXX (Vodafone Cash)</option>
-                      <option>+233 26 XXX XXXX (AirtelTigo Money)</option>
-                    </>
-                  )}
-                </select>
+                {(() => {
+                  const filtered = settlementAccounts.filter(a =>
+                    withdrawMethod === "bank" ? a.account_type === "BANK" : a.account_type === "MOBILE_WALLET"
+                  );
+                  if (filtered.length === 0) {
+                    return (
+                      <div className="mt-2 rounded-lg border border-dashed border-black/10 p-3 text-center">
+                        <p className="text-xs text-[color:var(--trite-muted)]">
+                          No {withdrawMethod === "bank" ? "bank" : "mobile money"} accounts found.
+                        </p>
+                        <Link href="/merchant/settlements" className="mt-1 inline-block text-xs font-semibold text-blue-600 hover:underline">
+                          Add an account →
+                        </Link>
+                      </div>
+                    );
+                  }
+                  return (
+                    <select
+                      value={withdrawAccount}
+                      onChange={(e) => setWithdrawAccount(e.target.value)}
+                      className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none focus:border-blue-500"
+                    >
+                      <option value="">Select account...</option>
+                      {filtered.map((acc) => (
+                        <option key={acc.id} value={acc.id}>
+                          {acc.provider_name} - {acc.account_number} ({acc.account_name}){acc.is_default ? ' ★' : ''}
+                        </option>
+                      ))}
+                    </select>
+                  );
+                })()}
               </div>
 
               <div className="rounded-xl bg-gray-50 p-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-[color:var(--trite-muted)]">Amount</span>
-                  <span className="font-medium text-[color:var(--trite-ink)]">₵0.00</span>
+                  <span className="font-medium text-[color:var(--trite-ink)]">{formatGHS(Number(withdrawAmount) || 0)}</span>
                 </div>
                 <div className="mt-1 flex justify-between text-sm">
                   <span className="text-[color:var(--trite-muted)]">Fee</span>
@@ -589,10 +732,21 @@ export default function DashboardPage() {
                 </div>
                 <div className="mt-2 border-t border-black/10 pt-2 flex justify-between text-sm">
                   <span className="font-medium text-[color:var(--trite-ink)]">Total</span>
-                  <span className="font-bold text-[color:var(--trite-ink)]">₵0.00</span>
+                  <span className="font-bold text-[color:var(--trite-ink)]">{formatGHS(Number(withdrawAmount) || 0)}</span>
                 </div>
               </div>
             </div>
+
+            {withdrawError && (
+              <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-center text-xs font-medium text-red-700">
+                {withdrawError}
+              </p>
+            )}
+            {withdrawSuccess && (
+              <p className="mt-4 rounded-lg bg-green-50 px-3 py-2 text-center text-xs font-medium text-green-700">
+                {withdrawSuccess}
+              </p>
+            )}
 
             <div className="mt-6 flex gap-3">
               <button
@@ -602,134 +756,151 @@ export default function DashboardPage() {
                 Cancel
               </button>
               <button
-                onClick={() => setWithdrawModalOpen(false)}
-                className="flex-1 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
+                onClick={submitWithdraw}
+                disabled={
+                  withdrawing ||
+                  settlementAccounts.length === 0 ||
+                  withdrawableBalance <= 0 ||
+                  !withdrawAccount ||
+                  !(Number(withdrawAmount) > 0) ||
+                  Number(withdrawAmount) > withdrawableBalance
+                }
+                className="flex-1 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Withdraw
+                {withdrawing ? "Processing..." : "Withdraw"}
               </button>
             </div>
+            {settlementAccounts.length === 0 ? (
+              <p className="mt-3 text-center text-xs text-[color:var(--trite-muted)]">
+                You need at least one settlement account to withdraw funds.{' '}
+                <Link href="/merchant/settlements" className="font-semibold text-blue-600 hover:underline">Add account</Link>
+              </p>
+            ) : withdrawableBalance <= 0 ? (
+              <p className="mt-3 text-center text-xs text-[color:var(--trite-muted)]">
+                No withdrawable balance yet{agingHours > 0 ? ` — payments become withdrawable ${agingHours} hours after they are received` : ""}.
+              </p>
+            ) : null}
           </div>
         </div>
       )}
 
+        {/* Convert to GHS Modal */}
+        {/*{convertModalOpen && (*/}
+        {/*  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">*/}
+        {/*    <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">*/}
+        {/*      <div className="mb-6 flex items-center justify-between">*/}
+        {/*        <h2 className="text-xl font-semibold text-[color:var(--trite-ink)]">Convert Stablecoin to GHS</h2>*/}
+        {/*        <button*/}
+        {/*          onClick={() => setConvertModalOpen(false)}*/}
+        {/*          className="flex h-8 w-8 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]"*/}
+        {/*        >*/}
+        {/*          <XIcon className="h-5 w-5" />*/}
+        {/*        </button>*/}
+        {/*      </div>*/}
 
-      {/* Convert to GHS Modal */}
-      {convertModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-[color:var(--trite-ink)]">Convert Stablecoin to GHS</h2>
-              <button
-                onClick={() => setConvertModalOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]"
-              >
-                <XIcon className="h-5 w-5" />
-              </button>
-            </div>
+        {/*      <div className="mb-6 rounded-xl bg-green-50 p-4">*/}
+        {/*        <div className="text-xs text-green-700">Available Stablecoin Balance</div>*/}
+        {/*        <div className="text-2xl font-bold text-green-900">*/}
+        {/*          ${(dashData?.stablecoin_holdings?.Total ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}*/}
+        {/*        </div>*/}
+        {/*        <div className="mt-1 text-xs text-green-600">*/}
+        {/*          USDC: ${(dashData?.stablecoin_holdings?.USDC ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} | */}
+        {/*          USDT: ${(dashData?.stablecoin_holdings?.USDT ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}*/}
+        {/*        </div>*/}
+        {/*      </div>*/}
 
-            <div className="mb-6 rounded-xl bg-green-50 p-4">
-              <div className="text-xs text-green-700">Available Stablecoin Balance</div>
-              <div className="text-2xl font-bold text-green-900">
-                ${(dashData?.stablecoin_holdings?.Total ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </div>
-              <div className="mt-1 text-xs text-green-600">
-                USDC: ${(dashData?.stablecoin_holdings?.USDC ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} | 
-                USDT: ${(dashData?.stablecoin_holdings?.USDT ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </div>
-            </div>
+        {/*      <div className="space-y-4">*/}
+        {/*        <div>*/}
+        {/*          <label className="text-sm font-medium text-[color:var(--trite-ink)]">Select Stablecoin</label>*/}
+        {/*          <div className="mt-2 grid grid-cols-2 gap-2">*/}
+        {/*            <button*/}
+        {/*              onClick={() => setConvertFrom("USDC")}*/}
+        {/*              className={`flex items-center justify-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${*/}
+        {/*                convertFrom === "USDC"*/}
+        {/*                  ? "border-green-500 bg-green-50 text-green-700"*/}
+        {/*                  : "border-black/10 text-[color:var(--trite-muted)] hover:bg-black/[0.03]"*/}
+        {/*              }`}*/}
+        {/*            >*/}
+        {/*              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-[8px] font-bold text-green-700">$</span>*/}
+        {/*              USDC*/}
+        {/*            </button>*/}
+        {/*            <button*/}
+        {/*              onClick={() => setConvertFrom("USDT")}*/}
+        {/*              className={`flex items-center justify-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${*/}
+        {/*                convertFrom === "USDT"*/}
+        {/*                  ? "border-green-500 bg-green-50 text-green-700"*/}
+        {/*                  : "border-black/10 text-[color:var(--trite-muted)] hover:bg-black/[0.03]"*/}
+        {/*              }`}*/}
+        {/*            >*/}
+        {/*              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-teal-100 text-[8px] font-bold text-teal-700">T</span>*/}
+        {/*              USDT*/}
+        {/*            </button>*/}
+        {/*          </div>*/}
+        {/*        </div>*/}
 
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-[color:var(--trite-ink)]">Select Stablecoin</label>
-                <div className="mt-2 grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => setConvertFrom("USDC")}
-                    className={`flex items-center justify-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
-                      convertFrom === "USDC"
-                        ? "border-green-500 bg-green-50 text-green-700"
-                        : "border-black/10 text-[color:var(--trite-muted)] hover:bg-black/[0.03]"
-                    }`}
-                  >
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-[8px] font-bold text-green-700">$</span>
-                    USDC
-                  </button>
-                  <button
-                    onClick={() => setConvertFrom("USDT")}
-                    className={`flex items-center justify-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
-                      convertFrom === "USDT"
-                        ? "border-green-500 bg-green-50 text-green-700"
-                        : "border-black/10 text-[color:var(--trite-muted)] hover:bg-black/[0.03]"
-                    }`}
-                  >
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-teal-100 text-[8px] font-bold text-teal-700">T</span>
-                    USDT
-                  </button>
-                </div>
-              </div>
+        {/*        <div>*/}
+        {/*          <label className="text-sm font-medium text-[color:var(--trite-ink)]">Amount to Convert (USD)</label>*/}
+        {/*          <input*/}
+        {/*            type="number"*/}
+        {/*            value={convertAmount}*/}
+        {/*            onChange={(e) => setConvertAmount(e.target.value)}*/}
+        {/*            placeholder="0.00"*/}
+        {/*            className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-green-500"*/}
+        {/*          />*/}
+        {/*          <div className="mt-1 flex justify-between text-xs">*/}
+        {/*            <span className="text-[color:var(--trite-muted)]">Available: {convertFrom === "USDC" ? "$12,450.00" : "$8,230.50"}</span>*/}
+        {/*            <button*/}
+        {/*              onClick={() => setConvertAmount(convertFrom === "USDC" ? "12450" : "8230.50")}*/}
+        {/*              className="text-green-600 hover:underline"*/}
+        {/*            >*/}
+        {/*              Max*/}
+        {/*            </button>*/}
+        {/*          </div>*/}
+        {/*        </div>*/}
 
-              <div>
-                <label className="text-sm font-medium text-[color:var(--trite-ink)]">Amount to Convert (USD)</label>
-                <input
-                  type="number"
-                  value={convertAmount}
-                  onChange={(e) => setConvertAmount(e.target.value)}
-                  placeholder="0.00"
-                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-green-500"
-                />
-                <div className="mt-1 flex justify-between text-xs">
-                  <span className="text-[color:var(--trite-muted)]">Available: {convertFrom === "USDC" ? "$12,450.00" : "$8,230.50"}</span>
-                  <button
-                    onClick={() => setConvertAmount(convertFrom === "USDC" ? "12450" : "8230.50")}
-                    className="text-green-600 hover:underline"
-                  >
-                    Max
-                  </button>
-                </div>
-              </div>
+        {/*        <div className="rounded-xl bg-gray-50 p-3">*/}
+        {/*          <div className="flex justify-between text-sm">*/}
+        {/*            <span className="text-[color:var(--trite-muted)]">Exchange Rate</span>*/}
+        {/*            <span className="font-medium text-[color:var(--trite-ink)]">1 USD = ₵15.50</span>*/}
+        {/*          </div>*/}
+        {/*          <div className="mt-1 flex justify-between text-sm">*/}
+        {/*            <span className="text-[color:var(--trite-muted)]">Conversion Fee (0.5%)</span>*/}
+        {/*            <span className="font-medium text-[color:var(--trite-ink)]">*/}
+        {/*              {convertAmount ? formatGHS(Number(convertAmount) * 0.005 * 15.50) : "₵0.00"}*/}
+        {/*            </span>*/}
+        {/*          </div>*/}
+        {/*          <div className="mt-2 border-t border-black/10 pt-2 flex justify-between text-sm">*/}
+        {/*            <span className="font-medium text-[color:var(--trite-ink)]">You Will Receive</span>*/}
+        {/*            <span className="font-bold text-green-700">*/}
+        {/*              {convertAmount ? formatGHS(Number(convertAmount) * 15.50 * 0.995) : "₵0.00"}*/}
+        {/*            </span>*/}
+        {/*          </div>*/}
+        {/*        </div>*/}
+        {/*      </div>*/}
 
-              <div className="rounded-xl bg-gray-50 p-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-[color:var(--trite-muted)]">Exchange Rate</span>
-                  <span className="font-medium text-[color:var(--trite-ink)]">1 USD = ₵15.50</span>
-                </div>
-                <div className="mt-1 flex justify-between text-sm">
-                  <span className="text-[color:var(--trite-muted)]">Conversion Fee (0.5%)</span>
-                  <span className="font-medium text-[color:var(--trite-ink)]">
-                    {convertAmount ? formatGHS(Number(convertAmount) * 0.005 * 15.50) : "₵0.00"}
-                  </span>
-                </div>
-                <div className="mt-2 border-t border-black/10 pt-2 flex justify-between text-sm">
-                  <span className="font-medium text-[color:var(--trite-ink)]">You Will Receive</span>
-                  <span className="font-bold text-green-700">
-                    {convertAmount ? formatGHS(Number(convertAmount) * 15.50 * 0.995) : "₵0.00"}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 flex gap-3">
-              <button
-                onClick={() => setConvertModalOpen(false)}
-                className="flex-1 rounded-lg border border-black/10 py-2.5 text-sm font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.03]"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  if (convertAmount) {
-                    setConvertAmount("");
-                    setConvertModalOpen(false);
-                  }
-                }}
-                disabled={!convertAmount}
-                className="flex-1 rounded-lg bg-green-600 py-2.5 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Convert Now
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        {/*      <div className="mt-6 flex gap-3">*/}
+        {/*        <button*/}
+        {/*          onClick={() => setConvertModalOpen(false)}*/}
+        {/*          className="flex-1 rounded-lg border border-black/10 py-2.5 text-sm font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.03]"*/}
+        {/*        >*/}
+        {/*          Cancel*/}
+        {/*        </button>*/}
+        {/*        <button*/}
+        {/*          onClick={() => {*/}
+        {/*            if (convertAmount) {*/}
+        {/*              setConvertAmount("");*/}
+        {/*              setConvertModalOpen(false);*/}
+        {/*            }*/}
+        {/*          }}*/}
+        {/*          disabled={!convertAmount}*/}
+        {/*          className="flex-1 rounded-lg bg-green-600 py-2.5 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"*/}
+        {/*        >*/}
+        {/*          Convert Now*/}
+        {/*        </button>*/}
+        {/*      </div>*/}
+        {/*    </div>*/}
+        {/*  </div>*/}
+        {/*)}*/}
     </>
   );
 }

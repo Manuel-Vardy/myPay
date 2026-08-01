@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAdminFetch } from "@/lib/hooks/useAdminFetch";
 import {
   Search,
@@ -16,28 +16,51 @@ import {
   Layers,
   Pause,
   Play,
+  X,
 } from "lucide-react";
 
-type LogLevel = "CRITICAL" | "ERROR" | "WARNING" | "INFO";
+type LogLevel = "CRITICAL" | "ERROR" | "WARN" | "INFO";
 
 type ApiLog = { id: number; timestamp: string; level: string; source: string; event_description: string };
 
 export default function AdminLogsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLive, setIsLive] = useState(true);
+  const [refreshRate, setRefreshRate] = useState(5);
+  const [levelFilter, setLevelFilter] = useState("");
+  const [sourceFilter, setSourceFilter] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState(50);
   const [page, setPage] = useState(1);
+  const [selectedLog, setSelectedLog] = useState<ApiLog | null>(null);
 
   const params: Record<string, string> = { page: String(page), per_page: String(rowsPerPage) };
-  if (searchQuery) params.source = searchQuery;
+  if (levelFilter) params.level = levelFilter;
+  if (sourceFilter) params.source = sourceFilter;
 
-  const { data: logsData } = useAdminFetch<{ 
-    data: ApiLog[]; 
+  const { data: logsData, mutate } = useAdminFetch<{
+    data: ApiLog[];
     activity_stats?: Array<{ hour: string; requests: number; errors: number }>;
-    pagination: { total: number } 
+    level_stats?: { CRITICAL: number; ERROR: number; WARN: number; INFO: number; TOTAL: number };
+    sources?: string[];
+    pagination: { total: number }
   }>("/api/admin/logs", params);
+
+  useEffect(() => {
+    if (!isLive) return;
+    const interval = setInterval(() => {
+      mutate();
+    }, refreshRate * 1000);
+    return () => clearInterval(interval);
+  }, [isLive, refreshRate, mutate]);
   
   const logs = logsData?.data ?? [];
+  const sources = logsData?.sources ?? [];
+
+  const levelStats = logsData?.level_stats ?? { CRITICAL: 0, ERROR: 0, WARN: 0, INFO: 0, TOTAL: 0 };
+  const formatNumber = (num: number) => {
+    if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+    return num.toString();
+  };
 
   const filteredLogs = searchQuery
     ? logs.filter((l) =>
@@ -53,7 +76,7 @@ export default function AdminLogsPage() {
         return "bg-red-500 text-white";
       case "ERROR":
         return "bg-orange-500 text-white";
-      case "WARNING":
+      case "WARN":
         return "bg-amber-400 text-white";
       case "INFO":
         return "bg-blue-500 text-white";
@@ -68,7 +91,7 @@ export default function AdminLogsPage() {
         return "bg-red-500";
       case "ERROR":
         return "bg-orange-500";
-      case "WARNING":
+      case "WARN":
         return "bg-amber-400";
       case "INFO":
         return "bg-blue-500";
@@ -113,7 +136,7 @@ export default function AdminLogsPage() {
               <AlertTriangle className="h-5 w-5 text-red-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-[color:var(--trite-ink)]">12</p>
+              <p className="text-2xl font-bold text-[color:var(--trite-ink)]">{formatNumber(levelStats.CRITICAL + levelStats.ERROR)}</p>
               <p className="text-[10px] font-bold text-[color:var(--trite-muted)] uppercase tracking-widest">Critical</p>
             </div>
           </div>
@@ -125,7 +148,7 @@ export default function AdminLogsPage() {
               <AlertTriangle className="h-5 w-5 text-amber-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-[color:var(--trite-ink)]">48</p>
+              <p className="text-2xl font-bold text-[color:var(--trite-ink)]">{formatNumber(levelStats.WARN)}</p>
               <p className="text-[10px] font-bold text-[color:var(--trite-muted)] uppercase tracking-widest">Warnings</p>
             </div>
           </div>
@@ -137,7 +160,7 @@ export default function AdminLogsPage() {
               <Info className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-[color:var(--trite-ink)]">1.2k</p>
+              <p className="text-2xl font-bold text-[color:var(--trite-ink)]">{formatNumber(levelStats.INFO)}</p>
               <p className="text-[10px] font-bold text-[color:var(--trite-muted)] uppercase tracking-widest">Info</p>
             </div>
           </div>
@@ -149,7 +172,7 @@ export default function AdminLogsPage() {
               <Layers className="h-5 w-5 text-slate-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-[color:var(--trite-ink)]">42.5k</p>
+              <p className="text-2xl font-bold text-[color:var(--trite-ink)]">{formatNumber(levelStats.TOTAL)}</p>
               <p className="text-[10px] font-bold text-[color:var(--trite-muted)] uppercase tracking-widest">Events</p>
             </div>
           </div>
@@ -167,7 +190,54 @@ export default function AdminLogsPage() {
             </div>
             <span className="text-[10px] font-bold font-mono text-white/70 uppercase tracking-[0.2em]">Live Auditing Console</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-y-2 gap-x-4">
+            <div className="flex items-center gap-2 mr-4 border-r border-white/10 pr-4">
+              <span className="text-[10px] font-bold font-mono text-white/50 uppercase">Level:</span>
+              <select
+                value={levelFilter}
+                onChange={(e) => {
+                  setLevelFilter(e.target.value);
+                  setPage(1);
+                }}
+                className="console-select rounded font-mono uppercase transition-colors cursor-pointer"
+              >
+                <option value="">All</option>
+                <option value="CRITICAL">Critical</option>
+                <option value="ERROR">Error</option>
+                <option value="WARN">Warn</option>
+                <option value="INFO">Info</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2 mr-4 border-r border-white/10 pr-4">
+              <span className="text-[10px] font-bold font-mono text-white/50 uppercase">Source:</span>
+              <select
+                value={sourceFilter}
+                onChange={(e) => {
+                  setSourceFilter(e.target.value);
+                  setPage(1);
+                }}
+                className="console-select rounded font-mono uppercase transition-colors cursor-pointer max-w-[9.5rem]"
+              >
+                <option value="">All</option>
+                {sources.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-center gap-2 mr-4 border-r border-white/10 pr-4">
+              <span className="text-[10px] font-bold font-mono text-white/50 uppercase">Refresh:</span>
+              <select
+                value={refreshRate}
+                onChange={(e) => setRefreshRate(Number(e.target.value))}
+                disabled={!isLive}
+                className="console-select rounded font-mono uppercase transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                <option value={1}>1s</option>
+                <option value={5}>5s</option>
+                <option value={10}>10s</option>
+                <option value={30}>30s</option>
+              </select>
+            </div>
             <button
               onClick={() => setIsLive(!isLive)}
               className="flex items-center gap-2 text-[10px] font-bold font-mono text-white hover:text-[color:var(--trite-lime)] transition-colors"
@@ -181,7 +251,11 @@ export default function AdminLogsPage() {
         {/* Console Content */}
         <div className="lg:hidden divide-y divide-black/5">
           {filteredLogs.map((log) => (
-            <div key={log.id} className="p-4 space-y-3 bg-[color:var(--trite-ink)] text-white/90 font-mono text-[11px]">
+            <div
+              key={log.id}
+              onClick={() => setSelectedLog(log)}
+              className="p-4 space-y-3 bg-[color:var(--trite-ink)] text-white/90 font-mono text-[11px] cursor-pointer active:bg-white/5"
+            >
               <div className="flex items-start justify-between">
                 <span className="text-white/40">{String(log.timestamp)}</span>
                 <span className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-bold ${getLevelColor(log.level as LogLevel)}`}>
@@ -211,7 +285,11 @@ export default function AdminLogsPage() {
             </thead>
             <tbody className="font-mono text-sm">
               {filteredLogs.map((log) => (
-                <tr key={log.id} className="border-b border-black/5 last:border-0 hover:bg-black/[0.02]">
+                <tr
+                  key={log.id}
+                  onClick={() => setSelectedLog(log)}
+                  className="border-b border-black/5 last:border-0 hover:bg-black/[0.02] cursor-pointer"
+                >
                   <td className="py-3 px-6 text-[color:var(--trite-muted)]">{String(log.timestamp)}</td>
                   <td className="py-3 px-4">
                     <span className={`inline-flex items-center gap-1.5 rounded px-2 py-1 text-xs font-semibold ${getLevelColor(log.level as LogLevel)}`}>
@@ -323,16 +401,27 @@ export default function AdminLogsPage() {
           <div className="flex items-end justify-between gap-2 h-32 px-2">
             {activityData.map((data, idx) => (
               <div key={idx} className="flex flex-col items-center gap-1 flex-1">
-                <div className="relative w-full flex flex-col items-center">
+                <div className="relative w-full flex flex-col items-center group cursor-pointer h-full justify-end">
+                  {/* Tooltip */}
+                  <div className="absolute -top-10 hidden group-hover:flex flex-col items-center z-10 w-max">
+                    <div className="bg-black text-white text-[10px] rounded px-2 py-1 shadow-lg">
+                      <div className="font-bold mb-0.5">{data.hour}</div>
+                      <div className="flex gap-2">
+                        <span className="text-blue-400">Req: {data.requests}</span>
+                        <span className="text-red-400">Err: {data.errors}</span>
+                      </div>
+                    </div>
+                    <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-black"></div>
+                  </div>
                   {/* Error bar */}
                   <div
-                    className="w-full bg-red-400 rounded-t"
-                    style={{ height: `${(data.errors / maxRequests) * 100}px` }}
+                    className="w-full bg-red-400 rounded-t transition-opacity group-hover:opacity-80"
+                    style={{ height: `${maxRequests ? (data.errors / maxRequests) * 100 : 0}px` }}
                   />
                   {/* Request bar */}
                   <div
-                    className="w-full bg-blue-500 rounded-b"
-                    style={{ height: `${((data.requests - data.errors) / maxRequests) * 100}px` }}
+                    className="w-full bg-blue-500 rounded-b transition-opacity group-hover:opacity-80"
+                    style={{ height: `${maxRequests ? ((data.requests - data.errors) / maxRequests) * 100 : 0}px` }}
                   />
                 </div>
                 <span className="text-xs text-[color:var(--trite-muted)]">{data.hour}</span>
@@ -376,6 +465,57 @@ export default function AdminLogsPage() {
           </button>
         </div>
       </div>
+
+      {/* Log Detail Modal */}
+      {selectedLog && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => setSelectedLog(null)}
+        >
+          <div
+            className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sticky top-0 flex items-center justify-between border-b border-black/5 bg-white px-6 py-4">
+              <div className="flex items-center gap-3">
+                <Terminal className="h-4 w-4 text-[color:var(--trite-muted)]" />
+                <h3 className="text-sm font-bold text-[color:var(--trite-ink)]">Log Entry #{selectedLog.id}</h3>
+                <span className={`inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-[10px] font-bold ${getLevelColor(selectedLog.level as LogLevel)}`}>
+                  <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                  {selectedLog.level}
+                </span>
+              </div>
+              <button
+                onClick={() => setSelectedLog(null)}
+                className="rounded-lg p-1 text-[color:var(--trite-muted)] hover:bg-black/5 hover:text-[color:var(--trite-ink)] transition-colors"
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="space-y-4 p-6">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[color:var(--trite-muted)]">Timestamp</p>
+                  <p className="mt-0.5 font-mono text-sm text-[color:var(--trite-ink)]">{String(selectedLog.timestamp)}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[color:var(--trite-muted)]">Source</p>
+                  <p className="mt-0.5 font-mono text-sm text-[color:var(--trite-ink)]">{selectedLog.source}</p>
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[color:var(--trite-muted)]">Event Description</p>
+                <pre className="whitespace-pre-wrap break-words rounded-xl bg-[color:var(--trite-ink)] p-4 font-mono text-xs leading-relaxed text-white/90">
+{selectedLog.event_description}
+                </pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

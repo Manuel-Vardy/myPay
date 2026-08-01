@@ -153,7 +153,7 @@ export default function GetStartedPage() {
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleChange}
-                  placeholder="Kwame"
+                  placeholder="Kay"
                   required
                 />
               </div>
@@ -170,7 +170,7 @@ export default function GetStartedPage() {
                   name="lastName"
                   value={formData.lastName}
                   onChange={handleChange}
-                  placeholder="Mensah"
+                  placeholder="Trite"
                   required
                 />
               </div>
