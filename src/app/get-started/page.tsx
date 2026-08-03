@@ -16,6 +16,7 @@ export default function GetStartedPage() {
     password: "",
     confirmPassword: "",
   });
+  const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +50,7 @@ export default function GetStartedPage() {
           first_name: formData.firstName,
           last_name: formData.lastName,
           legal_entity: formData.legalEntity,
+          marketing_opt_in: marketingOptIn,
         }),
       });
 
@@ -315,6 +317,34 @@ export default function GetStartedPage() {
                 </div>
               </div>
             </div>
+
+            {/* Marketing opt-in */}
+            <label className="flex items-start gap-3 cursor-pointer group">
+              <div className="relative mt-0.5 shrink-0">
+                <input
+                  id="marketingOptIn"
+                  type="checkbox"
+                  className="peer sr-only"
+                  checked={marketingOptIn}
+                  onChange={(e) => setMarketingOptIn(e.target.checked)}
+                />
+                <div className="h-4 w-4 rounded border border-black/20 bg-gray-50/50 transition-all peer-checked:bg-[#22c55e] peer-checked:border-[#22c55e] peer-focus-visible:ring-2 peer-focus-visible:ring-[#22c55e]/40 group-hover:border-[#22c55e]/60" />
+                <svg
+                  className="pointer-events-none absolute inset-0 m-auto h-2.5 w-2.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity"
+                  viewBox="0 0 12 10"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="1 5 4.5 8.5 11 1" />
+                </svg>
+              </div>
+              <span className="text-xs text-gray-500 font-medium leading-relaxed">
+                I'd like to receive product updates, feature announcements, and marketing emails from Trite. You can unsubscribe at any time.
+              </span>
+            </label>
 
             {/* Submit */}
             <button

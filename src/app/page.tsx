@@ -294,7 +294,7 @@ export default function Home() {
               <div className="space-y-6 max-w-2xl">
                 <div className="animate-on-scroll stagger-1">
                   <h1 className="hero-heading text-3xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl sm:font-extrabold leading-[1.1] sm:leading-[1.08]">
-                    The Trite Merchant Operating System <span className="text-[#22c55e]">(TMOS)</span>
+                    Powering the Future of Payments in Africa
                   </h1>
                   <div className="mt-6 h-px w-full max-w-2xl bg-white/20"></div>
                 </div>
