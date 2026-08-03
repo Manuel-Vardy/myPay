@@ -14,6 +14,7 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
+  CarouselNavigation,
   CarouselIndicator,
 } from "@/components/ui/carousel";
 import {
@@ -142,6 +143,204 @@ const whyTriteTestimonials = [
   }
 ];
 
+function HeroCarousel() {
+  const [slide, setSlide] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [animKey, setAnimKey] = useState(0);
+  const totalSlides = 2;
+  const DURATION = 4000;
+  const TICK = 50;
+
+  const goToSlide = (i: number) => {
+    setSlide(i);
+    setProgress(0);
+    setAnimKey((k) => k + 1);
+  };
+
+  // Progress bar + auto-advance — stops when paused
+  useEffect(() => {
+    if (paused) return;
+    setProgress(0);
+    setAnimKey((k) => k + 1);
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          return 100;
+        }
+        return prev + (TICK / DURATION) * 100;
+      });
+    }, TICK);
+    const advance = setTimeout(() => {
+      setSlide((prev) => (prev + 1) % totalSlides);
+    }, DURATION);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(advance);
+    };
+  }, [slide, paused]);
+
+  return (
+    <div className="relative min-h-[550px] sm:min-h-[650px] lg:min-h-screen">
+      {/* ── Sliding track (overflow hidden only on this inner div) ── */}
+      <div className="relative min-h-[550px] sm:min-h-[650px] lg:min-h-screen overflow-hidden">
+        <div
+          className="flex transition-transform duration-700 ease-in-out h-full"
+          style={{ transform: `translateX(-${slide * 100}%)` }}
+        >
+        {/* ── Slide 1: Original Hero ── */}
+        <div className="relative min-h-[550px] sm:min-h-[650px] lg:min-h-screen w-full shrink-0">
+          <div className="absolute inset-0 z-0">
+            <img
+              src="/images/tri-1.jpg"
+              alt="Hero background"
+              className="w-full h-full object-cover object-[70%_center] sm:object-center"
+            />
+            <div className="absolute inset-0 bg-black/45" />
+          </div>
+          <div key={animKey} className="hero-slide-anim relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-32 sm:pt-44 lg:pt-52 pb-24 sm:pb-32">
+            <div className="max-w-5xl">
+              <div className="space-y-6 max-w-2xl">
+                <div>
+                  <h1 className="hero-heading text-3xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl sm:font-extrabold leading-[1.1] sm:leading-[1.08]">
+                    Powering the Future of Payments in Africa
+                  </h1>
+                  <div className="mt-6 h-px w-full max-w-2xl bg-white/20" />
+                </div>
+                <p className="hero-subtext max-w-2xl text-base sm:text-xl leading-relaxed text-white/80 sm:text-white/90">
+                  Seamless bank, mobile money, and stablecoin payment - Pay and get PAID with Trite!
+                </p>
+              </div>
+              <div className="mt-8 flex flex-wrap items-center gap-3 sm:gap-4">
+                <div className="group h-12 px-7 sm:px-8 rounded-full bg-white text-[#22c55e] hover:bg-[#22c55e] hover:text-white shadow-lg border border-white/20 transition-all duration-300 hover:-translate-y-0.5 cursor-pointer inline-flex items-center justify-center select-none">
+                  <span className="text-sm font-extrabold uppercase tracking-wider transition-colors duration-300">INNOVATIVE</span>
+                </div>
+                <div className="group h-12 px-7 sm:px-8 rounded-full bg-[#22c55e] text-white hover:bg-white hover:text-[#22c55e] shadow-lg border border-[#22c55e] hover:border-white transition-all duration-300 hover:-translate-y-0.5 cursor-pointer inline-flex items-center justify-center select-none">
+                  <span className="text-sm font-extrabold uppercase tracking-wider transition-colors duration-300">TRUST</span>
+                </div>
+                <div className="group h-12 px-7 sm:px-8 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/25 shadow-lg border border-white/30 hover:border-white/50 transition-all duration-300 hover:-translate-y-0.5 cursor-pointer inline-flex items-center justify-center select-none">
+                  <span className="text-sm font-extrabold uppercase tracking-wider transition-colors duration-300">GROWTH</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Slide 2: TMOS / Trite App ── */}
+        <div className="relative min-h-[550px] sm:min-h-[650px] lg:min-h-screen w-full shrink-0 overflow-hidden">
+          <div className="absolute inset-0 z-0">
+            <img
+              src="/images/app-bg3.jpg"
+              alt="Trite App background"
+              className="w-full h-full object-cover object-center blur-sm scale-105"
+            />
+            <div className="absolute inset-0 bg-black/40" />
+          </div>
+
+          <div key={animKey} className="hero-slide-anim relative z-10 flex flex-col min-h-[550px] sm:min-h-[650px] lg:min-h-screen">
+            {/* Text block */}
+            <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-32 sm:pt-40 pb-2">
+              <div className="text-center max-w-2xl mx-auto">
+                <h1 className="hero-heading text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl sm:font-extrabold leading-[1.1] sm:leading-[1.08] mb-4">
+                  Manage Your TMOS with ease with Trite App
+                </h1>
+                <p className="hero-subtext text-sm sm:text-base leading-relaxed text-white/80 max-w-xl mx-auto mb-6">
+                  Track everyday sales, get paid and know your customers — all from your TMOS dashboard.
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-4">
+                  <Link
+                    href="#"
+                    className="hero-cta-btn-primary inline-flex items-center justify-center gap-2 h-11 px-7 rounded-full bg-[#22c55e] text-white text-sm font-bold uppercase tracking-wide shadow-lg hover:bg-[#16a34a] transition-all duration-300 hover:-translate-y-0.5"
+                  >
+                    Download App
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <Link
+                    href="#"
+                    className="hero-cta-btn-secondary inline-flex items-center justify-center gap-2 h-11 px-7 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm font-bold uppercase tracking-wide shadow-lg border border-white/30 hover:bg-white hover:text-black transition-all duration-300 hover:-translate-y-0.5"
+                  >
+                    Find Out More
+                    <ChevronRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* App image — peeking out below hero edge */}
+            <div className="flex justify-center w-full">
+              <img
+                src="/images/trite-app-image.png"
+                alt="Trite App"
+                className="w-[360px] sm:w-[480px] lg:w-[560px] max-w-[85%] object-contain translate-y-8 sm:translate-y-10"
+              />
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      {/* ── Slide indicators + pause — bottom right, outside overflow-hidden ── */}
+      <div className="absolute bottom-36 right-8 sm:right-12 flex flex-row items-center gap-3 z-20">
+        {/* Progress bars */}
+        {Array.from({ length: totalSlides }, (_, i) => (
+          <button
+            key={i}
+            type="button"
+            aria-label={`Go to slide ${i + 1}`}
+            onClick={() => { goToSlide(i); setPaused(false); }}
+            style={{ display: 'block', width: '48px', height: '5px', borderRadius: '9999px', overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.35)', cursor: 'pointer', border: 'none', padding: 0 }}
+          >
+            <span
+              style={{
+                display: 'block',
+                height: '100%',
+                borderRadius: '9999px',
+                backgroundColor: '#22c55e',
+                width: slide === i ? `${progress}%` : slide > i ? '100%' : '0%',
+                transition: slide === i ? 'none' : 'width 0.3s ease',
+              }}
+            />
+          </button>
+        ))}
+
+        {/* Pause / Play button */}
+        <button
+          type="button"
+          aria-label={paused ? 'Play slideshow' : 'Pause slideshow'}
+          onClick={() => setPaused((p) => !p)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '24px',
+            height: '24px',
+            borderRadius: '9999px',
+            backgroundColor: 'rgba(255,255,255,0.15)',
+            border: '1.5px solid rgba(255,255,255,0.5)',
+            cursor: 'pointer',
+            padding: 0,
+            flexShrink: 0,
+          }}
+        >
+          {paused ? (
+            /* Play icon */
+            <svg width="9" height="10" viewBox="0 0 9 10" fill="none">
+              <path d="M1.5 1.5L7.5 5L1.5 8.5V1.5Z" fill="white" />
+            </svg>
+          ) : (
+            /* Pause icon — two vertical bars */
+            <svg width="9" height="10" viewBox="0 0 9 10" fill="none">
+              <rect x="1.5" y="1.5" width="2" height="7" rx="0.5" fill="white" />
+              <rect x="5.5" y="1.5" width="2" height="7" rx="0.5" fill="white" />
+            </svg>
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [builtForIndex, setBuiltForIndex] = useState(0);
 
@@ -160,6 +359,14 @@ export default function Home() {
     <>
       {/* CSS Animation Styles */}
       <style jsx global>{`
+        @keyframes heroFadeIn {
+          from { opacity: 0; transform: translateY(24px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .hero-slide-anim {
+          opacity: 0;
+          animation: heroFadeIn 0.75s ease-out forwards;
+        }
         @keyframes fadeInUp {
           from {
             opacity: 0;
@@ -274,63 +481,9 @@ export default function Home() {
         {/* SECTION 1: HOME (HERO) */}
         <section
           id="home"
-          className="relative min-h-[550px] sm:min-h-[650px] lg:min-h-screen overflow-hidden bg-white"
+          className="relative min-h-[550px] sm:min-h-[650px] lg:min-h-screen bg-white"
         >
-          {/* Background Image */}
-          <div className="absolute inset-0 z-0">
-            <img
-              src="/images/tri-1.jpg"
-              alt="Hero background"
-              className="w-full h-full object-cover object-[70%_center] sm:object-center"
-            />
-            {/* Overlay for better text readability */}
-            <div className="absolute inset-0 bg-black/45" />
-          </div>
-
-          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-32 sm:pt-44 lg:pt-52 pb-24 sm:pb-32">
-            <div className="max-w-5xl">
-
-              {/* Hero Texts */}
-              <div className="space-y-6 max-w-2xl">
-                <div className="animate-on-scroll stagger-1">
-                  <h1 className="hero-heading text-3xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl sm:font-extrabold leading-[1.1] sm:leading-[1.08]">
-                    Powering the Future of Payments in Africa
-                  </h1>
-                  <div className="mt-6 h-px w-full max-w-2xl bg-white/20"></div>
-                </div>
-
-                <p className="hero-subtext animate-on-scroll stagger-2 max-w-2xl text-base sm:text-xl leading-relaxed text-white/80 sm:text-white/90">
-                  Seamless bank, mobile money, and stablecoin payment - Pay and get PAID with Trite!
-                </p>
-              </div>
-
-              {/* 3 Feature Boxes in Hero (INNOVATIVE, TRUST, GROWTH) - Button styled */}
-              <div className="mt-8 animate-on-scroll stagger-3 flex flex-wrap items-center gap-3 sm:gap-4">
-                {/* Box 1: INNOVATIVE (White default with green text -> Green background with white text on hover) */}
-                <div className="group h-12 px-7 sm:px-8 rounded-full bg-white text-[#22c55e] hover:bg-[#22c55e] hover:text-white shadow-lg border border-white/20 transition-all duration-300 hover:-translate-y-0.5 cursor-pointer inline-flex items-center justify-center select-none">
-                  <span className="text-sm font-extrabold uppercase tracking-wider transition-colors duration-300">
-                    INNOVATIVE
-                  </span>
-                </div>
-
-                {/* Box 2: TRUST (Green default with white text -> White background with green text on hover) */}
-                <div className="group h-12 px-7 sm:px-8 rounded-full bg-[#22c55e] text-white hover:bg-white hover:text-[#22c55e] shadow-lg border border-[#22c55e] hover:border-white transition-all duration-300 hover:-translate-y-0.5 cursor-pointer inline-flex items-center justify-center select-none">
-                  <span className="text-sm font-extrabold uppercase tracking-wider transition-colors duration-300">
-                    TRUST
-                  </span>
-                </div>
-
-                {/* Box 3: GROWTH (Transparent default -> Darker transparent on hover) */}
-                <div className="group h-12 px-7 sm:px-8 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/25 shadow-lg border border-white/30 hover:border-white/50 transition-all duration-300 hover:-translate-y-0.5 cursor-pointer inline-flex items-center justify-center select-none">
-                  <span className="text-sm font-extrabold uppercase tracking-wider transition-colors duration-300">
-                    GROWTH
-                  </span>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </section>
+          <HeroCarousel /></section>
 
         {/* Unified Payment Gateway Section */}
         <section className="relative bg-white pt-16 pb-4 sm:pt-20 sm:pb-6 rounded-t-[24px] sm:rounded-t-[32px] md:rounded-t-[40px] -mt-6 sm:-mt-8 md:-mt-10 z-10">
