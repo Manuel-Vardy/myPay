@@ -149,7 +149,7 @@ function HeroCarousel() {
   const [paused, setPaused] = useState(false);
   const [animKey, setAnimKey] = useState(0);
   const totalSlides = 2;
-  const DURATION = 4000;
+  const DURATION = 6000;
   const TICK = 50;
 
   const goToSlide = (i: number) => {
@@ -182,15 +182,15 @@ function HeroCarousel() {
   }, [slide, paused]);
 
   return (
-    <div className="relative min-h-[550px] sm:min-h-[650px] lg:min-h-screen">
+    <div className="relative min-h-[750px] sm:min-h-[650px] lg:min-h-screen">
       {/* ── Sliding track (overflow hidden only on this inner div) ── */}
-      <div className="relative min-h-[550px] sm:min-h-[650px] lg:min-h-screen overflow-hidden">
+      <div className="relative min-h-[750px] sm:min-h-[650px] lg:min-h-screen overflow-hidden">
         <div
           className="flex transition-transform duration-700 ease-in-out h-full"
           style={{ transform: `translateX(-${slide * 100}%)` }}
         >
         {/* ── Slide 1: Original Hero ── */}
-        <div className="relative min-h-[550px] sm:min-h-[650px] lg:min-h-screen w-full shrink-0">
+        <div className="relative min-h-[750px] sm:min-h-[650px] lg:min-h-screen w-full shrink-0">
           <div className="absolute inset-0 z-0">
             <img
               src="/images/tri-1.jpg"
@@ -228,52 +228,45 @@ function HeroCarousel() {
         </div>
 
         {/* ── Slide 2: TMOS / Trite App ── */}
-        <div className="relative min-h-[550px] sm:min-h-[650px] lg:min-h-screen w-full shrink-0 overflow-hidden">
+        <div className="relative min-h-[750px] sm:min-h-[650px] lg:min-h-screen w-full shrink-0">
           <div className="absolute inset-0 z-0">
             <img
-              src="/images/app-bg3.jpg"
-              alt="Trite App background"
-              className="w-full h-full object-cover object-center blur-sm scale-105"
+              src="/images/shopkeeper.jpg"
+              alt="Trite App shopkeeper background"
+              className="w-full h-full object-cover object-center"
             />
-            <div className="absolute inset-0 bg-black/40" />
+            <div className="absolute inset-0 bg-black/45" />
           </div>
 
-          <div key={animKey} className="hero-slide-anim relative z-10 flex flex-col min-h-[550px] sm:min-h-[650px] lg:min-h-screen">
-            {/* Text block */}
-            <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-32 sm:pt-40 pb-2">
-              <div className="text-center max-w-2xl mx-auto">
-                <h1 className="hero-heading text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl sm:font-extrabold leading-[1.1] sm:leading-[1.08] mb-4">
-                  Manage Your TMOS with ease with Trite App
-                </h1>
-                <p className="hero-subtext text-sm sm:text-base leading-relaxed text-white/80 max-w-xl mx-auto mb-6">
-                  Track everyday sales, get paid and know your customers — all from your TMOS dashboard.
-                </p>
-                <div className="flex flex-wrap items-center justify-center gap-4">
-                  <Link
-                    href="#"
-                    className="hero-cta-btn-primary inline-flex items-center justify-center gap-2 h-11 px-7 rounded-full bg-[#22c55e] text-white text-sm font-bold uppercase tracking-wide shadow-lg hover:bg-[#16a34a] transition-all duration-300 hover:-translate-y-0.5"
-                  >
-                    Download App
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                  <Link
-                    href="#"
-                    className="hero-cta-btn-secondary inline-flex items-center justify-center gap-2 h-11 px-7 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm font-bold uppercase tracking-wide shadow-lg border border-white/30 hover:bg-white hover:text-black transition-all duration-300 hover:-translate-y-0.5"
-                  >
-                    Find Out More
-                    <ChevronRight className="h-4 w-4" />
-                  </Link>
+          <div key={animKey} className="hero-slide-anim relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-32 sm:pt-44 lg:pt-52 pb-24 sm:pb-32">
+            <div className="max-w-5xl">
+              <div className="space-y-6 max-w-2xl">
+                <div>
+                  <h1 className="hero-heading text-3xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl sm:font-extrabold leading-[1.1] sm:leading-[1.08]">
+                    Manage Your Business with ease with Trite App
+                  </h1>
+                  <div className="mt-6 h-px w-full max-w-2xl bg-white/20" />
                 </div>
+                <p className="hero-subtext max-w-2xl text-base sm:text-xl leading-relaxed text-white/80 sm:text-white/90">
+                  Manage products, sales, invoicing and track the performance of your business in real time.
+                </p>
               </div>
-            </div>
-
-            {/* App image — peeking out below hero edge */}
-            <div className="flex justify-center w-full">
-              <img
-                src="/images/trite-app-image.png"
-                alt="Trite App"
-                className="w-[360px] sm:w-[480px] lg:w-[560px] max-w-[85%] object-contain translate-y-8 sm:translate-y-10"
-              />
+              <div className="mt-8 flex flex-wrap items-center gap-3 sm:gap-4">
+                <Link
+                  href="/trite-app#download"
+                  className="hero-cta-btn-primary inline-flex items-center justify-center gap-2 h-12 px-7 sm:px-8 rounded-full bg-[#22c55e] text-white text-sm font-extrabold uppercase tracking-wider shadow-lg hover:bg-[#16a34a] transition-all duration-300 hover:-translate-y-0.5"
+                >
+                  Download App
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  href="#"
+                  className="hero-cta-btn-secondary inline-flex items-center justify-center gap-2 h-12 px-7 sm:px-8 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm font-extrabold uppercase tracking-wider shadow-lg border border-white/30 hover:bg-white hover:text-black transition-all duration-300 hover:-translate-y-0.5"
+                >
+                  Find Out More
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -281,28 +274,22 @@ function HeroCarousel() {
       </div>
 
       {/* ── Slide indicators + pause — bottom right, outside overflow-hidden ── */}
-      <div className="absolute bottom-36 right-8 sm:right-12 flex flex-row items-center gap-3 z-20">
-        {/* Progress bars */}
-        {Array.from({ length: totalSlides }, (_, i) => (
-          <button
-            key={i}
-            type="button"
-            aria-label={`Go to slide ${i + 1}`}
-            onClick={() => { goToSlide(i); setPaused(false); }}
-            style={{ display: 'block', width: '48px', height: '5px', borderRadius: '9999px', overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.35)', cursor: 'pointer', border: 'none', padding: 0 }}
-          >
-            <span
-              style={{
-                display: 'block',
-                height: '100%',
-                borderRadius: '9999px',
-                backgroundColor: '#22c55e',
-                width: slide === i ? `${progress}%` : slide > i ? '100%' : '0%',
-                transition: slide === i ? 'none' : 'width 0.3s ease',
-              }}
-            />
-          </button>
-        ))}
+      <div className="absolute bottom-44 sm:bottom-28 lg:bottom-32 right-6 sm:right-12 flex flex-row items-center gap-3 z-30">
+        {/* Progress bar — single unified bar */}
+        <div
+          style={{ display: 'block', width: '64px', height: '5px', borderRadius: '9999px', overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.35)' }}
+        >
+          <span
+            style={{
+              display: 'block',
+              height: '100%',
+              borderRadius: '9999px',
+              backgroundColor: '#22c55e',
+              width: `${(slide / totalSlides) * 100 + (progress / totalSlides)}%`,
+              transition: 'none',
+            }}
+          />
+        </div>
 
         {/* Pause / Play button */}
         <button
@@ -324,15 +311,13 @@ function HeroCarousel() {
           }}
         >
           {paused ? (
-            /* Play icon */
-            <svg width="9" height="10" viewBox="0 0 9 10" fill="none">
-              <path d="M1.5 1.5L7.5 5L1.5 8.5V1.5Z" fill="white" />
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
+              <polygon points="5 3 19 12 5 21 5 3" />
             </svg>
           ) : (
-            /* Pause icon — two vertical bars */
-            <svg width="9" height="10" viewBox="0 0 9 10" fill="none">
-              <rect x="1.5" y="1.5" width="2" height="7" rx="0.5" fill="white" />
-              <rect x="5.5" y="1.5" width="2" height="7" rx="0.5" fill="white" />
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
+              <rect x="6" y="4" width="4" height="16" />
+              <rect x="14" y="4" width="4" height="16" />
             </svg>
           )}
         </button>
@@ -481,15 +466,15 @@ export default function Home() {
         {/* SECTION 1: HOME (HERO) */}
         <section
           id="home"
-          className="relative min-h-[550px] sm:min-h-[650px] lg:min-h-screen bg-white"
+          className="relative min-h-[750px] sm:min-h-[650px] lg:min-h-screen bg-white sm:pb-20"
         >
           <HeroCarousel /></section>
 
         {/* Unified Payment Gateway Section */}
-        <section className="relative bg-white pt-16 pb-4 sm:pt-20 sm:pb-6 rounded-t-[24px] sm:rounded-t-[32px] md:rounded-t-[40px] -mt-6 sm:-mt-8 md:-mt-10 z-10">
+        <section className="relative bg-white pt-10 pb-4 sm:pt-12 sm:pb-6 rounded-t-[24px] sm:rounded-t-[32px] md:rounded-t-[40px] -mt-32 sm:-mt-16 md:-mt-20 z-10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {/* Heading Card - Overlaps hero */}
-            <div className="relative -mt-28 sm:-mt-32 mb-4 sm:mb-6 flex justify-start">
+            <div className="relative -mt-16 sm:-mt-20 lg:-mt-32 mb-8 sm:mb-10 flex justify-start z-20">
               <HeroHeadingCard
                 className="lg:w-5/12"
                 label="Payment Solutions"

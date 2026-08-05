@@ -15,7 +15,7 @@ export default function HeroHeadingCard({
   return (
     <div
       className={cn(
-        "relative w-full max-w-md overflow-hidden sm:max-w-lg",
+        "relative w-full max-w-md overflow-hidden sm:max-w-lg border-b-2 border-b-white",
         className
       )}
     >
