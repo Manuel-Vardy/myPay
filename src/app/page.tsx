@@ -255,7 +255,7 @@ function HeroCarousel() {
               </div>
               <div className="mt-8 flex flex-wrap items-center gap-3 sm:gap-4">
                 <Link
-                  href="/trite-app#download"
+                  href="#"
                   className="hero-cta-btn-primary inline-flex items-center justify-center gap-2 h-12 px-7 sm:px-8 rounded-full bg-[#22c55e] text-white text-sm font-extrabold uppercase tracking-wider shadow-lg hover:bg-[#16a34a] transition-all duration-300 hover:-translate-y-0.5"
                 >
                   Download App
