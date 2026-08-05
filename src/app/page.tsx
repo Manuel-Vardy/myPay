@@ -243,19 +243,17 @@ function HeroCarousel() {
               <div className="space-y-6 max-w-2xl">
                 <div>
                   <h1 className="hero-heading text-3xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl sm:font-extrabold leading-[1.1] sm:leading-[1.08]">
-                    Manage Your TMOS with ease with Trite App
+                    Control your everyday sales with Trite App
                   </h1>
                   <div className="mt-6 h-px w-full max-w-2xl bg-white/20" />
                 </div>
                 <p className="hero-subtext max-w-2xl text-base sm:text-xl leading-relaxed text-white/80 sm:text-white/90">
-                  You’re in control to track your everyday sales with Trite App
-                  <br />
-                  On your TMOS dashboard you sell, get paid and know your customers.
+                  Manage your performance of your business in real time.
                 </p>
               </div>
               <div className="mt-8 flex flex-wrap items-center gap-3 sm:gap-4">
                 <Link
-                  href="#"
+                  href="/trite-app#download"
                   className="hero-cta-btn-primary inline-flex items-center justify-center gap-2 h-12 px-7 sm:px-8 rounded-full bg-[#22c55e] text-white text-sm font-extrabold uppercase tracking-wider shadow-lg hover:bg-[#16a34a] transition-all duration-300 hover:-translate-y-0.5"
                 >
                   Download App
