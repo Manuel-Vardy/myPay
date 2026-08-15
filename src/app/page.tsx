@@ -193,7 +193,7 @@ function HeroCarousel() {
         <div className="relative min-h-[750px] sm:min-h-[650px] lg:min-h-screen w-full shrink-0">
           <div className="absolute inset-0 z-0">
             <img
-              src="/images/tri-1.jpg"
+              src="/images/hero-1.jpg"
               alt="Hero background"
               className="w-full h-full object-cover object-[70%_center] sm:object-center"
             />
@@ -231,8 +231,8 @@ function HeroCarousel() {
         <div className="relative min-h-[750px] sm:min-h-[650px] lg:min-h-screen w-full shrink-0">
           <div className="absolute inset-0 z-0">
             <img
-              src="/images/shopkeeper.jpg"
-              alt="Trite App shopkeeper background"
+              src="/images/hero-2.jpg"
+              alt="Trite App hero background"
               className="w-full h-full object-cover object-center"
             />
             <div className="absolute inset-0 bg-black/45" />
