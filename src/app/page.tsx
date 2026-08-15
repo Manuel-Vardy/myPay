@@ -195,7 +195,7 @@ function HeroCarousel() {
             <img
               src="/images/hero-2.jpg"
               alt="Hero background"
-              className="w-full h-full object-cover object-[70%_center] sm:object-center"
+              className="w-full h-full object-cover object-[30%_center] sm:object-center"
             />
             <div className="absolute inset-0 bg-black/45" />
           </div>
