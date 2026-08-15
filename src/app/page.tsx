@@ -193,17 +193,17 @@ function HeroCarousel() {
         <div className="relative min-h-[750px] sm:min-h-[650px] lg:min-h-screen w-full shrink-0">
           <div className="absolute inset-0 z-0">
             <img
-              src="/images/hero-1.jpg"
+              src="/images/hero-2.jpg"
               alt="Hero background"
               className="w-full h-full object-cover object-[70%_center] sm:object-center"
             />
             <div className="absolute inset-0 bg-black/45" />
           </div>
-          <div key={animKey} className="hero-slide-anim relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-32 sm:pt-44 lg:pt-52 pb-24 sm:pb-32">
+          <div key={animKey} className="hero-slide-anim relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-60 sm:pt-72 lg:pt-96 pb-24 sm:pb-32">
             <div className="max-w-5xl">
               <div className="space-y-6 max-w-2xl">
                 <div>
-                  <h1 className="hero-heading text-3xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl sm:font-extrabold leading-[1.1] sm:leading-[1.08]">
+                  <h1 className="hero-heading text-2xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl sm:font-extrabold leading-[1.1] sm:leading-[1.08]">
                     Powering the Future of Payments in Africa
                   </h1>
                   <div className="mt-6 h-px w-full max-w-2xl bg-white/20" />
@@ -231,18 +231,18 @@ function HeroCarousel() {
         <div className="relative min-h-[750px] sm:min-h-[650px] lg:min-h-screen w-full shrink-0">
           <div className="absolute inset-0 z-0">
             <img
-              src="/images/hero-2.jpg"
+              src="/images/hero-1.jpg"
               alt="Trite App hero background"
               className="w-full h-full object-cover object-center"
             />
             <div className="absolute inset-0 bg-black/45" />
           </div>
 
-          <div key={animKey} className="hero-slide-anim relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-32 sm:pt-44 lg:pt-52 pb-24 sm:pb-32">
+          <div key={animKey} className="hero-slide-anim relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-60 sm:pt-72 lg:pt-96 pb-24 sm:pb-32">
             <div className="max-w-5xl">
               <div className="space-y-6 max-w-2xl">
                 <div>
-                  <h1 className="hero-heading text-3xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl sm:font-extrabold leading-[1.1] sm:leading-[1.08]">
+                  <h1 className="hero-heading text-2xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl sm:font-extrabold leading-[1.1] sm:leading-[1.08]">
                     Manage Your TMOS with ease with Trite App
                   </h1>
                   <div className="mt-6 h-px w-full max-w-2xl bg-white/20" />
@@ -253,7 +253,7 @@ function HeroCarousel() {
               </div>
               <div className="mt-8 flex flex-wrap items-center gap-3 sm:gap-4">
                 <Link
-                  href="/trite-app#download"
+                  href="#"
                   className="hero-cta-btn-primary inline-flex items-center justify-center gap-2 h-12 px-7 sm:px-8 rounded-full bg-[#22c55e] text-white text-sm font-extrabold uppercase tracking-wider shadow-lg hover:bg-[#16a34a] transition-all duration-300 hover:-translate-y-0.5"
                 >
                   Download App
