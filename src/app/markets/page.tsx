@@ -146,7 +146,7 @@ export default function MarketsPage() {
           {/* Background Image */}
           <div className="absolute inset-0 z-0">
             <Image
-              src="/images/market-women.jpg"
+              src="/images/market-woman.jpg"
               alt="Markets Hero background"
               fill
               sizes="100vw"
@@ -425,7 +425,7 @@ export default function MarketsPage() {
 
               <div className="absolute top-6 left-8 sm:top-10 sm:left-12 lg:top-12 lg:left-14 z-10 transition-transform duration-300 group-hover:scale-110">
                 <Image
-                  src="/images/Trite-WB.png"
+                  src="/logos/trite-logo-white.png"
                   alt="Trite"
                   width={90}
                   height={22}

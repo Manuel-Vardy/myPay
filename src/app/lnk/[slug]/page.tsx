@@ -57,7 +57,7 @@ export default async function LinkResolverPage({
         <header className="sticky top-0 z-50 border-b border-black/5 bg-white/80 backdrop-blur">
           <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
             <div className="flex items-center gap-3">
-              <Image src="/tritee-logo.png" alt="Trite logo" width={120} height={28} priority />
+              <Image src="/logos/trite-logo-black.png" alt="Trite logo" width={120} height={28} className="h-7 w-auto object-contain" priority />
             </div>
             <div className="flex items-center gap-3">
               <div className="flex shrink-0 items-center justify-center rounded-full bg-[color:var(--trite-lime-strong)] p-0.5 h-5 w-5">
@@ -118,7 +118,7 @@ export default async function LinkResolverPage({
         <header className="sticky top-0 z-50 border-b border-black/5 bg-white/80 backdrop-blur">
           <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
             <div className="flex items-center gap-3">
-              <Image src="/tritee-logo.png" alt="Trite logo" width={120} height={28} priority />
+              <Image src="/logos/trite-logo-black.png" alt="Trite logo" width={120} height={28} className="h-7 w-auto object-contain" priority />
             </div>
             <div className="flex items-center gap-3">
               <div className="flex shrink-0 items-center justify-center rounded-full bg-[color:var(--trite-lime-strong)] p-0.5 h-5 w-5">
@@ -195,7 +195,7 @@ export default async function LinkResolverPage({
         <header className="sticky top-0 z-50 border-b border-black/5 bg-white/80 backdrop-blur">
           <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
             <div className="flex items-center gap-3">
-              <Image src="/tritee-logo.png" alt="Trite logo" width={120} height={28} priority />
+              <Image src="/logos/trite-logo-black.png" alt="Trite logo" width={120} height={28} className="h-7 w-auto object-contain" priority />
             </div>
           </div>
         </header>

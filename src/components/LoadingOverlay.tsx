@@ -50,7 +50,7 @@ export default function LoadingOverlay() {
         {/* Trite logo on top */}
         <div className="relative transform hover:scale-105 transition-transform duration-300">
           <Image
-            src="/tritee-logo.png"
+            src="/logos/trite-logo-black.png"
             alt="Trite logo"
             width={160}
             height={38}

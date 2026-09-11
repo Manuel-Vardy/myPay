@@ -155,7 +155,7 @@ export default function ProductsPage() {
         {/* SECTION 5: PRODUCTS */}
         <section
           id="products"
-          className="animate-on-scroll relative z-10 pt-12 sm:pt-16 md:pt-20 pb-8 sm:pb-12 md:pb-16 overflow-hidden"
+          className="animate-on-scroll relative z-10 pt-28 sm:pt-16 md:pt-20 pb-8 sm:pb-12 md:pb-16 overflow-hidden"
           style={{ backgroundColor: "rgba(247, 247, 247, 1)" }}
         >
           {/* SVG Background */}
@@ -195,9 +195,6 @@ export default function ProductsPage() {
               {/* Left Column: Heading & Image */}
               <div className="lg:col-span-5 space-y-6">
                 <div className="animate-on-scroll stagger-2 space-y-3">
-                  <p className="animate-on-scroll stagger-3 text-sm font-semibold uppercase tracking-wider text-gray-500">
-                    PRODUCTS
-                  </p>
                   <h2 className="animate-on-scroll stagger-4 text-4xl sm:text-5xl font-extrabold tracking-tight text-black leading-tight">
                     Our Suite of <br className="hidden sm:inline" /> Payment Products
                   </h2>
@@ -425,8 +422,8 @@ export default function ProductsPage() {
                         className="relative pl-20 lg:pl-0 group cursor-pointer transition-all duration-300"
                       >
                         {/* Overlapping White Box Indicator */}
-                        <div className="absolute left-4 top-0 lg:-left-[92px] flex h-14 w-14 items-center justify-center bg-white border border-gray-200 shadow-[0_8px_30px_rgba(0,0,0,0.06)] rounded-none transition-all duration-300 group-hover:border-[#22c55e] group-hover:scale-105 z-20">
-                          <IconComponent className="h-6 w-6 text-[#0a2540] group-hover:text-[#22c55e] transition-colors duration-300" />
+                        <div className="absolute left-4 top-0 lg:-left-[92px] flex h-14 w-14 items-center justify-center bg-white border border-gray-200 shadow-[0_8px_30px_rgba(0,0,0,0.06)] rounded-lg transition-all duration-300 group-hover:bg-[#22c55e] group-hover:border-[#22c55e] group-hover:scale-105 z-20">
+                          <IconComponent className="h-6 w-6 text-[#0a2540] group-hover:text-white transition-colors duration-300" />
                         </div>
 
                         {/* Step text content */}
@@ -483,12 +480,6 @@ export default function ProductsPage() {
                     href="/get-started"
                   >
                     Start Accepting Payments
-                  </Link>
-                  <Link
-                    className="inline-flex h-14 items-center justify-center rounded-full border border-white/30 bg-white/10 backdrop-blur-md px-10 text-base font-semibold text-white hover:bg-white/20 transition-all duration-300"
-                    href="/demo"
-                  >
-                    Request Demo
                   </Link>
                   <Link
                     className="inline-flex h-14 items-center justify-center rounded-full border border-white/30 bg-white/10 backdrop-blur-md px-10 text-base font-semibold text-white hover:bg-white/20 transition-all duration-300"

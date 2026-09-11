@@ -121,10 +121,11 @@ export default function AdminLoginPage() {
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <Link className="flex items-center gap-3" href="/">
             <Image
-              src="/tritee-logo.png"
+              src="/logos/trite-logo-black.png"
               alt="Trite logo"
               width={90}
               height={22}
+              className="h-6 w-auto object-contain"
               priority
             />
           </Link>

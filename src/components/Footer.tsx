@@ -13,12 +13,11 @@ export default function Footer() {
           {/* Branding Column */}
           <div className="col-span-2 space-y-4">
             <Image
-              src="/Trite-WB.png"
+              src="/logos/trite-logo-black.png"
               alt="Trite logo"
               width={100}
               height={24}
-              className="h-6 w-auto object-contain brightness-0"
-              style={{ filter: "brightness(0)" }}
+              className="h-6 w-auto object-contain"
             />
             <p className="text-xs text-gray-500 font-medium leading-relaxed max-w-sm">
               Redefining money movement with high-velocity Global Settlements, built-in KYC compliance, and robust stablecoin payment infrastructures.
@@ -38,7 +37,7 @@ export default function Footer() {
           <div>
             <h5 className="text-xs font-extrabold uppercase tracking-wider text-black">Products</h5>
             <ul className="mt-4 space-y-2 text-xs text-gray-500 font-bold">
-              <li><Link href="/products#trite-mos" className="hover:text-black transition-colors">Trite-MOS</Link></li>
+              <li><Link href="/trite-app" className="hover:text-black transition-colors">Trite-MOS</Link></li>
               <li><Link href="/products#stable-pay" className="hover:text-black transition-colors">Stable-Pay</Link></li>
               <li><Link href="/products#trite-api" className="hover:text-black transition-colors">Trite API</Link></li>
             </ul>

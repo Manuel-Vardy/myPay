@@ -152,7 +152,7 @@ export default function PaymentsPage() {
           {/* Background Image */}
           <div className="absolute inset-0 z-0">
             <Image
-              src="/images/payment-4.jpg"
+              src="/images/payment-4.1.jpg"
               alt="Payments Hero background"
               fill
               className="object-cover"

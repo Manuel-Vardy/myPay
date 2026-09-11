@@ -103,10 +103,11 @@ export default function AdminDashboardLayout({
           <div className="flex items-center gap-4">
             <Link href="/admin" className="flex items-center gap-3">
               <Image
-                src="/tritee-logo.png"
+                src="/logos/trite-logo-black.png"
                 alt="Trite logo"
                 width={75}
                 height={18}
+                className="h-5 w-auto object-contain"
                 priority
               />
             </Link>
@@ -158,10 +159,11 @@ export default function AdminDashboardLayout({
             <div className="flex items-center justify-between border-b border-black/5 p-5 lg:hidden">
               <div className="flex items-center gap-3">
                 <Image
-                  src="/tritee-logo.png"
+                  src="/logos/trite-logo-black.png"
                   alt="Trite logo"
                   width={80}
                   height={20}
+                  className="h-5 w-auto object-contain"
                 />
               </div>
               <button onClick={() => setSidebarOpen(false)} className="text-[color:var(--trite-muted)] hover:text-[color:var(--trite-ink)] transition-colors">

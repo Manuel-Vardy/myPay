@@ -117,11 +117,11 @@ export default function ForgotPasswordPage() {
         <div className="flex items-center justify-between mb-6">
           <Link href="/">
             <Image
-              src="/tritee-logo.png"
+              src="/logos/trite-logo-black.png"
               alt="Trite logo"
               width={120}
               height={28}
-              className="h-7 w-auto"
+              className="h-7 w-auto object-contain"
               priority
             />
           </Link>

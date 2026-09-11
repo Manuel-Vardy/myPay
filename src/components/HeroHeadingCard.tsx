@@ -5,17 +5,19 @@ interface HeroHeadingCardProps {
   label: string;
   title: ReactNode;
   className?: string;
+  titleClassName?: string;
 }
 
 export default function HeroHeadingCard({
   label,
   title,
   className,
+  titleClassName,
 }: HeroHeadingCardProps) {
   return (
     <div
       className={cn(
-        "relative w-full max-w-md overflow-hidden sm:max-w-lg border-b-2 border-b-white",
+        "relative w-full max-w-md overflow-hidden sm:max-w-lg",
         className
       )}
     >
@@ -43,7 +45,11 @@ export default function HeroHeadingCard({
         <p className="mb-1.5 text-sm font-medium text-white/90 sm:text-base">
           {label}
         </p>
-        <h3 className="text-xl font-extrabold leading-tight tracking-tight text-white sm:text-2xl lg:text-3xl">
+        <h3 className={cn(
+          "font-extrabold leading-tight tracking-tight text-white",
+          "text-xl sm:text-2xl lg:text-3xl",
+          titleClassName
+        )}>
           {title}
         </h3>
       </div>

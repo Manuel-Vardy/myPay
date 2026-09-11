@@ -101,10 +101,11 @@ export default function SubscriptionsPage() {
           <div className="flex h-16 items-center border-b border-black/5 px-4">
             <Link href="/" className="flex items-center gap-3">
               <Image
-                src="/tritee-logo.png"
+                src="/logos/trite-logo-black.png"
                 alt="Trite logo"
                 width={120}
                 height={28}
+                className="h-7 w-auto object-contain"
                 priority
               />
             </Link>
@@ -168,10 +169,11 @@ export default function SubscriptionsPage() {
               </button>
               <Link href="/" className="lg:hidden">
                 <Image
-                  src="/tritee-logo.png"
+                  src="/logos/trite-logo-black.png"
                   alt="Trite logo"
                   width={90}
                   height={22}
+                  className="h-6 w-auto object-contain"
                   priority
                 />
               </Link>

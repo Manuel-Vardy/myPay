@@ -214,7 +214,7 @@ export default function MerchantLayout({ children }: { children: React.ReactNode
         <div className="flex h-full flex-col">
           <div className="flex h-16 items-center border-b border-black/5 px-5">
             <Link href="/" className="flex items-center gap-3">
-              <Image src="/tritee-logo.png" alt="Trite logo" width={85} height={20} priority />
+              <Image src="/logos/trite-logo-black.png" alt="Trite logo" width={85} height={20} className="h-6 w-auto object-contain" priority />
             </Link>
           </div>
 
@@ -275,10 +275,11 @@ export default function MerchantLayout({ children }: { children: React.ReactNode
             <div className="flex items-center gap-4">
               <Link href="/" className="lg:hidden">
                 <Image
-                  src="/tritee-logo.png"
+                  src="/logos/trite-logo-black.png"
                   alt="Trite logo"
                   width={90}
                   height={22}
+                  className="h-6 w-auto object-contain"
                   priority
                 />
               </Link>

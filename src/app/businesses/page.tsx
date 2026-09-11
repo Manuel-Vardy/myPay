@@ -426,12 +426,6 @@ export default function BusinessesPage() {
               {/* CTA Buttons - Homepage Style */}
               <div className="animate-on-scroll stagger-3 flex flex-wrap gap-2 sm:gap-4 pt-1 sm:pt-4">
                 <Link
-                  className="biz-hero-btn-primary px-5 py-2.5 sm:px-8 sm:py-4 text-xs sm:text-base font-semibold bg-[#22c55e] text-white hover:bg-[#16a34a] rounded-full transition-all flex items-center gap-2 shadow-[0_10px_25px_-5px_rgba(34,197,94,0.3)] hover:scale-[1.02]"
-                  href="/contact-sales"
-                >
-                  Request a Demo <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
-                </Link>
-                <Link
                   className="biz-hero-btn-secondary px-5 py-2.5 sm:px-8 sm:py-4 text-xs sm:text-base font-semibold bg-white/10 backdrop-blur-md text-white border border-white/20 hover:bg-white/20 rounded-full transition-all flex items-center gap-2 hover:scale-[1.02]"
                   href="/contact-sales"
                 >

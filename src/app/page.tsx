@@ -195,7 +195,7 @@ function HeroCarousel() {
             <img
               src="/images/hero-2.jpg"
               alt="Hero background"
-              className="w-full h-full object-cover object-[30%_center] sm:object-center"
+              className="w-full h-full object-cover object-[30%_15%] sm:object-[center_15%]"
             />
             <div className="absolute inset-0 bg-black/45" />
           </div>
@@ -260,7 +260,7 @@ function HeroCarousel() {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
-                  href="#"
+                  href="/trite-app"
                   className="hero-cta-btn-secondary inline-flex items-center justify-center gap-2 h-12 px-7 sm:px-8 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm font-extrabold uppercase tracking-wider shadow-lg border border-white/30 hover:bg-white hover:text-black transition-all duration-300 hover:-translate-y-0.5"
                 >
                   Find Out More
@@ -1000,12 +1000,6 @@ export default function Home() {
               </h3>
               <div className="animate-on-scroll stagger-4 mt-8 flex flex-wrap gap-3">
                 <Link
-                  className="inline-flex h-11 items-center justify-center rounded-md bg-[#22c55e] px-5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-[#16a34a]"
-                  href="/contact-sales"
-                >
-                  Request a Demo
-                </Link>
-                <Link
                   href="/businesses"
                   className="inline-flex h-11 items-center justify-center gap-1.5 rounded-md border border-white/40 bg-white/10 px-5 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-200 hover:bg-white/20"
                 >
@@ -1360,8 +1354,8 @@ export default function Home() {
                         className="relative pl-20 lg:pl-0 group cursor-pointer transition-all duration-300"
                       >
                         {/* Overlapping White Box Indicator */}
-                        <div className="absolute left-4 top-0 lg:-left-[92px] flex h-14 w-14 items-center justify-center bg-white border border-gray-200 shadow-[0_8px_30px_rgba(0,0,0,0.06)] rounded-none transition-all duration-300 group-hover:border-[#22c55e] group-hover:scale-105 z-20">
-                          <IconComponent className="h-6 w-6 text-[#0a2540] group-hover:text-[#22c55e] transition-colors duration-300" />
+                        <div className="absolute left-4 top-0 lg:-left-[92px] flex h-14 w-14 items-center justify-center bg-white border border-gray-200 shadow-[0_8px_30px_rgba(0,0,0,0.06)] rounded-lg transition-all duration-300 group-hover:bg-[#22c55e] group-hover:border-[#22c55e] group-hover:scale-105 z-20">
+                          <IconComponent className="h-6 w-6 text-[#0a2540] group-hover:text-white transition-colors duration-300" />
                         </div>
 
                         {/* Step text content */}
@@ -1468,12 +1462,6 @@ export default function Home() {
                     href="/get-started"
                   >
                     Start Accepting Payments
-                  </Link>
-                  <Link
-                    className="inline-flex h-14 items-center justify-center rounded-full border border-white/30 bg-white/10 backdrop-blur-md px-10 text-base font-semibold text-white hover:bg-white/20 transition-all duration-300"
-                    href="/demo"
-                  >
-                    Request Demo
                   </Link>
                   <Link
                     className="inline-flex h-14 items-center justify-center rounded-full border border-white/30 bg-white/10 backdrop-blur-md px-10 text-base font-semibold text-white hover:bg-white/20 transition-all duration-300"

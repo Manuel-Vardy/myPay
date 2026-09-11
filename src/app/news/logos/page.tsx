@@ -8,10 +8,10 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const LOGO_ASSETS = {
-  mark: "/trite-fav.png",
-  markWhite: "/trite-fav-white.png",
-  fullDark: "/tritee-logo.png",
-  fullLight: "/Trite-WB.png",
+  mark: "/logos/favicon-black.png",
+  markWhite: "/logos/favicon.png",
+  fullDark: "/logos/trite-logo-black.png",
+  fullLight: "/logos/trite-logo-white.png",
 };
 
 export default function LogosPage() {

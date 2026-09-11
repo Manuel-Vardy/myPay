@@ -20,6 +20,7 @@ export default function Header({
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDownloadOpen, setIsDownloadOpen] = useState(false);
+  const [isProductsOpen, setIsProductsOpen] = useState(false);
   const pathname = usePathname();
   const [isSticky, setIsSticky] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
@@ -191,7 +192,7 @@ export default function Header({
             {/* Desktop White Logo (shown only when transparent and not sticky) */}
             {(mounted && transparent && !isSticky && !darkLogo) && (
               <Image
-                src="/Trite-WB.png"
+                src="/logos/trite-logo-white.png"
                 alt="Trite logo"
                 width={120}
                 height={28}
@@ -201,7 +202,7 @@ export default function Header({
             )}
             {/* Dark Logo (shown on mobile, or when sticky, or when not transparent) */}
             <Image
-              src="/tritee-logo.png"
+              src="/logos/trite-logo-black.png"
               alt="Trite logo"
               width={120}
               height={28}
@@ -226,6 +227,67 @@ export default function Header({
           >
             {navLinks.map((link) => {
               const isActive = getActiveState(link.href);
+
+              // Products link gets a hover dropdown
+              if (link.name === "Products") {
+                const isProductsActive =
+                  pathname.startsWith("/products") || pathname.startsWith("/trite-app");
+                return (
+                  <div
+                    key="products"
+                    className="relative group"
+                    onMouseEnter={() => setIsProductsOpen(true)}
+                    onMouseLeave={() => setIsProductsOpen(false)}
+                  >
+                    <button
+                      className={cn(
+                        "px-4 py-2 text-sm font-semibold transition-all relative rounded-full flex items-center gap-1",
+                        isProductsActive ? "text-[#22c55e]" : "text-gray-700 hover:bg-gray-100/80"
+                      )}
+                    >
+                      Products
+                      <svg className="h-3.5 w-3.5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
+                      {isProductsActive && (
+                        <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#22c55e]" />
+                      )}
+                    </button>
+
+                    {/* Dropdown */}
+                    <div className={cn(
+                      "absolute left-0 top-full pt-2 w-44 z-50 transition-all duration-200",
+                      isProductsOpen ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-1"
+                    )}>
+                      <div className="bg-white rounded-xl shadow-xl border border-black/[0.06] overflow-hidden py-1">
+                        <Link
+                          href="/products"
+                          className={cn(
+                            "flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold transition-colors",
+                            pathname.startsWith("/products") && !pathname.startsWith("/trite-app")
+                              ? "text-[#22c55e] bg-green-50"
+                              : "text-gray-800 hover:bg-gray-50"
+                          )}
+                        >
+                          All Products
+                        </Link>
+                        <Link
+                          href="/trite-app"
+                          className={cn(
+                            "flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold transition-colors",
+                            pathname.startsWith("/trite-app")
+                              ? "text-[#22c55e] bg-green-50"
+                              : "text-gray-800 hover:bg-gray-50"
+                          )}
+                        >
+                          TMOS
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+
               return (
                 <Link
                   key={link.name}
@@ -279,6 +341,41 @@ export default function Header({
             <div className="flex flex-col gap-2">
               {navLinks.map((link) => {
                 const isActive = getActiveState(link.href);
+
+                if (link.name === "Products") {
+                  return (
+                    <div key="products-mobile" className="flex flex-col">
+                      <span className="px-4 py-3 text-sm font-semibold text-gray-400 uppercase tracking-wider">
+                        Products
+                      </span>
+                      <Link
+                        href="/products"
+                        onClick={() => setIsMenuOpen(false)}
+                        className={cn(
+                          "flex w-full items-center px-6 py-2.5 text-sm font-medium rounded-xl",
+                          pathname.startsWith("/products") && !pathname.startsWith("/trite-app")
+                            ? "text-[#22c55e] font-semibold"
+                            : "text-gray-900 hover:bg-gray-100"
+                        )}
+                      >
+                        All Products
+                      </Link>
+                      <Link
+                        href="/trite-app"
+                        onClick={() => setIsMenuOpen(false)}
+                        className={cn(
+                          "flex w-full items-center px-6 py-2.5 text-sm font-medium rounded-xl",
+                          pathname.startsWith("/trite-app")
+                            ? "text-[#22c55e] font-semibold"
+                            : "text-gray-900 hover:bg-gray-100"
+                        )}
+                      >
+                        TMOS
+                      </Link>
+                    </div>
+                  );
+                }
+
                 return (
                   <Link
                     key={link.name}

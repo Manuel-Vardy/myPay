@@ -11,7 +11,7 @@ export default function PayBasePage() {
       <header className="sticky top-0 z-50 border-b border-black/5 bg-white/80 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
-            <Image src="/tritee-logo.png" alt="Trite logo" width={90} height={21} priority />
+            <Image src="/logos/trite-logo-black.png" alt="Trite logo" width={90} height={21} className="h-6 w-auto object-contain" priority />
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-[color:var(--trite-muted,#6b7280)]">Secure Checkout</span>
