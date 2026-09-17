@@ -273,7 +273,7 @@ export default function TriteAppPage() {
       headline: "Churches",
       tagline: "Manage your community, Simplify operations, Get paid.",
       icon: Church,
-      image: "/images/tmos-page/church.jpg",
+      image: "/images/tmos-page/church-1.jpg",
       description:
         "Manage your church's operations and payments from one place. TMOS provides a centralized platform to help churches manage their community, operations and payment activities while using Trite to collect payments.",
       features: [
@@ -409,16 +409,6 @@ export default function TriteAppPage() {
                     Run your business, <br />
                     <span className="text-[#22c55e]">Get paid</span>, Stay in control.
                   </h1>
-
-                  {/* Subtitle in White */}
-                  <p className="text-base sm:text-lg lg:text-[19px] text-white/90 font-normal leading-relaxed max-w-lg mx-auto">
-                    TMOS is a simple business management platform that helps you manage your operations, customers,
-                    sales and payments - all in one place.
-                  </p>
-
-                  <p className="text-sm sm:text-base text-white/70 font-medium">
-                    Built for retail shops, eateries, pharmacies, academic institutions and churches.
-                  </p>
 
                   {/* Action Buttons */}
                   <div className="pt-2 flex flex-wrap items-center justify-center gap-3">

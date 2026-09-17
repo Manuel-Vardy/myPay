@@ -18,11 +18,11 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: [
-      { url: "/logos/favicon-black.png", type: "image/png" },
+      { url: "/logos/favicon-green.png", type: "image/png" },
     ],
-    shortcut: ["/logos/favicon-black.png"],
+    shortcut: ["/logos/favicon-green.png"],
     apple: [
-      { url: "/logos/favicon-black.png", sizes: "180x180", type: "image/png" },
+      { url: "/logos/favicon-green.png", sizes: "180x180", type: "image/png" },
     ],
   },
   openGraph: {
@@ -30,13 +30,13 @@ export const metadata: Metadata = {
     siteName: "Trite",
     title: "Trite",
     description: "Financial Services Company",
-    images: [{ url: "/logos/favicon-black.png", width: 512, height: 512, alt: "Trite" }],
+    images: [{ url: "/logos/favicon-green.png", width: 512, height: 512, alt: "Trite" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Trite",
     description: "Financial Services Company",
-    images: ["/logos/favicon-black.png"],
+    images: ["/logos/favicon-green.png"],
   },
 };
 
