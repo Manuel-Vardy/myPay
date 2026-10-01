@@ -18,9 +18,11 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: [
-      { url: "/logos/favicon-green.png", type: "image/png" },
+      { url: "/logos/favicon-green.png", sizes: "32x32", type: "image/png" },
+      { url: "/logos/favicon-green.png", sizes: "192x192", type: "image/png" },
+      { url: "/logos/favicon-green.png", sizes: "512x512", type: "image/png" },
     ],
-    shortcut: ["/logos/favicon-green.png"],
+    shortcut: [{ url: "/logos/favicon-green.png", type: "image/png" }],
     apple: [
       { url: "/logos/favicon-green.png", sizes: "180x180", type: "image/png" },
     ],
@@ -30,10 +32,17 @@ export const metadata: Metadata = {
     siteName: "Trite",
     title: "Trite",
     description: "Financial Services Company",
-    images: [{ url: "/logos/favicon-green.png", width: 512, height: 512, alt: "Trite" }],
+    images: [
+      {
+        url: "/logos/favicon-green.png",
+        width: 512,
+        height: 512,
+        alt: "Trite",
+      },
+    ],
   },
   twitter: {
-    card: "summary_large_image",
+    card: "summary",
     title: "Trite",
     description: "Financial Services Company",
     images: ["/logos/favicon-green.png"],

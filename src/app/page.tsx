@@ -867,7 +867,7 @@ export default function Home() {
               {/* Left Column: Image with Glass Card Overlay */}
               <div className="animate-on-scroll stagger-2 lg:col-span-6 xl:col-span-7 relative rounded-2xl overflow-hidden group min-h-[500px] lg:min-h-[580px] shadow-lg">
                 <Image
-                  src="/images/market-women.jpg"
+                  src="/images/market-woman.jpg"
                   alt="Market Women"
                   fill
                   sizes="(max-width: 1024px) 100vw, 50vw"

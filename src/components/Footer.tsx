@@ -30,7 +30,8 @@ export default function Footer() {
             <ul className="mt-4 space-y-2 text-xs text-gray-500 font-bold">
               <li><Link href="/about" className="hover:text-black transition-colors">About Us</Link></li>
               <li><Link href="/careers" className="hover:text-black transition-colors">Careers</Link></li>
-              <li><Link href="/news" className="hover:text-black transition-colors">News</Link></li>
+              {/* News link temporarily hidden until unlocked */}
+              {/* <li><Link href="/news" className="hover:text-black transition-colors">News</Link></li> */}
             </ul>
           </div>
 

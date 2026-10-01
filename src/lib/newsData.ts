@@ -126,7 +126,7 @@ export const ourStories: Article[] = [
     readTime: "4-minute read",
     category: "Impact",
     description: "Deploying low-cost payment terminals and QR interfaces to enable local traders in Accra to accept stablecoin micropayments without high card fees.",
-    image: "/images/market-women.jpg",
+    image: "/images/market-woman.jpg",
     content: [
       "Trite has launched a pilot project in Accra to bring digital asset payments to local market women and micro-retailers. By deploying low-cost QR terminals, the project enables traders to accept stablecoin micro-payments directly from mobile wallets.",
       "For small traders, accepting digital payments is often prohibitively expensive due to high transaction fees and hardware costs. Trite's QR terminals bypass these card fees, allowing traders to settle sales in stablecoins for a fraction of a cent per transaction.",
