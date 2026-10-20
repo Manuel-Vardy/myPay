@@ -3,7 +3,8 @@ import db from "@/lib/db";
 import type { User } from "@/lib/types";
 import { requireMerchant } from "@/lib/guards";
 import { generateToken, hashToken } from "@/lib/tokens";
-import { sendVerificationEmail, DASHBOARD_BASE_URL } from "@/lib/email";
+import { sendVerificationEmail } from "@/lib/notifications";
+import { DASHBOARD_BASE_URL } from "@/lib/email";
 
 const EMAIL_VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
@@ -21,6 +22,13 @@ export async function POST() {
       return Response.json({ message: "Email is already verified." });
     }
 
+    if (!user.email) {
+      return Response.json(
+        { error: "This account has no email address on file." },
+        { status: 400 }
+      );
+    }
+
     const token = generateToken();
     await db("users")
       .where({ id: user.id })
@@ -30,7 +38,7 @@ export async function POST() {
       });
 
     const verifyUrl = `${DASHBOARD_BASE_URL}/verify-email?token=${token}`;
-    await sendVerificationEmail(user.email, verifyUrl);
+    await sendVerificationEmail(user.email, verifyUrl, user.id);
 
     return Response.json({ message: "Verification email sent." });
   } catch (error) {

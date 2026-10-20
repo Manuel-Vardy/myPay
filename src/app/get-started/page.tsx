@@ -13,6 +13,7 @@ export default function GetStartedPage() {
     businessName: "",
     legalEntity: "",
     email: "",
+    mobileNumber: "",
     password: "",
     confirmPassword: "",
   });
@@ -35,6 +36,11 @@ export default function GetStartedPage() {
       return;
     }
 
+    if (!/^\+[1-9]\d{7,14}$/.test(formData.mobileNumber.trim())) {
+      setError("Enter your mobile number in international format, e.g. +233201234567");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -51,6 +57,7 @@ export default function GetStartedPage() {
           last_name: formData.lastName,
           legal_entity: formData.legalEntity,
           marketing_opt_in: marketingOptIn,
+          mobile_number: formData.mobileNumber.trim(),
         }),
       });
 
@@ -60,7 +67,8 @@ export default function GetStartedPage() {
         throw new Error(data.error || "Registration failed");
       }
 
-      router.push("/merchant");
+      // Mobile number must be verified before the dashboard unlocks.
+      router.push("/verify-phone");
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -140,7 +148,6 @@ export default function GetStartedPage() {
           )}
 
           <form className="space-y-4" onSubmit={handleSubmit}>
-            {/* First + Last name */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label
@@ -234,6 +241,23 @@ export default function GetStartedPage() {
                 placeholder="you@business.com"
                 required
               />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider" htmlFor="mobileNumber">Mobile number</label>
+              <input
+                className="flex h-11 w-full rounded-xl border border-black/15 bg-gray-50/50 px-4 py-2 text-sm font-medium text-black transition-all focus:border-[#22c55e] focus:bg-white focus:ring-4 focus:ring-[#22c55e]/5 outline-none placeholder:text-gray-500"
+                id="mobileNumber"
+                name="mobileNumber"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                value={formData.mobileNumber}
+                onChange={handleChange}
+                placeholder="+233 20 123 4567"
+                required
+              />
+              <p className="text-[10px] text-gray-400 font-medium">We&apos;ll text you a code to verify this number.</p>
             </div>
 
             {/* Password + confirm */}

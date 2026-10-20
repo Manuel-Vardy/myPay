@@ -4,11 +4,14 @@
 // or re-run enrollment never invalidates a secret already in use.
 import db from "@/lib/db";
 import type { User } from "@/lib/types";
-import { requireRole } from "@/lib/guards";
+import { requireRoleAllowingMfaSetup } from "@/lib/guards";
 import { generateTotpSecret, totpProvisioningUri } from "@/lib/mfa";
 
 export async function POST() {
-  const guard = await requireRole("ADMIN", "MERCHANT");
+  // Not `requireRole`: an admin who is being forced to enroll has to be able
+  // to reach this endpoint, and requireRole would 403 them for the very thing
+  // they are here to fix.
+  const guard = await requireRoleAllowingMfaSetup("ADMIN", "MERCHANT");
   if (guard.error) return guard.error;
 
   const user = await db<User>("users").where({ id: guard.session.userId }).first();
@@ -21,6 +24,8 @@ export async function POST() {
 
   return Response.json({
     secret,
-    otpauth_uri: totpProvisioningUri(user.email, secret),
+    // Labels the entry in the authenticator app. Payer accounts can be
+    // phone-only, so fall back to whatever identifies them.
+    otpauth_uri: totpProvisioningUri(user.email || user.mobile_number || user.id, secret),
   });
 }

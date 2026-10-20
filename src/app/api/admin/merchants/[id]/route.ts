@@ -2,7 +2,7 @@
 // PATCH /api/admin/merchants/[id] — update merchant status
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
-import { requireAdmin } from "@/lib/guards";
+import { requirePermission } from "@/lib/guards";
 import { fromMinorUnits } from "@/lib/utils";
 
 export async function GET(
@@ -10,7 +10,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const guard = await requireAdmin();
+    const guard = await requirePermission("manage-merchants");
     if (guard.error) return guard.error;
 
     const { id } = await params;
@@ -26,6 +26,9 @@ export async function GET(
       .select(
         "users.id",
         "users.email",
+        "users.email_verified_at",
+        "users.mobile_number",
+        "users.mobile_verified_at",
         "users.role",
         "users.status",
         "users.two_factor_enabled",
@@ -36,7 +39,6 @@ export async function GET(
         "merchants.merchant_display_id",
         "merchants.tier as merchant_tier",
         "merchants.region",
-        "merchants.api_keys",
         "merchants.notification_email",
         "merchants.payments_paused_at",
         "merchants.payments_paused_reason",
@@ -79,21 +81,27 @@ export async function GET(
       .orderBy("created_at", "desc")
       .first();
 
-    // Count active API keys
-    let apiKeyCount = 0;
-    try {
-      const keys = typeof merchant.api_keys === "string"
-        ? JSON.parse(merchant.api_keys)
-        : merchant.api_keys;
-      apiKeyCount = Array.isArray(keys) ? keys.filter((k: any) => k.active !== false).length : 0;
-    } catch {
-      apiKeyCount = 0;
-    }
+    // Count active API keys.
+    //
+    // Read from `api_keys`, not the legacy `merchants.api_keys` JSONB this used
+    // to parse: migration 0026 moved keys into their own table and nothing has
+    // written that column since, so this reported 0 for every merchant on the
+    // platform. It matters more now that a single merchant can hold several
+    // keys — one per TMOS branch — and an admin looking at a suspected
+    // compromise needs the real number.
+    const [{ count: activeKeys }] = await db("api_keys")
+      .where({ merchant_id: merchant.merchant_id })
+      .whereNull("revoked_at")
+      .count({ count: "*" });
+    const apiKeyCount = Number(activeKeys ?? 0);
 
     return Response.json({
       profile: {
         id: merchant.id,
         email: merchant.email,
+        email_verified_at: merchant.email_verified_at || null,
+        mobile_number: merchant.mobile_number || null,
+        mobile_verified_at: merchant.mobile_verified_at || null,
         role: merchant.role,
         status: merchant.status,
         two_factor_enabled: merchant.two_factor_enabled,
@@ -133,7 +141,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const guard = await requireAdmin();
+    const guard = await requirePermission("manage-merchants");
     if (guard.error) return guard.error;
 
     const { id } = await params;

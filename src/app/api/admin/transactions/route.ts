@@ -17,15 +17,19 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status"); // PENDING, SUCCESS, FAILED
     const flag_level = searchParams.get("flag_level"); // NONE, LOW, MEDIUM, HIGH
     const merchant_id = searchParams.get("merchant_id");
+    // Pivot for a flagged transaction: everything this device has attempted.
+    const device_visitor_id = searchParams.get("device_visitor_id");
     const date_from = searchParams.get("date_from");
     const date_to = searchParams.get("date_to");
 
     let query = db("transactions")
       .join("merchants", "transactions.merchant_id", "merchants.id")
+      .leftJoin("payment_sessions", "transactions.payment_session_id", "payment_sessions.id")
       .select(
         "transactions.*",
         "merchants.business_name",
-        "merchants.merchant_display_id"
+        "merchants.merchant_display_id",
+        "payment_sessions.description as description"
       );
 
     if (search) {
@@ -35,12 +39,15 @@ export async function GET(request: NextRequest) {
           .whereILike("transactions.tx_id_display", term)
           .orWhereILike("transactions.payer_email", term)
           .orWhereILike("merchants.business_name", term)
+          .orWhereILike("payment_sessions.description", term)
       );
     }
     if (method) query = query.where("transactions.method", method);
     if (status) query = query.where("transactions.status", status);
     if (flag_level) query = query.where("transactions.flag_level", flag_level);
     if (merchant_id) query = query.where("transactions.merchant_id", merchant_id);
+    if (device_visitor_id)
+      query = query.where("transactions.device_visitor_id", device_visitor_id);
     if (date_from) query = query.where("transactions.created_at", ">=", date_from);
     if (date_to) query = query.where("transactions.created_at", "<=", date_to);
 

@@ -98,6 +98,15 @@ export async function GET(
       available_methods: availableMethods,
       expires_at: session.expires_at,
       redirect_url: session.redirect_url || null,
+      // Identity the merchant supplied when creating the session. This
+      // endpoint is public — anyone holding the link can read it — so only
+      // the phone comes back, because the checkout has to prefill the mobile
+      // money field with it. Email and name are reported as presence flags:
+      // the UI just needs to know whether to ask, and the server resolves the
+      // real values from the session row at charge time either way.
+      customer_phone: session.customer_phone || null,
+      customer_email_on_file: Boolean(session.customer_email),
+      customer_name_on_file: Boolean(session.customer_name),
     });
   } catch (error) {
     console.error("Payment session fetch error:", error);

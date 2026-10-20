@@ -80,6 +80,10 @@ export async function POST(request: NextRequest) {
       redirect_url: link.redirect_url,
       status: "ACTIVE",
       expires_at: expiresAt,
+      // A shared link is an unauthenticated channel by design — anyone with
+      // the URL can open it — so there is no key to attribute this to. Say so
+      // explicitly rather than leaving api_key_id NULL and ambiguous.
+      origin: "PAYMENT_LINK",
     });
 
     await db("system_logs").insert({

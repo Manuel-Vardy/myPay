@@ -1,15 +1,18 @@
 // POST /api/auth/login — authenticate admin or merchant
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
+import { normalizeEmail } from "@/lib/email-validation";
 import type { User } from "@/lib/types";
 import { verifyPassword } from "@/lib/auth";
 import { createSession } from "@/lib/session";
 import { checkAuthRateLimit } from "@/lib/guards";
+import { mfaRequiredForRole } from "@/lib/mfa-policy";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password } = body;
+    const { password } = body;
+    const email = normalizeEmail(body.email);
 
     if (!email || !password) {
       return Response.json(
@@ -20,7 +23,7 @@ export async function POST(request: NextRequest) {
 
     const ip = request.headers.get("x-forwarded-for") || "unknown";
     const [byEmail, byIp] = await Promise.all([
-      checkAuthRateLimit(`email:${email.toLowerCase()}`, "login", { limit: 5, windowSeconds: 300 }),
+      checkAuthRateLimit(`email:${email}`, "login", { limit: 5, windowSeconds: 300 }),
       checkAuthRateLimit(`ip:${ip}`, "login", { limit: 20, windowSeconds: 300 }),
     ]);
     if (byEmail.error || byIp.error) {
@@ -76,14 +79,22 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Privileged role with no TOTP enrolled. The session is still issued —
+    // enrollment needs one — but every guarded route will refuse it until
+    // enrollment completes, so this is an authenticated account with no
+    // authority rather than a working login.
+    const mfaEnrollmentRequired = mfaRequiredForRole(user.role);
+
     // Update last login
     await db("users").where({ id: user.id }).update({ last_login: db.fn.now() });
 
     // Log the event
     await db("system_logs").insert({
-      level: "INFO",
+      level: mfaEnrollmentRequired ? "WARN" : "INFO",
       source: "AUTH_CORE",
-      event_description: `User ${user.email} logged in successfully`,
+      event_description: mfaEnrollmentRequired
+        ? `User ${user.email} logged in without MFA enrolled — access withheld pending enrollment`
+        : `User ${user.email} logged in successfully`,
       actor_id: user.id,
       ip_address: request.headers.get("x-forwarded-for") || "unknown",
     });
@@ -102,6 +113,7 @@ export async function POST(request: NextRequest) {
 
     return Response.json({
       token,
+      mfa_enrollment_required: mfaEnrollmentRequired,
       user: {
         id: user.id,
         email: user.email,

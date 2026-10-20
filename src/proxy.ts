@@ -25,7 +25,7 @@ const roleRules: Record<ServiceRole, { mode: "allow" | "deny"; prefixes: string[
   },
   merchant: {
     mode: "allow",
-    prefixes: ["/merchant", "/login", "/get-started", "/api/merchant", "/api/auth", "/api/public", "/forgot-password", "/reset-password", "/verify-email"],
+    prefixes: ["/merchant", "/login", "/get-started", "/api/merchant", "/api/auth", "/api/public", "/forgot-password", "/reset-password", "/verify-email", "/verify-phone"],
   },
   checkout: {
     mode: "allow",

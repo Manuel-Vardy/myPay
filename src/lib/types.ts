@@ -105,7 +105,8 @@ export interface TwoFactorBackupCode {
 
 export interface User {
   id: string;
-  email: string;
+  /** Null for phone-only payers created at settlement — see migration 0041. */
+  email: string | null;
   password_hash: string;
   role: UserRole;
   two_factor_enabled: boolean;
@@ -114,6 +115,8 @@ export interface User {
   two_factor_backup_codes: TwoFactorBackupCode[] | null;
   status: UserStatus;
   last_login: Date | null;
+  mobile_number: string | null;
+  mobile_verified_at: Date | null;
   email_verified_at: Date | null;
   email_verification_token: string | null;
   email_verification_expires: Date | null;
@@ -137,6 +140,33 @@ export interface AdminProfile {
   updated_at: Date;
 }
 
+export type BusinessType = "LIMITED_LIABILITY" | "SOLE_PROPRIETORSHIP" | "PARTNERSHIP";
+
+export interface DirectorProfile {
+  id: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  ghana_card_number: string;
+  ghana_card_front_key?: string | null;
+  ghana_card_front_url?: string | null;
+  ghana_card_back_key?: string | null;
+  ghana_card_back_url?: string | null;
+}
+
+export interface BeneficialOwnerProfile {
+  id: string;
+  full_name: string;
+  nationality: string;
+  ownership_percentage: number;
+  email: string;
+  phone: string;
+  ghana_card_number?: string | null;
+  is_pep: boolean;
+  profile_doc_key?: string | null;
+  profile_doc_url?: string | null;
+}
+
 export interface Merchant {
   id: string;
   user_id: string;
@@ -144,6 +174,10 @@ export interface Merchant {
   merchant_display_id: string;
   tier: MerchantTier;
   fee_bearer: FeeBearer;
+  business_type?: BusinessType | null;
+  logo_url?: string | null;
+  gps_address?: string | null;
+  company_phone?: string | null;
   region: string | null;
   business_address_line1: string | null;
   business_address_line2: string | null;
@@ -153,8 +187,16 @@ export interface Merchant {
   api_keys: ApiKeyEntry[];
   webhook_config: WebhookConfig;
   notification_email: string | null;
+  /** Per-channel opt-ins (migration 0006). Defaults to transactions on. */
+  notification_settings: MerchantNotificationSettings | null;
   created_at: Date;
   updated_at: Date;
+}
+
+export interface MerchantNotificationSettings {
+  transactions: boolean;
+  systemUpdates: boolean;
+  marketing: boolean;
 }
 
 export interface ApiKeyEntry {
@@ -262,13 +304,20 @@ export interface Transaction {
   failure_reason: string | null;
   payer_email: string | null;
   payer_wallet_address: string | null;
+  /** Normalised to bare international digits (233...) — see normalizeMsisdn. */
   payer_phone: string | null;
+  payer_name: string | null;
   card_token: string | null;
   card_last_four: string | null;
   card_brand: string | null;
   momo_reference: string | null;
   three_ds_session_id: string | null;
   three_ds_status: string | null;
+  /** Fingerprint device identifier, resolved server-side at checkout. Null on
+   *  pre-0036 rows and whenever identification failed open. */
+  device_visitor_id: string | null;
+  /** Fingerprint identification event backing `device_visitor_id`. */
+  device_event_id: string | null;
   idempotency_key: string | null;
   metadata: Record<string, unknown>;
   created_at: Date;
@@ -345,19 +394,43 @@ export interface Settlement {
   date_range_start: Date;
   date_range_end: Date;
   transaction_count: number;
+  account_id: string | null;
+  /** Provider-side reference for the payout transfer. */
+  bank_reference: string | null;
+  failure_reason: string | null;
+  /** Adapter name of the PSP that executed the transfer, e.g. "Paystack". */
+  payout_provider: string | null;
+  /** Transfer handles and narration: transfer_code, payout_initiated_at, ... */
+  provider_metadata: Record<string, unknown> | null;
   created_at: Date;
   updated_at: Date;
 }
 
+/**
+ * How a payment session came into existence. Only an API-origin session can
+ * name an API key; a shared payment link is unauthenticated by design, and a
+ * NULL origin means the session predates attribution (migration 0047).
+ */
+export type PaymentSessionOrigin = "API" | "PAYMENT_LINK" | "DASHBOARD";
+
 export interface PaymentSession {
   id: string;
   merchant_id: string;
+  payment_link_id: string | null;
+  origin: PaymentSessionOrigin | null;
+  /** The API key that created this session; NULL unless origin is "API". */
+  api_key_id: string | null;
   amount: number;
   currency: string;
   description: string | null;
   redirect_url: string | null;
   cancel_url: string | null;
   status: SessionStatus;
+  /** Payer identity supplied by the merchant when creating the session. */
+  customer_email: string | null;
+  customer_name: string | null;
+  /** Normalised to bare international digits (233...) — see normalizeMsisdn. */
+  customer_phone: string | null;
   metadata: Record<string, unknown>;
   expires_at: Date;
   created_at: Date;
@@ -386,11 +459,16 @@ export interface KycRecord {
   identity_id: string;
   tier: KycTier;
   status: KycStatus;
+  business_type?: BusinessType | null;
+  directors?: DirectorProfile[];
+  beneficial_owners?: BeneficialOwnerProfile[];
+  current_step?: number;
   process_time_ms: number | null;
   region: string | null;
   review_notes: string | null;
   reviewed_by: string | null;
-  submitted_at: Date;
+  /** Null until the merchant submits for review (migration 0039). */
+  submitted_at: Date | null;
   reviewed_at: Date | null;
   created_at: Date;
   updated_at: Date;
@@ -407,15 +485,17 @@ export interface KycDocument {
   created_at: Date;
 }
 
+/**
+ * A merchant's relationship with a payer. Personal details live on the linked
+ * `users` row; spend and activity are computed from `transactions` at read
+ * time rather than stored, so a re-settled payment can't corrupt them.
+ */
 export interface Customer {
   id: string;
   merchant_id: string;
   user_id: string;
   tier: CustomerTier;
   status: CustomerStatus;
-  total_spent: number;
-  transaction_count: number;
-  last_transaction_at: Date | null;
   notes: string | null;
   created_at: Date;
   updated_at: Date;
@@ -474,7 +554,9 @@ export interface RegisterMerchantRequest {
 export interface AdminDashboardResponse {
   total_platform_volume: number;
   active_merchants: number;
-  system_uptime: string;
+  /** Measured over the last 24h; null when no attempts fall in the window. */
+  payment_success_rate_24h: number | null;
+  payment_attempts_24h: number;
   liquidity_inbound: number;
   liquidity_outbound: number;
   security_alerts: number;
@@ -518,12 +600,18 @@ export interface PaymentSessionResponse {
   network_gas: string;
   available_methods: PaymentMethod[];
   expires_at: string;
+  /** Merchant-supplied, prefills the mobile money field. */
+  customer_phone: string | null;
+  /** Whether the merchant already gave us these — the checkout stops asking. */
+  customer_email_on_file: boolean;
+  customer_name_on_file: boolean;
 }
 
 export interface ProcessPaymentRequest {
   session_id: string;
   method: PaymentMethod;
   payer_email?: string;
+  payer_name?: string;
   wallet_address?: string;
   card_token?: string;
   mobile_money_number?: string;

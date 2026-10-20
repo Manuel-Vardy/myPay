@@ -53,7 +53,7 @@ const useScrollAnimation = () => {
   }, []);
 };
 
-// ── Industry block with entrance animation ────────────────────────────────
+// ── Industry block with entrance animation (desktop only) ────────────────────────────────
 function IndustryBlock({
   ind,
   isEven,
@@ -74,6 +74,16 @@ function IndustryBlock({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "0px 0px -80px 0px" });
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const checkDesktop = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+    checkDesktop();
+    window.addEventListener("resize", checkDesktop);
+    return () => window.removeEventListener("resize", checkDesktop);
+  }, []);
 
   const transition = { duration: 0.65, ease: [0.22, 1, 0.36, 1] as const };
 
@@ -84,8 +94,8 @@ function IndustryBlock({
     >
       {/* Text column */}
       <motion.div
-        initial={{ opacity: 0, x: textX }}
-        animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: textX }}
+        initial={isDesktop ? { opacity: 0, x: textX } : { opacity: 0, y: 16 }}
+        animate={isInView ? { opacity: 1, x: 0, y: 0 } : (isDesktop ? { opacity: 0, x: textX } : { opacity: 0, y: 16 })}
         transition={{ ...transition, delay: 0.05 }}
         className={cn(
           "lg:col-span-6 space-y-5 sm:space-y-6",
@@ -127,11 +137,11 @@ function IndustryBlock({
         )}
       </motion.div>
 
-      {/* Image column */}
+      {/* Image column: no entrance effect on mobile view */}
       <motion.div
-        initial={{ opacity: 0, x: imageX }}
-        animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: imageX }}
-        transition={{ ...transition, delay: 0.15 }}
+        initial={isDesktop ? { opacity: 0, x: imageX } : false}
+        animate={isDesktop ? (isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: imageX }) : { opacity: 1, x: 0 }}
+        transition={isDesktop ? { ...transition, delay: 0.15 } : { duration: 0 }}
         className={cn(
           "lg:col-span-5",
           isEven ? "lg:order-2" : "lg:order-1"
@@ -376,9 +386,22 @@ export default function TriteAppPage() {
         .stagger-4 {
           animation-delay: 0.4s;
         }
+
+        /* ONLY for mobile view on TRITE APP PAGE: disable entrance effect on images & cards */
+        @media (max-width: 767px) {
+          .trite-app-page .animate-on-scroll {
+            opacity: 1 !important;
+            animation: none !important;
+            transform: none !important;
+          }
+          .trite-app-page .animate-fade-in-up {
+            animation: none !important;
+            transform: none !important;
+          }
+        }
       `}</style>
 
-      <div className="min-h-screen bg-white text-black selection:bg-[#22c55e]/20 selection:text-black">
+      <div className="trite-app-page min-h-screen bg-white text-black selection:bg-[#22c55e]/20 selection:text-black overflow-x-clip w-full">
         <Header transparent={true} darkLogo={false} hideBorder={true} />
 
         <main>

@@ -26,6 +26,8 @@ type TxDetail = {
   method: string;
   rail: string | null;
   status: string;
+  /** The merchant's own order reference, from the payment session. */
+  description: string | null;
   failure_reason: string | null;
   processing_fee: number | string;
   gateway_reference: string | null;
@@ -211,6 +213,7 @@ function TransactionDetailModalInner({
         ["Amount", formatMoney(tx.amount, tx.currency)],
         ["Processing Fee", formatMoney(tx.processing_fee, tx.currency)],
         ["Method", tx.rail ? `${tx.method} · ${tx.rail}` : tx.method],
+        tx.description ? ["Description", tx.description] : null,
         tx.merchant_name
           ? ["Merchant", `${tx.merchant_name} (${tx.merchant_display_id ?? ""})`]
           : null,

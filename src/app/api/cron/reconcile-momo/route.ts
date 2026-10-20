@@ -1,9 +1,7 @@
 import { NextRequest } from "next/server";
 import db from "@/lib/db";
 import type { MobileMoneyProvider } from "@/lib/payments";
-import { getMobileMoneyProvider } from "@/lib/payments";
-import { MoolreProvider } from "@/lib/payments/moolre";
-import { AnmProvider } from "@/lib/payments/anm";
+import { getMobileMoneyProvider, MOMO_PROVIDERS, normaliseProviderName } from "@/lib/payments";
 import { settleMomoPayment, failMomoPayment } from "@/lib/payments/settle-momo";
 
 // Mobile money settlement is poll-driven: the provider webhook callback is
@@ -26,19 +24,12 @@ const DEFAULT_NOT_FOUND_FAIL_HOURS = 24;
 // this, eternal-pendings accumulate and eventually fill every batch.
 const DEFAULT_PENDING_FAIL_HOURS = 48;
 
-const providerByName: Record<string, MobileMoneyProvider> = {
-  moolre: new MoolreProvider(),
-  appsnmobile: new AnmProvider(),
-  anm: new AnmProvider(),
-};
-
 function resolveProvider(
   metadataProvider: unknown,
   activeProvider: MobileMoneyProvider
 ): MobileMoneyProvider {
   if (typeof metadataProvider !== "string") return activeProvider;
-  const normalized = metadataProvider.toLowerCase().replace(/[^a-z]/g, "");
-  return providerByName[normalized] ?? activeProvider;
+  return MOMO_PROVIDERS[normaliseProviderName(metadataProvider)] ?? activeProvider;
 }
 
 export async function POST(request: NextRequest) {

@@ -176,14 +176,17 @@ export default function ApiDocsPage() {
 
             <SectionTitle id="merchant-verification">Merchant verification</SectionTitle>
             <p className="text-gray-600 leading-relaxed mb-4">
-              API access requires your merchant account to be <strong>fully verified</strong>. This means:
+              The{" "}
+              <a href="#direct-charge" className="text-[#22c55e] font-semibold hover:underline">direct charge</a>{" "}
+              endpoints move money on a payer&apos;s behalf, so they require your merchant account to be{" "}
+              <strong>fully verified</strong>. This means:
             </p>
             <ol className="list-decimal ml-6 text-gray-600 leading-relaxed mb-4 space-y-2">
               <li><strong>Email verified</strong> — confirm your email address via the link sent at registration.</li>
               <li><strong>KYC approved</strong> — submit identity verification documents in the merchant portal under Settings and receive approval.</li>
             </ol>
             <p className="text-gray-600 leading-relaxed mb-4">
-              If either requirement is not met, all payment API calls will return{" "}
+              If either requirement is not met, those calls return{" "}
               <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm font-mono">403</code> with a
               machine-readable <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm font-mono">code</code> field:
             </p>
@@ -225,15 +228,15 @@ export default function ApiDocsPage() {
               tabs={[
                 {
                   name: "cURL",
-                  code: `curl ${BASE_URL}/api/v1/payments/initiate \\\n  -H "Authorization: Bearer trite_sk_..." \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "amount": 25.50,\n    "currency": "GHS",\n    "description": "Order #1234",\n    "redirect_url": "https://yourstore.com/thank-you"\n  }'`
+                  code: `curl ${BASE_URL}/api/v1/payments/initiate \\\n  -H "Authorization: Bearer trite_sk_..." \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "amount": 25.50,\n    "currency": "GHS",\n    "description": "Order #1234",\n    "redirect_url": "https://yourstore.com/thank-you",\n    "customer_email": "ama@example.com",\n    "customer_name": "Ama Serwaa",\n    "customer_phone": "0244123456"\n  }'`
                 },
                 {
                   name: "Node.js",
-                  code: `const response = await fetch("${BASE_URL}/api/v1/payments/initiate", {\n  method: "POST",\n  headers: {\n    "Authorization": "Bearer trite_sk_...",\n    "Content-Type": "application/json"\n  },\n  body: JSON.stringify({\n    amount: 25.50,\n    currency: "GHS",\n    description: "Order #1234",\n    redirect_url: "https://yourstore.com/thank-you"\n  })\n});\n\nconst data = await response.json();`
+                  code: `const response = await fetch("${BASE_URL}/api/v1/payments/initiate", {\n  method: "POST",\n  headers: {\n    "Authorization": "Bearer trite_sk_...",\n    "Content-Type": "application/json"\n  },\n  body: JSON.stringify({\n    amount: 25.50,\n    currency: "GHS",\n    description: "Order #1234",\n    redirect_url: "https://yourstore.com/thank-you",\n    customer_email: "ama@example.com",\n    customer_name: "Ama Serwaa",\n    customer_phone: "0244123456"\n  })\n});\n\nconst data = await response.json();`
                 },
                 {
                   name: "Python",
-                  code: `import requests\n\nresponse = requests.post(\n    "${BASE_URL}/api/v1/payments/initiate",\n    headers={"Authorization": "Bearer trite_sk_..."},\n    json={\n        "amount": 25.50,\n        "currency": "GHS",\n        "description": "Order #1234",\n        "redirect_url": "https://yourstore.com/thank-you"\n    }\n)\n\ndata = response.json()`
+                  code: `import requests\n\nresponse = requests.post(\n    "${BASE_URL}/api/v1/payments/initiate",\n    headers={"Authorization": "Bearer trite_sk_..."},\n    json={\n        "amount": 25.50,\n        "currency": "GHS",\n        "description": "Order #1234",\n        "redirect_url": "https://yourstore.com/thank-you",\n        "customer_email": "ama@example.com",\n        "customer_name": "Ama Serwaa",\n        "customer_phone": "0244123456"\n    }\n)\n\ndata = response.json()`
                 }
               ]} 
             />
@@ -247,6 +250,12 @@ export default function ApiDocsPage() {
   "currency": "GHS",
   "expires_at": "2026-07-08T12:00:00.000Z"
 }`}</CodeBlock>
+              <p className="text-gray-600 leading-relaxed mt-4 text-sm">
+                A session created without <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm font-mono">customer_email</code> or{" "}
+                <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm font-mono">customer_phone</code> still succeeds, with a{" "}
+                <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm font-mono">warnings</code> array in the response. Treat those
+                warnings as errors in waiting.
+              </p>
             </div>
 
             <div className="mt-8">
@@ -265,6 +274,9 @@ export default function ApiDocsPage() {
                     <tr><td className="px-4 py-3 font-mono">currency</td><td className="px-4 py-3">string</td><td className="px-4 py-3">Optional, default USD.</td></tr>
                     <tr><td className="px-4 py-3 font-mono">description</td><td className="px-4 py-3">string</td><td className="px-4 py-3">Optional, shown at checkout.</td></tr>
                     <tr><td className="px-4 py-3 font-mono">redirect_url</td><td className="px-4 py-3">string</td><td className="px-4 py-3">Optional, payer is sent here after payment.</td></tr>
+                    <tr><td className="px-4 py-3 font-mono">customer_email</td><td className="px-4 py-3">string</td><td className="px-4 py-3">Who is paying. <strong>Will become required</strong> — sessions without it are accepted for now and return a warning. Identifies the payer in your customer directory, and is the only identity we get on crypto payments.</td></tr>
+                    <tr><td className="px-4 py-3 font-mono">customer_name</td><td className="px-4 py-3">string</td><td className="px-4 py-3">Optional. Shown in your customer directory.</td></tr>
+                    <tr><td className="px-4 py-3 font-mono">customer_phone</td><td className="px-4 py-3">string</td><td className="px-4 py-3">Optional. Local or international format. Prefills the mobile money field at checkout, and is the strongest way to recognise a returning payer.</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -273,8 +285,7 @@ export default function ApiDocsPage() {
             <AlertBox type="info">
               Errors: <code className="rounded bg-blue-100/50 px-1.5 py-0.5 text-sm font-mono">400</code> invalid input,{" "}
               <code className="rounded bg-blue-100/50 px-1.5 py-0.5 text-sm font-mono">401</code> bad key,{" "}
-              <code className="rounded bg-blue-100/50 px-1.5 py-0.5 text-sm font-mono">403</code> unverified merchant (see{" "}
-              <a href="#merchant-verification" className="text-[#22c55e] font-semibold hover:underline">Merchant verification</a>),{" "}
+              <code className="rounded bg-blue-100/50 px-1.5 py-0.5 text-sm font-mono">403</code> merchant is not currently accepting payments,{" "}
               <code className="rounded bg-blue-100/50 px-1.5 py-0.5 text-sm font-mono">429</code> rate limited,{" "}
               <code className="rounded bg-blue-100/50 px-1.5 py-0.5 text-sm font-mono">500</code> server error.
             </AlertBox>
@@ -327,6 +338,158 @@ export default function ApiDocsPage() {
 
             <AlertBox type="warning">
               Sessions belonging to a different merchant return <code className="rounded bg-amber-100 px-1.5 py-0.5 text-sm font-mono text-amber-900">404</code>.
+            </AlertBox>
+
+            <SectionTitle id="direct-charge">Direct charge</SectionTitle>
+            <p className="text-gray-600 leading-relaxed mb-4">
+              Debit a mobile money wallet from your own backend, with no Trite-hosted checkout page.
+              The payer approves the charge on their handset. Ghana mobile money only —{" "}
+              <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm font-mono">GHS</code> is the
+              only supported currency.
+            </p>
+
+            <SectionLabel type="request">POST /api/v1/payments/charge</SectionLabel>
+            <CodeTabs
+              tabs={[
+                {
+                  name: "cURL",
+                  code: `curl ${BASE_URL}/api/v1/payments/charge \\\n  -H "Authorization: Bearer trite_sk_..." \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "amount": 200,\n    "mobile_number": "0249713683",\n    "provider": "MTN",\n    "currency": "GHS",\n    "description": "Order #1234"\n  }'`
+                },
+                {
+                  name: "Node.js",
+                  code: `const response = await fetch("${BASE_URL}/api/v1/payments/charge", {\n  method: "POST",\n  headers: {\n    "Authorization": "Bearer trite_sk_...",\n    "Content-Type": "application/json"\n  },\n  body: JSON.stringify({\n    amount: 200,\n    mobile_number: "0249713683",\n    provider: "MTN",\n    currency: "GHS",\n    description: "Order #1234"\n  })\n});\n\nconst data = await response.json();`
+                },
+                {
+                  name: "Python",
+                  code: `import requests\n\nresponse = requests.post(\n    "${BASE_URL}/api/v1/payments/charge",\n    headers={"Authorization": "Bearer trite_sk_..."},\n    json={\n        "amount": 200,\n        "mobile_number": "0249713683",\n        "provider": "MTN",\n        "currency": "GHS",\n        "description": "Order #1234"\n    }\n)\n\ndata = response.json()`
+                }
+              ]}
+            />
+
+            <div className="mt-8">
+              <SectionLabel type="response">HTTP 202 Accepted</SectionLabel>
+              <CodeBlock>{`{
+  "reference": "TX-8F3K2M-A1B2C3D4",
+  "transaction_id": "9a2d...",
+  "session_id": "3f6b1c9e-...",
+  "status": "INITIATED",
+  "amount": 200,
+  "currency": "GHS",
+  "message": "Payment prompt sent to your phone. Please approve it."
+}`}</CodeBlock>
+            </div>
+
+            <div className="mt-8">
+              <SectionLabel type="parameters">Body Parameters</SectionLabel>
+              <div className="overflow-x-auto rounded-xl border border-gray-100 mt-2">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
+                    <tr>
+                      <th className="px-4 py-3">Field</th>
+                      <th className="px-4 py-3">Type</th>
+                      <th className="px-4 py-3">Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 text-gray-600">
+                    <tr><td className="px-4 py-3 font-mono">amount</td><td className="px-4 py-3">number</td><td className="px-4 py-3">Required. Positive, major units — <code className="font-mono">200</code> means GHS 200.00.</td></tr>
+                    <tr><td className="px-4 py-3 font-mono">mobile_number</td><td className="px-4 py-3">string</td><td className="px-4 py-3">Required. The payer&apos;s mobile money number.</td></tr>
+                    <tr><td className="px-4 py-3 font-mono">provider</td><td className="px-4 py-3">string</td><td className="px-4 py-3">Required. <code className="font-mono">MTN</code>, <code className="font-mono">TELECEL</code>, or <code className="font-mono">AT</code>. Not inferred from the number — a ported line would charge the wrong network.</td></tr>
+                    <tr><td className="px-4 py-3 font-mono">currency</td><td className="px-4 py-3">string</td><td className="px-4 py-3">Optional, default <code className="font-mono">GHS</code>. No other value is accepted.</td></tr>
+                    <tr><td className="px-4 py-3 font-mono">description</td><td className="px-4 py-3">string</td><td className="px-4 py-3">Optional, shown on the payer&apos;s prompt where the network supports it.</td></tr>
+                    <tr><td className="px-4 py-3 font-mono">payer_email</td><td className="px-4 py-3">string</td><td className="px-4 py-3">Optional. Recorded against the transaction and added to your customer directory once the charge settles.</td></tr>
+                    <tr><td className="px-4 py-3 font-mono">payer_name</td><td className="px-4 py-3">string</td><td className="px-4 py-3">Optional. Names the payer in your customer directory instead of showing a bare phone number.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="mt-8">
+              <SectionLabel type="parameters">Response status values</SectionLabel>
+              <div className="overflow-x-auto rounded-xl border border-gray-100 mt-2">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
+                    <tr>
+                      <th className="px-4 py-3">status</th>
+                      <th className="px-4 py-3">HTTP</th>
+                      <th className="px-4 py-3">What to do</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 text-gray-600">
+                    <tr><td className="px-4 py-3 font-mono">INITIATED</td><td className="px-4 py-3">202</td><td className="px-4 py-3">The prompt is on the payer&apos;s handset. Wait for your webhook.</td></tr>
+                    <tr><td className="px-4 py-3 font-mono">OTP_REQUIRED</td><td className="px-4 py-3">202</td><td className="px-4 py-3">Collect the OTP the payer was texted and submit it below.</td></tr>
+                    <tr><td className="px-4 py-3 font-mono">FAILED</td><td className="px-4 py-3">422</td><td className="px-4 py-3">The charge was rejected outright. <code className="font-mono">message</code> says why.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <p className="text-gray-600 leading-relaxed mt-8 mb-4">
+              When a charge returns{" "}
+              <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm font-mono">OTP_REQUIRED</code>,
+              submit the code against the same reference. The response uses the shapes above.
+            </p>
+
+            <SectionLabel type="request">POST /api/v1/payments/charge/submit-otp</SectionLabel>
+            <CodeBlock>{`curl ${BASE_URL}/api/v1/payments/charge/submit-otp \\
+  -H "Authorization: Bearer trite_sk_..." \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "reference": "TX-8F3K2M-A1B2C3D4",
+    "otp": "123456"
+  }'`}</CodeBlock>
+
+            <p className="text-gray-600 leading-relaxed mt-8 mb-4">
+              To read a charge&apos;s current state, use its reference. Terminal states are{" "}
+              <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm font-mono">SETTLED</code> and{" "}
+              <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm font-mono">FAILED</code>.
+            </p>
+
+            <SectionLabel type="request">GET /api/v1/payments/charge/{"{reference}"}</SectionLabel>
+            <CodeBlock>{`curl ${BASE_URL}/api/v1/payments/charge/TX-8F3K2M-A1B2C3D4 \\
+  -H "Authorization: Bearer trite_sk_..."`}</CodeBlock>
+
+            <div className="mt-8">
+              <SectionLabel type="response">HTTP 200 OK</SectionLabel>
+              <CodeBlock>{`{
+  "reference": "TX-8F3K2M-A1B2C3D4",
+  "transaction_id": "9a2d...",
+  "session_id": "3f6b1c9e-...",
+  "status": "SETTLED",
+  "amount": 200,
+  "currency": "GHS",
+  "method": "MOBILE_MONEY",
+  "failure_reason": null,
+  "created_at": "2026-08-09T14:21:07.412Z",
+  "updated_at": "2026-08-09T14:21:44.907Z"
+}`}</CodeBlock>
+              <p className="text-gray-600 leading-relaxed mt-4">
+                <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm font-mono">status</code> is{" "}
+                <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm font-mono">INITIATED</code> while
+                the payer still has the prompt, then{" "}
+                <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm font-mono">SETTLED</code> or{" "}
+                <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm font-mono">FAILED</code>.{" "}
+                <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm font-mono">failure_reason</code>{" "}
+                is populated only on the latter.
+              </p>
+            </div>
+
+            <AlertBox type="info" title="Prefer webhooks over polling">
+              Mobile money settles asynchronously — a payer may approve the prompt minutes after your
+              request returned. The{" "}
+              <a href="#webhooks" className="text-[#22c55e] font-semibold hover:underline">payment.success</a>{" "}
+              webhook is the recommended completion signal and carries the same{" "}
+              <code className="rounded bg-blue-100/50 px-1.5 py-0.5 text-sm font-mono">tx_id_display</code>{" "}
+              as your <code className="rounded bg-blue-100/50 px-1.5 py-0.5 text-sm font-mono">reference</code>.
+              If you do poll, poll every 3–5 seconds and stop after about five minutes.
+            </AlertBox>
+
+            <AlertBox type="warning">
+              Direct charge requires a verified merchant — see{" "}
+              <a href="#merchant-verification" className="text-[#22c55e] font-semibold hover:underline">Merchant verification</a>.
+              Charges belonging to a different merchant return{" "}
+              <code className="rounded bg-amber-100 px-1.5 py-0.5 text-sm font-mono text-amber-900">404</code>.
+              Submitting an OTP against a charge that is no longer awaiting one returns{" "}
+              <code className="rounded bg-amber-100 px-1.5 py-0.5 text-sm font-mono text-amber-900">409</code>.
             </AlertBox>
 
             <SectionTitle id="webhooks">Webhooks</SectionTitle>
@@ -405,12 +568,28 @@ export default function ApiDocsPage() {
             />
 
             <SectionTitle id="rate-limits">Rate limits</SectionTitle>
-            <p className="text-gray-600 leading-relaxed">
-              60 requests per minute per merchant per endpoint. Exceeding the limit returns{" "}
+            <p className="text-gray-600 leading-relaxed mb-4">
+              Limits are per merchant, per bucket, in a fixed one-minute window. Exceeding one returns{" "}
               <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm font-mono">429</code> with a{" "}
               <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm font-mono">Retry-After</code> header
               (seconds). Back off and retry after that interval.
             </p>
+            <div className="overflow-x-auto rounded-xl border border-gray-100">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
+                  <tr>
+                    <th className="px-4 py-3">Bucket</th>
+                    <th className="px-4 py-3">Limit</th>
+                    <th className="px-4 py-3">Endpoints</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 text-gray-600">
+                  <tr><td className="px-4 py-3 font-mono">v1/payments</td><td className="px-4 py-3">60/min</td><td className="px-4 py-3">Create session, check session status</td></tr>
+                  <tr><td className="px-4 py-3 font-mono">v1/payments/charge</td><td className="px-4 py-3">60/min</td><td className="px-4 py-3">Direct charge, submit OTP</td></tr>
+                  <tr><td className="px-4 py-3 font-mono">v1/payments/charge:status</td><td className="px-4 py-3">300/min</td><td className="px-4 py-3">Read a charge by reference — a polling loop can never starve your charge bucket</td></tr>
+                </tbody>
+              </table>
+            </div>
 
             <SectionTitle id="deprecations">Deprecations</SectionTitle>
             <AlertBox type="warning" title="Endpoint Deprecation">
@@ -450,6 +629,7 @@ export default function ApiDocsPage() {
                   <li><a href="#merchant-verification" className="hover:text-[#22c55e] transition-colors block">Merchant verification</a></li>
                   <li><a href="#create-session" className="hover:text-[#22c55e] transition-colors block">Create a payment session</a></li>
                   <li><a href="#session-status" className="hover:text-[#22c55e] transition-colors block">Check session status</a></li>
+                  <li><a href="#direct-charge" className="hover:text-[#22c55e] transition-colors block">Direct charge</a></li>
                   <li><a href="#webhooks" className="hover:text-[#22c55e] transition-colors block">Webhooks</a></li>
                   <li><a href="#signatures" className="hover:text-[#22c55e] transition-colors block">Verifying signatures</a></li>
                   <li><a href="#rate-limits" className="hover:text-[#22c55e] transition-colors block">Rate limits</a></li>

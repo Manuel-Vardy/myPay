@@ -17,6 +17,7 @@ import {
 
 type ApiTx = {
   id: string; tx_id_display: string; merchant_id: string;
+  description: string | null;
   business_name: string | null;
   amount: number; currency: string; method: string;
   status: string; flag_level: string; gateway_node: string | null;
@@ -378,6 +379,9 @@ function AdminTransactionsPageInner() {
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-[color:var(--trite-muted)]">Transaction ID</p>
                     <p className="text-xs font-mono font-bold text-[color:var(--trite-ink)]">{tx.tx_id_display}</p>
+                    {tx.description && (
+                      <p className="mt-0.5 max-w-[200px] truncate text-[10px] text-[color:var(--trite-muted)]" title={tx.description}>{tx.description}</p>
+                    )}
                   </div>
                 </div>
                 <span className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${getStatusColor(tx.status)}`}>
@@ -465,6 +469,9 @@ function AdminTransactionsPageInner() {
                       <span className="text-xs font-mono font-medium text-blue-600">{tx.tx_id_display.split("-")[1] ?? tx.tx_id_display.slice(0,6)}</span>
                     </div>
                     <p className="mt-1 text-xs text-[color:var(--trite-muted)]">{tx.tx_id_display}</p>
+                    {tx.description && (
+                      <p className="mt-0.5 max-w-[180px] truncate text-[11px] text-[color:var(--trite-muted)]" title={tx.description}>{tx.description}</p>
+                    )}
                   </td>
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-2 sm:gap-3">

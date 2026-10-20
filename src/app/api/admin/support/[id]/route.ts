@@ -46,6 +46,14 @@ export async function PATCH(
       .update(updates)
       .returning("*");
 
+    await db("system_logs").insert({
+      level: "INFO",
+      source: "ADMIN_SUPPORT",
+      event_description: `Support ticket ${ticket.ticket_id_display} updated (status: ${status || ticket.status})`,
+      actor_id: guard.session.userId,
+      ip_address: request.headers.get("x-forwarded-for") || "unknown",
+    });
+
     return Response.json(updated);
   } catch (error) {
     console.error("Admin support PATCH error:", error);

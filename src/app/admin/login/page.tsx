@@ -51,6 +51,14 @@ export default function AdminLoginPage() {
         return;
       }
 
+      // Authenticated, but the account holds no authority until TOTP is
+      // enrolled — send them straight to setup rather than to a dashboard
+      // that will answer 403 to everything.
+      if (data.mfa_enrollment_required) {
+        router.push("/admin/settings?mfa=setup");
+        return;
+      }
+
       // Success — redirect to admin dashboard
       router.push("/admin");
     } catch {

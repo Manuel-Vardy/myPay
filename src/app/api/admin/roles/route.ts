@@ -3,11 +3,11 @@
 // PUT /api/admin/roles — update role permissions
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
-import { requireAdmin } from "@/lib/guards";
+import { requirePermission } from "@/lib/guards";
 
 export async function GET() {
   try {
-    const guard = await requireAdmin();
+    const guard = await requirePermission("manage-roles");
     if (guard.error) return guard.error;
 
     const roles = await db("roles")
@@ -43,7 +43,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const guard = await requireAdmin();
+    const guard = await requirePermission("manage-roles");
     if (guard.error) return guard.error;
 
     const body = await request.json();
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const guard = await requireAdmin();
+    const guard = await requirePermission("manage-roles");
     if (guard.error) return guard.error;
 
     const body = await request.json();
@@ -153,6 +153,8 @@ export async function PUT(request: NextRequest) {
         level: "INFO",
         source: "AUTH_CORE",
         event_description: `Permissions updated for role "${role.name}" (${permission_ids.length} permissions)`,
+        actor_id: guard.session.userId,
+        ip_address: request.headers.get("x-forwarded-for") || "unknown",
       });
     });
 

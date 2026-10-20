@@ -26,17 +26,61 @@ function SalesImagePanel({
   phoneSrc,
   isActive,
   phonePosition = "right",
+  disableEntrance = false,
 }: {
   laptopSrc: string;
   phoneSrc: string;
   isActive: boolean;
   phonePosition?: "left" | "right";
+  disableEntrance?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "0px 0px -80px 0px" });
 
   const phoneInitialX = phonePosition === "right" ? 60 : -60;
   const phoneExitX   = phonePosition === "right" ? 40 : -40;
+
+  if (disableEntrance) {
+    return (
+      <div
+        ref={ref}
+        className="relative w-full pb-8 sm:pb-12"
+      >
+        {/* ── Laptop: on its own, no container, no clipping ── */}
+        <img
+          src={laptopSrc}
+          alt="laptop view"
+          className="block object-contain"
+          style={{
+            width: "80%",
+            height: "auto",
+            filter: "drop-shadow(0 20px 48px rgba(0,0,0,0.13))",
+            position: "relative",
+            marginLeft: phonePosition === "left" ? "20%" : "0%",
+            zIndex: 10,
+          }}
+        />
+
+        {/* ── Phone: on its own, no container, no clipping ── */}
+        {isActive && (
+          <img
+            key="phone"
+            src={phoneSrc}
+            alt="mobile view"
+            className="absolute object-contain"
+            style={{
+              width: "34%",
+              height: "auto",
+              top: "4%",
+              ...(phonePosition === "right" ? { right: "1%" } : { left: "1%" }),
+              filter: "drop-shadow(0 20px 48px rgba(0,0,0,0.22))",
+              zIndex: 20,
+            }}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div
@@ -314,7 +358,7 @@ export function Scroll01({ items }: Readonly<Scroll01Props>) {
 
   return (
     <>
-      {/* ── MOBILE layout: no container card, dual images above text ── */}
+      {/* ── MOBILE layout: no container card, images on their own ── */}
       <div className="md:hidden flex flex-col" style={{ gap: "100px" }}>
         {items.map((item, index) => {
           const phonePos: "left" | "right" = index % 2 === 0 ? "right" : "left";
@@ -336,20 +380,21 @@ export function Scroll01({ items }: Readonly<Scroll01Props>) {
                 </div>
               </div>
 
-              {/* Images below text */}
+              {/* Images below text — on their own without container */}
               {item.mediaExtra ? (
                 <SalesImagePanel
                   laptopSrc={item.media}
                   phoneSrc={item.mediaExtra}
                   isActive={true}
                   phonePosition={phonePos}
+                  disableEntrance={true}
                 />
               ) : (
-                <div className="w-full aspect-[16/10] rounded-[20px] overflow-hidden shadow-sm">
+                <div className="w-full">
                   <img
                     src={item.media}
                     alt={item.title}
-                    className="h-full w-full object-cover"
+                    className="w-full h-auto object-contain"
                   />
                 </div>
               )}

@@ -2,11 +2,11 @@
 // POST /api/admin/fee-schedules — create a schedule
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
-import { requireAdmin } from "@/lib/guards";
+import { requirePermission } from "@/lib/guards";
 import { validateScheduleBody } from "./validation";
 
 export async function GET() {
-  const guard = await requireAdmin();
+  const guard = await requirePermission("manage-fees");
   if (guard.error) return guard.error;
 
   try {
@@ -31,7 +31,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const guard = await requireAdmin();
+  const guard = await requirePermission("manage-fees");
   if (guard.error) return guard.error;
 
   try {
@@ -63,6 +63,14 @@ export async function POST(request: NextRequest) {
         created_by: guard.session.userId,
       })
       .returning("*");
+
+    await db("system_logs").insert({
+      level: "INFO",
+      source: "ADMIN_FEES",
+      event_description: `Fee schedule created (${body.fee_type}, ${body.calculation_method}, applicability: ${body.applicability})`,
+      actor_id: guard.session.userId,
+      ip_address: request.headers.get("x-forwarded-for") || "unknown",
+    });
 
     return Response.json({ success: true, schedule }, { status: 201 });
   } catch (error) {

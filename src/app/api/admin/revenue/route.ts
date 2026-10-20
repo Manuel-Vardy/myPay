@@ -43,18 +43,82 @@ export async function GET(request: NextRequest) {
       .groupBy("fee_type")
       .orderBy("total", "desc");
 
-    // Daily time-series (last 12 days) for the trend graph
+    // Daily time-series (last 12 calendar days) for the trend graph
     const dailyRows = await notWaived()
-      .select(db.raw("DATE(created_at) as date"))
+      .select(db.raw("DATE(created_at) as fee_date"))
       .sum("amount as total")
-      .groupByRaw("DATE(created_at)")
-      .orderByRaw("DATE(created_at) DESC")
-      .limit(12);
+      .where("created_at", ">=", db.raw("CURRENT_DATE - INTERVAL '11 days'"))
+      .groupByRaw("DATE(created_at)");
 
-    const revenue_graph = Array(12).fill(0);
-    dailyRows.forEach((row: any, i: number) => {
-      revenue_graph[11 - i] = fromMinorUnits(row.total || 0);
+    const feeMap = new Map<string, number>();
+    dailyRows.forEach((row: any) => {
+      let dateKey = "";
+      if (row.fee_date instanceof Date) {
+        dateKey = row.fee_date.toISOString().split("T")[0];
+      } else if (typeof row.fee_date === "string") {
+        dateKey = row.fee_date.split("T")[0];
+      } else if (row.fee_date) {
+        dateKey = String(row.fee_date).split("T")[0];
+      }
+      if (dateKey) {
+        feeMap.set(dateKey, Number(row.total || 0));
+      }
     });
+
+    const revenue_graph = [];
+    const today = new Date();
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const dateStr = d.toISOString().split("T")[0];
+      const amountMinor = feeMap.get(dateStr) || 0;
+      revenue_graph.push({
+        date: dateStr,
+        label: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        day_name: d.toLocaleDateString("en-US", { weekday: "short" }),
+        amount: fromMinorUnits(amountMinor),
+      });
+    }
+
+    // Top merchants ranked by total fees acquired
+    const topMerchantsRows = await db("fee_ledger")
+      .join("merchants", "fee_ledger.merchant_id", "merchants.id")
+      .select(
+        "merchants.id as merchant_id",
+        "merchants.business_name",
+        "merchants.merchant_display_id",
+        "merchants.tier as merchant_tier",
+        "merchants.user_id"
+      )
+      .select(
+        db.raw("SUM(CASE WHEN fee_ledger.is_waived = false THEN fee_ledger.amount ELSE 0 END) as total_fees"),
+        db.raw("COUNT(CASE WHEN fee_ledger.is_waived = false THEN 1 ELSE NULL END) as fee_count"),
+        db.raw("SUM(CASE WHEN fee_ledger.is_waived = true THEN fee_ledger.amount ELSE 0 END) as waived_fees"),
+        db.raw("COUNT(CASE WHEN fee_ledger.is_waived = true THEN 1 ELSE NULL END) as waived_count"),
+        db.raw("MAX(fee_ledger.created_at) as last_fee_at")
+      )
+      .groupBy(
+        "merchants.id",
+        "merchants.business_name",
+        "merchants.merchant_display_id",
+        "merchants.tier",
+        "merchants.user_id"
+      )
+      .orderBy("total_fees", "desc")
+      .limit(20);
+
+    const top_merchants = topMerchantsRows.map((r: any) => ({
+      merchant_id: r.merchant_id,
+      business_name: r.business_name,
+      merchant_display_id: r.merchant_display_id,
+      merchant_tier: r.merchant_tier,
+      user_id: r.user_id,
+      total_fees: fromMinorUnits(r.total_fees || 0),
+      fee_count: Number(r.fee_count || 0),
+      waived_fees: fromMinorUnits(r.waived_fees || 0),
+      waived_count: Number(r.waived_count || 0),
+      last_fee_at: r.last_fee_at ? new Date(r.last_fee_at).toISOString() : null,
+    }));
 
     // Most recent fees charged
     const recentRows = await db("fee_ledger")
@@ -84,6 +148,7 @@ export async function GET(request: NextRequest) {
         count: Number(r.cnt || 0),
       })),
       revenue_graph,
+      top_merchants,
       recent_fees: recentRows.map((r: any) => ({
         ...r,
         amount: r.amount != null ? fromMinorUnits(r.amount) : null,

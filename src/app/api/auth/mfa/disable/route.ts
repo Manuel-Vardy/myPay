@@ -6,6 +6,7 @@ import db from "@/lib/db";
 import type { User } from "@/lib/types";
 import { requireRole } from "@/lib/guards";
 import { verifyPassword } from "@/lib/auth";
+import { mfaRequiredForRole } from "@/lib/mfa-policy";
 
 export async function POST(request: NextRequest) {
   const guard = await requireRole("ADMIN", "MERCHANT");
@@ -21,6 +22,27 @@ export async function POST(request: NextRequest) {
   const user = await db<User>("users").where({ id: guard.session.userId }).first();
   if (!user) {
     return Response.json({ error: "User not found" }, { status: 404 });
+  }
+
+  // Read the role from the row, not the session — the session claim is a
+  // week old at worst and a role change should bind immediately here.
+  if (mfaRequiredForRole(user.role)) {
+    await db("system_logs").insert({
+      level: "WARN",
+      source: "AUTH_CORE",
+      event_description: `Blocked attempt to disable mandatory 2FA for ${user.email} (role ${user.role})`,
+      actor_id: user.id,
+      ip_address: request.headers.get("x-forwarded-for") || "unknown",
+    });
+
+    return Response.json(
+      {
+        error:
+          "Two-factor authentication is mandatory for this role and cannot be disabled.",
+        code: "MFA_MANDATORY",
+      },
+      { status: 403 }
+    );
   }
 
   const passwordValid = await verifyPassword(password, user.password_hash);

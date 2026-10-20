@@ -4,7 +4,7 @@
 // channel and expires the outstanding ones.
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
-import { requireAdmin } from "@/lib/guards";
+import { requirePermission } from "@/lib/guards";
 import {
   pauseMerchantPayments,
   resumeMerchantPayments,
@@ -14,7 +14,7 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const guard = await requireAdmin();
+  const guard = await requirePermission("manage-merchants");
   if (guard.error) return guard.error;
 
   try {

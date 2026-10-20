@@ -11,7 +11,8 @@ import {
 type DashboardData = {
   total_platform_volume: number;
   active_merchants: number;
-  system_uptime: string;
+  payment_success_rate_24h: number | null;
+  payment_attempts_24h: number;
   liquidity_inbound: number;
   liquidity_outbound: number;
   security_alerts: number;
@@ -35,7 +36,11 @@ export default function AdminDashboardPage() {
     { label: "Total Platform Volume", value: dash ? formatGHS(dash.total_platform_volume) : "—", sub: "+12.4% vs LY" },
     { label: "Active Merchants", value: dash ? dash.active_merchants.toLocaleString() : "—", sub: "Direct Institutional Access" },
     { label: "KYC Pending Review", value: String(pendingKyc), sub: "⚠ Action Required", alert: true },
-    { label: "System Uptime", value: dash?.system_uptime ?? "—", sub: "● Operational" },
+    {
+      label: "Payment Success (24h)",
+      value: dash?.payment_success_rate_24h != null ? `${dash.payment_success_rate_24h}%` : "—",
+      sub: dash ? `${dash.payment_attempts_24h.toLocaleString()} attempts` : "No data yet",
+    },
   ];
 
   const recentActivity = dash?.recent_transactions ?? [];

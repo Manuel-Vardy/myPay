@@ -4,7 +4,7 @@ import { Toaster } from "sonner";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   LayoutGrid,
   Users,
@@ -26,16 +26,27 @@ import {
 
 const sidebarItems = [
   { id: "dashboard", label: "Dashboard", href: "/admin", icon: LayoutGrid },
-  { id: "merchants", label: "Merchants", href: "/admin/merchants", icon: Users },
-  { id: "transactions", label: "Transactions", href: "/admin/transactions", icon: Receipt },
-  { id: "settlements", label: "Settlements", href: "/admin/settlements", icon: Banknote },
-  { id: "withdrawals", label: "Withdrawals", href: "/admin/withdrawals", icon: HandCoins },
-  { id: "revenue", label: "Revenue", href: "/admin/revenue", icon: TrendingUp },
-  { id: "kyc", label: "KYC Center", href: "/admin/kyc", icon: ShieldCheck },
-  { id: "logs", label: "Logs", href: "/admin/logs", icon: FileText },
-  { id: "roles", label: "Roles", href: "/admin/roles", icon: Key },
-  { id: "support", label: "Support", href: "/admin/support", icon: HelpCircle },
+  { id: "merchants", label: "Merchants", href: "/admin/merchants", icon: Users, permission: "manage-merchants" },
+  { id: "transactions", label: "Transactions", href: "/admin/transactions", icon: Receipt, permission: "view-logs" },
+  { id: "settlements", label: "Settlements", href: "/admin/settlements", icon: Banknote, permission: "settlement-monitoring" },
+  { id: "withdrawals", label: "Withdrawals", href: "/admin/withdrawals", icon: HandCoins, permission: "settlement-monitoring" },
+  { id: "revenue", label: "Revenue", href: "/admin/revenue", icon: TrendingUp, permission: "settlement-monitoring" },
+  { id: "kyc", label: "KYC Center", href: "/admin/kyc", icon: ShieldCheck, permission: "approve-kyc" },
+  { id: "logs", label: "Logs", href: "/admin/logs", icon: FileText, permission: "view-logs" },
+  { id: "roles", label: "Roles", href: "/admin/roles", icon: Key, permission: "manage-roles" },
+  { id: "support", label: "Support", href: "/admin/support", icon: HelpCircle, permission: "view-logs" },
 ];
+
+/** Compact "10m ago" style stamp for the notification feed. */
+function formatRelativeTime(iso: string): string {
+  const seconds = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
+  if (seconds < 60) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+}
 
 const bottomItems = [
   { id: "settings", label: "Settings", href: "/admin/settings", icon: Settings },
@@ -51,29 +62,66 @@ export default function AdminDashboardLayout({
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [notifications, setNotifications] = useState([
-    {
-      id: "1",
-      title: "KYC Pending Review",
-      message: "Merchant 'Gala Venture' uploaded new identity document.",
-      time: "10m ago",
-      read: false,
-    },
-    {
-      id: "2",
-      title: "Liquidity Alert",
-      message: "USD outbound gateway node exceeds warning threshold (80%).",
-      time: "1h ago",
-      read: false,
-    },
-    {
-      id: "3",
-      title: "System Update",
-      message: "Gateway adapter for Ghanaian Mobile Money successfully upgraded.",
-      time: "2d ago",
-      read: true,
-    },
-  ]);
+  const [notifications, setNotifications] = useState<
+    { id: string; title: string; message: string; time: string; read: boolean }[]
+  >([]);
+  const [adminAuth, setAdminAuth] = useState<{
+    isSuperAdmin?: boolean;
+    permissions?: string[];
+    roles?: Array<{ id: string; name: string }>;
+  } | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((data) => {
+        if (active) setAdminAuth(data);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Poll the admin notification feed so alerts (delivery failures, etc.) show
+  // up without a page reload. Cheap query, and the bell is always mounted.
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      try {
+        const res = await fetch("/api/admin/notifications");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        setNotifications(
+          (data.notifications ?? []).map((n: {
+            id: string | number;
+            title: string;
+            message: string;
+            created_at: string;
+            read_at: string | null;
+          }) => ({
+            id: String(n.id),
+            title: n.title,
+            message: n.message,
+            time: formatRelativeTime(n.created_at),
+            read: Boolean(n.read_at),
+          }))
+        );
+      } catch {
+        // Feed is best-effort — never break the portal chrome over it.
+      }
+    };
+
+    load();
+    const timer = setInterval(load, 60_000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, []);
 
   /** Derive active tab from the current pathname */
   const activeTab = (() => {
@@ -133,8 +181,13 @@ export default function AdminDashboardLayout({
               )}
             </button>
             <div className="flex items-center gap-2 border-l border-black/10 pl-2 sm:gap-3 sm:pl-3">
-              <div className="h-8 w-8 rounded-full bg-[color:var(--trite-lime)] flex items-center justify-center text-[10px] font-bold text-white">
-                AD
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-full bg-[color:var(--trite-lime)] flex items-center justify-center text-[10px] font-bold text-white">
+                  {(adminAuth?.roles?.[0]?.name || "Super Admin").slice(0, 2).toUpperCase()}
+                </div>
+                <span className="hidden text-xs font-semibold text-slate-700 sm:inline-block">
+                  {adminAuth?.roles?.[0]?.name || (adminAuth?.isSuperAdmin ? "Super Admin" : "Admin")}
+                </span>
               </div>
               <button
                 onClick={() => setSidebarOpen(true)}
@@ -173,7 +226,12 @@ export default function AdminDashboardLayout({
 
             <div className="flex-1 overflow-y-auto px-3 pt-10 pb-4">
               <ul className="space-y-2">
-                {sidebarItems.map((item) => {
+                {sidebarItems
+                  .filter((item) => {
+                    if (!item.permission || adminAuth?.isSuperAdmin) return true;
+                    return adminAuth?.permissions?.includes(item.permission);
+                  })
+                  .map((item) => {
                   const Icon = item.icon;
                   const isActive = activeTab === item.id;
                   return (
@@ -263,6 +321,11 @@ export default function AdminDashboardLayout({
                   <button 
                     onClick={() => {
                       setNotifications(notifications.map(n => ({ ...n, read: true })));
+                      fetch("/api/admin/notifications", {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ all: true }),
+                      }).catch(() => {});
                     }}
                     className="text-xs font-semibold text-[color:var(--trite-lime)] hover:text-[color:var(--trite-lime-strong)] transition-colors whitespace-nowrap"
                   >
@@ -297,6 +360,13 @@ export default function AdminDashboardLayout({
                     key={n.id} 
                     onClick={() => {
                       setNotifications(notifications.map(item => item.id === n.id ? { ...item, read: true } : item));
+                      if (!n.read) {
+                        fetch("/api/admin/notifications", {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ ids: [n.id] }),
+                        }).catch(() => {});
+                      }
                     }}
                     className={`group relative py-4 px-1 border-b border-black/[0.08] last:border-b-0 text-left transition-all cursor-pointer flex gap-3 ${
                       n.read 

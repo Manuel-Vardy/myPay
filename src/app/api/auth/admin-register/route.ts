@@ -2,18 +2,35 @@
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
 import { hashPassword } from "@/lib/auth";
+import { validateSignupEmail } from "@/lib/email-validation";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password, institution, phone, designated_role } = body;
+    const { email: rawEmail, password, institution, phone, designated_role } = body;
 
-    if (!email || !password || !institution || !designated_role) {
+    if (!rawEmail || !password || !institution || !designated_role) {
       return Response.json(
         { error: "Email, password, institution name, and designated role are required" },
         { status: 400 }
       );
     }
+
+    // Reject malformed and disposable/throwaway addresses before any writes.
+    const emailCheck = validateSignupEmail(rawEmail);
+    if (!emailCheck.ok) {
+      if (emailCheck.reason === "DISPOSABLE") {
+        await db("system_logs")
+          .insert({
+            level: "WARN",
+            source: "AUTH_CORE",
+            event_description: `Blocked disposable email admin access request: ${emailCheck.domain}`,
+          })
+          .catch((err) => console.error("Failed to log blocked signup:", err));
+      }
+      return Response.json({ error: emailCheck.error }, { status: 400 });
+    }
+    const email = emailCheck.email;
 
     if (password.length < 16) {
       return Response.json(

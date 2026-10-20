@@ -4,18 +4,46 @@ import db from "@/lib/db";
 import { hashPassword } from "@/lib/auth";
 import { createSession } from "@/lib/session";
 import { generateToken, hashToken } from "@/lib/tokens";
-import { sendVerificationEmail, DASHBOARD_BASE_URL } from "@/lib/email";
+import { sendVerificationEmail } from "@/lib/notifications";
+import { DASHBOARD_BASE_URL } from "@/lib/email";
+import { isValidE164 } from "@/lib/sms";
+import { validateSignupEmail } from "@/lib/email-validation";
 
 const EMAIL_VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password, business_name, first_name, last_name, legal_entity, region } = body;
+    const { email: rawEmail, password, business_name, first_name, last_name, legal_entity, region, mobile_number } = body;
 
-    if (!email || !password || !business_name || !first_name || !last_name || !legal_entity) {
+    if (!rawEmail || !password || !business_name || !first_name || !last_name || !legal_entity || !mobile_number) {
       return Response.json(
         { error: "All fields are required" },
+        { status: 400 }
+      );
+    }
+
+    // Reject malformed and disposable/throwaway addresses before any writes.
+    const emailCheck = validateSignupEmail(rawEmail);
+    if (!emailCheck.ok) {
+      if (emailCheck.reason === "DISPOSABLE") {
+        await db("system_logs")
+          .insert({
+            level: "WARN",
+            source: "AUTH_CORE",
+            event_description: `Blocked disposable email merchant signup: ${emailCheck.domain}`,
+          })
+          .catch((err) => console.error("Failed to log blocked signup:", err));
+      }
+      return Response.json({ error: emailCheck.error }, { status: 400 });
+    }
+    const email = emailCheck.email;
+
+    // Mobile number must be E.164 (+233...) — it's verified via SMS before the
+    // dashboard unlocks, so the SMS provider needs a fully-qualified number.
+    if (!isValidE164(mobile_number)) {
+      return Response.json(
+        { error: "Enter a valid mobile number in international format, e.g. +233201234567" },
         { status: 400 }
       );
     }
@@ -43,6 +71,7 @@ export async function POST(request: NextRequest) {
           password_hash,
           first_name,
           last_name,
+          mobile_number,
           role: "MERCHANT",
           status: "PENDING_VERIFICATION", // requires KYC approval
           email_verification_token: hashToken(verificationToken),
@@ -97,7 +126,7 @@ export async function POST(request: NextRequest) {
 
     // Send the verification email — signup succeeds regardless of delivery outcome.
     const verifyUrl = `${DASHBOARD_BASE_URL}/verify-email?token=${verificationToken}`;
-    sendVerificationEmail(result.user.email, verifyUrl).catch((err) =>
+    sendVerificationEmail(result.user.email, verifyUrl, result.user.id).catch((err) =>
       console.error("Failed to send verification email on signup:", err)
     );
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAdminFetch } from "@/lib/hooks/useAdminFetch";
+import { AdminPermissionGuard } from "@/components/admin/AdminPermissionGuard";
 import {
   ShieldPlus,
   Key,
@@ -134,7 +135,7 @@ export default function AdminRolesPage() {
 
 
   return (
-    <>
+    <AdminPermissionGuard requiredPermission="manage-roles">
       {/* Page Header */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -457,6 +458,6 @@ export default function AdminRolesPage() {
           </div>
         </div>
       )}
-    </>
+    </AdminPermissionGuard>
   );
 }

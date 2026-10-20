@@ -4,6 +4,27 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import Image from "next/image";
 import { QRCodeSVG } from "qrcode.react";
 import { useParams } from "next/navigation";
+import { useVisitorData } from "@fingerprint/react";
+
+/**
+ * CARD_ACCEPTANCE_NOTICE — read before adding any card input to this page.
+ *
+ * This page must never contain a field that accepts a Primary Account Number,
+ * expiry date, CVV or PIN, and must never hold one in component state.
+ *
+ * This is a PCI DSS scope boundary, not a styling preference. With a fully
+ * partner-hosted payment form and no cardholder data touching a Trite-served
+ * page, Trite qualifies for SAQ A. A single card field on a page Trite serves
+ * moves the assessment to SAQ A-EP, which brings the whole page — and the
+ * scripts it loads — into scope for quarterly ASV scanning and a materially
+ * larger control set. Recorded as a gating commitment to the Bank of Ghana in
+ * Item 29 of the licensing response, and tracked as risk R-24.
+ *
+ * When card acceptance goes live it must be delivered as a redirect to, or an
+ * iframe of, the acquiring partner's own hosted page. Trite receives a token
+ * and a webhook, never the card.
+ */
+const CARD_ACCEPTANCE_LIVE = false;
 
 interface SessionDetails {
   session_id: string;
@@ -19,6 +40,11 @@ interface SessionDetails {
   card_enabled: boolean;
   crypto_enabled: boolean;
   redirect_url: string | null;
+  /** Set when the merchant supplied it on the session; prefills the MoMo field. */
+  customer_phone: string | null;
+  /** The merchant already knows the payer — don't ask for these again. */
+  customer_email_on_file: boolean;
+  customer_name_on_file: boolean;
 }
 
 interface TokenNetwork {
@@ -43,6 +69,12 @@ export default function DynamicCheckoutPage() {
   const params = useParams();
   const sessionId = params?.sessionId as string;
 
+  // Device identification, started as the page mounts so the result is ready
+  // by the time the payer submits. The backend re-resolves this event id
+  // against Fingerprint's Server API and ignores anything else we send, so a
+  // failure here costs the payment nothing — see lib/payments/device-risk.ts.
+  const { data: visitorData } = useVisitorData({ immediate: true });
+
   // Session state
   const [loading, setLoading] = useState(true);
   const [sessionError, setSessionError] = useState<string | null>(null);
@@ -52,9 +84,9 @@ export default function DynamicCheckoutPage() {
   const [step, setStep] = useState<"method" | "details" | "processing" | "success" | "failed">("method");
   const [paymentMethod, setPaymentMethod] = useState<"card" | "momo" | "crypto" | null>(null);
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvv, setCardCvv] = useState("");
+  const [payerEmail, setPayerEmail] = useState("");
+  const [payerName, setPayerName] = useState("");
+  // No cardNumber / cardExpiry / cardCvv state by design — see CARD_ACCEPTANCE_NOTICE.
   const [momoNetwork, setMomoNetwork] = useState<"MTN" | "TELECEL" | "AT">("MTN");
   const [transactionId, setTransactionId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
@@ -152,6 +184,9 @@ export default function DynamicCheckoutPage() {
         }
 
         setSessionDetails(data);
+        // The merchant already told us the number — don't make the payer
+        // type it again.
+        if (data.customer_phone) setPhoneNumber(data.customer_phone);
         setLoading(false);
       } catch (err) {
         setSessionError("Something went wrong while loading the payment session.");
@@ -235,6 +270,12 @@ export default function DynamicCheckoutPage() {
       const res = await fetch(`/api/payments/${sessionDetails.session_id}/crypto-confirm`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          // The only identity a crypto payer can have — the deposit address
+          // is ours, not theirs.
+          ...(payerEmail.trim() ? { payer_email: payerEmail.trim() } : {}),
+          ...(payerName.trim() ? { payer_name: payerName.trim() } : {}),
+        }),
       });
 
       const data = await res.json();
@@ -302,6 +343,15 @@ export default function DynamicCheckoutPage() {
         session_id: sessionDetails.session_id,
         method: paymentMethod === "momo" ? "MOBILE_MONEY" : paymentMethod === "card" ? "CARD" : "CRYPTO",
       };
+
+      if (visitorData?.event_id) {
+        payload.device = { event_id: visitorData.event_id };
+      }
+
+      // Only sent when the merchant didn't already supply them — the server
+      // prefers the session's copy regardless.
+      if (payerEmail.trim()) payload.payer_email = payerEmail.trim();
+      if (payerName.trim()) payload.payer_name = payerName.trim();
 
       if (paymentMethod === "momo") {
         payload.mobile_money_number = phoneNumber;
@@ -716,41 +766,21 @@ export default function DynamicCheckoutPage() {
               </div>
             )}
 
-            {/* Card Payment Form */}
+            {/* Card Payment — no cardholder data is captured on this page.
+                See the PCI note in CARD_ACCEPTANCE_NOTICE below. */}
             {paymentMethod === "card" && (
-              <div className="mt-6 space-y-4">
-                <div>
-                  <label className="text-sm font-semibold text-[color:var(--trite-ink)]">Card Number</label>
-                  <input
-                    type="text"
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(e.target.value)}
-                    placeholder="1234 5678 9012 3456"
-                    className="mt-2 w-full rounded-xl border border-black/20 px-4 py-3.5 text-gray-900 placeholder:text-gray-500 outline-none focus:border-[#22c55e] transition-all"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-semibold text-[color:var(--trite-ink)]">Expiry Date</label>
-                    <input
-                      type="text"
-                      value={cardExpiry}
-                      onChange={(e) => setCardExpiry(e.target.value)}
-                      placeholder="MM/YY"
-                      className="mt-2 w-full rounded-xl border border-black/20 px-4 py-3.5 text-gray-900 placeholder:text-gray-500 outline-none focus:border-[#22c55e] transition-all"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-semibold text-[color:var(--trite-ink)]">CVV</label>
-                    <input
-                      type="password"
-                      value={cardCvv}
-                      onChange={(e) => setCardCvv(e.target.value)}
-                      placeholder="123"
-                      maxLength={4}
-                      className="mt-2 w-full rounded-xl border border-black/20 px-4 py-3.5 text-gray-900 placeholder:text-gray-500 outline-none focus:border-[#22c55e] transition-all"
-                    />
-                  </div>
+              <div className="mt-6">
+                <div className="rounded-xl border border-black/10 bg-black/[0.02] px-4 py-4">
+                  <p className="text-sm font-semibold text-[color:var(--trite-ink)]">
+                    Card payments are not available yet
+                  </p>
+                  <p className="mt-2 text-sm text-[color:var(--trite-muted)] leading-relaxed">
+                    When card acceptance goes live, you will be taken to your bank&apos;s own secure
+                    payment page to enter your card details. Trite never handles your card number.
+                  </p>
+                  <p className="mt-3 text-xs text-[color:var(--trite-muted)]">
+                    Please choose mobile money or stablecoin to complete this payment.
+                  </p>
                 </div>
               </div>
             )}
@@ -858,6 +888,49 @@ export default function DynamicCheckoutPage() {
               </div>
             )}
 
+            {/* Contact details — optional, and skipped entirely when the
+                merchant already told us who is paying. On crypto this is the
+                only identity there is: the deposit address is ours, not the
+                payer's. */}
+            {(!sessionDetails.customer_email_on_file || !sessionDetails.customer_name_on_file) && (
+              <div className="mt-6 space-y-4 border-t border-black/5 pt-4">
+                <p className="text-xs text-[color:var(--trite-muted)]">
+                  Optional — so {sessionDetails.merchant_name} can send your receipt and
+                  recognise you next time.
+                </p>
+                {!sessionDetails.customer_name_on_file && (
+                  <div>
+                    <label className="text-sm font-semibold text-[color:var(--trite-ink)]">
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      value={payerName}
+                      onChange={(e) => setPayerName(e.target.value)}
+                      disabled={otpRequired}
+                      placeholder="Ama Serwaa"
+                      className="mt-2 w-full rounded-xl border border-black/20 px-3 py-3 sm:px-4 sm:py-3.5 text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:border-[#22c55e] transition-all disabled:bg-gray-50 disabled:text-gray-500"
+                    />
+                  </div>
+                )}
+                {!sessionDetails.customer_email_on_file && (
+                  <div>
+                    <label className="text-sm font-semibold text-[color:var(--trite-ink)]">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      value={payerEmail}
+                      onChange={(e) => setPayerEmail(e.target.value)}
+                      disabled={otpRequired}
+                      placeholder="you@example.com"
+                      className="mt-2 w-full rounded-xl border border-black/20 px-3 py-3 sm:px-4 sm:py-3.5 text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:border-[#22c55e] transition-all disabled:bg-gray-50 disabled:text-gray-500"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Summary Details Box */}
             <div className="mt-6 border-t border-black/5 pt-4 space-y-2">
               <div className="flex justify-between text-sm">
@@ -889,10 +962,19 @@ export default function DynamicCheckoutPage() {
             {/* CTAs */}
             <button
               onClick={paymentMethod === "crypto" && cryptoAddress ? handleCryptoPaymentConfirm : handlePaymentSubmit}
-              disabled={paymentMethod === "crypto" && !cryptoAddress}
+              disabled={
+                (paymentMethod === "crypto" && !cryptoAddress) ||
+                (paymentMethod === "card" && !CARD_ACCEPTANCE_LIVE)
+              }
               className="mt-6 w-full rounded-xl bg-[#22c55e] py-4 text-sm font-bold text-white hover:bg-[#1ea74f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {paymentMethod === "crypto" ? (cryptoAddress ? "I Have Paid" : "Generate Address First") : "Make Payment"}
+              {paymentMethod === "crypto"
+                ? cryptoAddress
+                  ? "I Have Paid"
+                  : "Generate Address First"
+                : paymentMethod === "card" && !CARD_ACCEPTANCE_LIVE
+                  ? "Unavailable"
+                  : "Make Payment"}
             </button>
 
             <button

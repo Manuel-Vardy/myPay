@@ -12,7 +12,7 @@ import { PaymentsPausedError } from "@/lib/payments/controls";
 export async function POST(request: NextRequest) {
   const guard = await requireApiKey(request, { endpoint: "v1/payments" });
   if (guard.error) return guard.error;
-  const { merchant } = guard;
+  const { merchant, apiKeyId } = guard;
 
   try {
     const body = await request.json().catch(() => ({}));
@@ -21,7 +21,10 @@ export async function POST(request: NextRequest) {
       currency: body.currency,
       description: body.description,
       redirect_url: body.redirect_url,
-    });
+      customer_email: body.customer_email,
+      customer_name: body.customer_name,
+      customer_phone: body.customer_phone,
+    }, { origin: "API", apiKeyId });
     return Response.json(session, { status: 201 });
   } catch (error) {
     if (error instanceof PaymentSessionInputError) {

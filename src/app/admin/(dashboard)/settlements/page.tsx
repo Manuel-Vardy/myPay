@@ -3,7 +3,10 @@
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAdminFetch } from "@/lib/hooks/useAdminFetch";
+import { AdminPermissionGuard } from "@/components/admin/AdminPermissionGuard";
 import { Search, Calendar, Banknote, CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
+
+import { toast } from "sonner";
 
 type Settlement = {
   id: string;
@@ -25,6 +28,13 @@ type Settlement = {
 };
 
 type Summary = { status: string; count: number; gross: number; fees: number; net: number };
+
+type ScheduleData = {
+  payout_time: string;
+  payout_threshold: number | null;
+  withdrawal_age_hours: number;
+  auto_settlements_enabled: boolean;
+};
 
 const formatGHS = (amount: number) =>
   `GH₵${amount.toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -60,6 +70,9 @@ function AdminSettlementsPageInner() {
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  // Payouts stuck in flight. Overrides the status and date filters, because
+  // the default 30-day window is what hides them.
+  const [needsAttentionOnly, setNeedsAttentionOnly] = useState(false);
   const [datePreset, setDatePreset] = useState("30d");
   const [dateFrom, setDateFrom] = useState<string>(() =>
     new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
@@ -67,17 +80,109 @@ function AdminSettlementsPageInner() {
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(15);
 
+  const { data: scheduleData, mutate: refreshSchedule } = useAdminFetch<ScheduleData>(
+    "/api/admin/settlement-schedule"
+  );
+  const [togglingAuto, setTogglingAuto] = useState(false);
+
+  const toggleAutoSettlements = async () => {
+    if (!scheduleData || togglingAuto) return;
+    const nextState = !scheduleData.auto_settlements_enabled;
+    setTogglingAuto(true);
+    try {
+      const res = await fetch("/api/admin/settlement-schedule", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          payout_time: scheduleData.payout_time,
+          payout_threshold: scheduleData.payout_threshold,
+          withdrawal_age_hours: scheduleData.withdrawal_age_hours,
+          auto_settlements_enabled: nextState,
+        }),
+      });
+      if (res.ok) {
+        toast.success(
+          nextState
+            ? "Auto settlements enabled platform-wide"
+            : "Auto settlements paused platform-wide"
+        );
+        refreshSchedule();
+      } else {
+        const err = await res.json();
+        toast.error(err.error || "Failed to toggle auto settlements");
+      }
+    } catch {
+      toast.error("Network error toggling auto settlements");
+    } finally {
+      setTogglingAuto(false);
+    }
+  };
+
   const params: Record<string, string> = { page: String(page), per_page: String(rowsPerPage) };
   if (searchQuery) params.search = searchQuery;
-  if (statusFilter !== "All") params.status = statusFilter;
   if (merchantFilter) params.merchant_id = merchantFilter;
-  if (dateFrom) params.date_from = dateFrom;
+  if (needsAttentionOnly) {
+    params.needs_attention = "true";
+  } else {
+    if (statusFilter !== "All") params.status = statusFilter;
+    if (dateFrom) params.date_from = dateFrom;
+  }
 
-  const { data } = useAdminFetch<{
+  const { data, mutate } = useAdminFetch<{
     data: Settlement[];
     summary: Summary[];
+    needs_attention?: { count: number; stale_after_hours: number };
     pagination: { total: number; total_pages: number };
   }>("/api/admin/settlements", params);
+
+  const stuckCount = data?.needs_attention?.count ?? 0;
+  const staleAfterHours = data?.needs_attention?.stale_after_hours ?? 48;
+
+  // Resolve modal — closing out a payout stuck in flight
+  const [resolveTarget, setResolveTarget] = useState<Settlement | null>(null);
+  const [resolveOutcome, setResolveOutcome] = useState<"PAID" | "NOT_PAID">("PAID");
+  const [resolveReference, setResolveReference] = useState("");
+  const [resolveNote, setResolveNote] = useState("");
+  const [resolving, setResolving] = useState(false);
+
+  const openResolve = (s: Settlement) => {
+    setResolveTarget(s);
+    setResolveOutcome("PAID");
+    setResolveReference(s.bank_reference ?? "");
+    setResolveNote("");
+  };
+
+  const submitResolve = async () => {
+    if (!resolveTarget || !resolveNote.trim()) return;
+    setResolving(true);
+    try {
+      const res = await fetch(`/api/admin/settlements/${resolveTarget.id}/resolve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          outcome: resolveOutcome,
+          reference: resolveReference.trim() || undefined,
+          note: resolveNote.trim(),
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        toast.error(json.error || "Could not resolve the payout");
+      } else {
+        toast.success(
+          resolveOutcome === "PAID"
+            ? `${resolveTarget.settlement_id_display} marked completed`
+            : `${resolveTarget.settlement_id_display} failed — funds returned to the merchant`
+        );
+        setResolveTarget(null);
+        mutate();
+      }
+    } catch {
+      toast.error("Network error — please try again");
+    } finally {
+      setResolving(false);
+    }
+  };
 
   const settlements = data?.data ?? [];
   const pagination = data?.pagination;
@@ -89,15 +194,49 @@ function AdminSettlementsPageInner() {
   const totalFees = (data?.summary ?? []).reduce((acc, s) => acc + (s.fees || 0), 0);
 
   return (
-    <>
-      <div className="mb-6">
-        <h1 className="text-xl font-semibold text-[color:var(--trite-ink)] sm:text-2xl">
-          Settlements
-        </h1>
-        <p className="mt-2 text-sm text-[color:var(--trite-muted)]">
-          Platform-wide payout ledger — automatic sweeps and approved merchant withdrawals.
-          PROCESSING settlements with an unknown transfer outcome require manual reconciliation.
-        </p>
+    <AdminPermissionGuard requiredPermission="settlement-monitoring">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-xl font-semibold text-[color:var(--trite-ink)] sm:text-2xl">
+            Settlements
+          </h1>
+          <p className="mt-2 text-sm text-[color:var(--trite-muted)]">
+            Platform-wide payout ledger — automatic sweeps and approved merchant withdrawals.
+            PROCESSING settlements with an unknown transfer outcome require manual reconciliation.
+          </p>
+        </div>
+
+        {/* Auto Settlements Toggle Control */}
+        <div className="flex items-center gap-3 rounded-2xl border border-black/10 bg-white p-3.5 shadow-sm shrink-0">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[color:var(--trite-muted)]">
+              Auto Settlements
+            </span>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  scheduleData?.auto_settlements_enabled
+                    ? "bg-emerald-500 animate-pulse"
+                    : "bg-amber-500"
+                }`}
+              />
+              <span className="text-xs font-semibold text-[color:var(--trite-ink)]">
+                {scheduleData?.auto_settlements_enabled ? "Enabled" : "Paused"}
+              </span>
+            </div>
+          </div>
+
+          <label className="relative inline-flex cursor-pointer items-center ml-2">
+            <input
+              type="checkbox"
+              checked={scheduleData?.auto_settlements_enabled ?? true}
+              disabled={togglingAuto || !scheduleData}
+              onChange={toggleAutoSettlements}
+              className="peer sr-only"
+            />
+            <div className="peer h-6 w-11 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-emerald-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none disabled:opacity-50" />
+          </label>
+        </div>
       </div>
 
       {/* Summary tiles */}
@@ -147,6 +286,60 @@ function AdminSettlementsPageInner() {
         ))}
       </div>
 
+      {/* Payouts stuck in flight — shown whatever the filters are, because
+          the default 30-day window is precisely what hides them. */}
+      {stuckCount > 0 && !needsAttentionOnly && (
+        <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
+            <div>
+              <p className="text-sm font-bold text-red-800">
+                {stuckCount} payout{stuckCount === 1 ? "" : "s"} stuck in flight
+              </p>
+              <p className="mt-0.5 text-xs text-red-700">
+                Still processing after {staleAfterHours}h. Funds stay reserved and further
+                payouts for those merchants are blocked until each one is resolved.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              setNeedsAttentionOnly(true);
+              setPage(1);
+            }}
+            className="shrink-0 rounded-xl bg-red-600 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white hover:bg-red-700"
+          >
+            Show them
+          </button>
+        </div>
+      )}
+
+      {needsAttentionOnly && (
+        <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
+            <div>
+              <p className="text-sm font-bold text-red-800">
+                Showing payouts stuck in flight
+              </p>
+              <p className="mt-0.5 text-xs text-red-700">
+                Processing for more than {staleAfterHours}h. Status and date filters are
+                ignored while this is on.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              setNeedsAttentionOnly(false);
+              setPage(1);
+            }}
+            className="shrink-0 rounded-xl border border-red-300 bg-white px-4 py-2 text-xs font-bold uppercase tracking-wider text-red-700 hover:bg-red-100"
+          >
+            Clear filter
+          </button>
+        </div>
+      )}
+
       {/* Filters */}
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-2xl border border-black/5 bg-white p-5">
@@ -173,6 +366,22 @@ function AdminSettlementsPageInner() {
             Status
           </p>
           <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => {
+                setNeedsAttentionOnly((v) => !v);
+                setPage(1);
+              }}
+              title={`Payouts still processing after ${staleAfterHours}h, regardless of date`}
+              className={`rounded-lg px-3 py-2 text-[10px] font-bold uppercase tracking-wider transition-all ${
+                needsAttentionOnly
+                  ? "bg-red-600 text-white"
+                  : stuckCount > 0
+                  ? "bg-red-100 text-red-700 hover:bg-red-200"
+                  : "bg-black/5 text-[color:var(--trite-muted)] hover:bg-black/10"
+              }`}
+            >
+              Needs attention{stuckCount > 0 ? ` (${stuckCount})` : ""}
+            </button>
             {(["All", "PENDING", "PROCESSING", "COMPLETED", "FAILED", "CANCELLED"] as const).map(
               (value) => (
                 <button
@@ -413,6 +622,15 @@ function AdminSettlementsPageInner() {
                         {s.failure_reason}
                       </p>
                     )}
+                    {s.status === "PROCESSING" && (
+                      <button
+                        onClick={() => openResolve(s)}
+                        title="Confirm with the provider whether this transfer moved, then record the answer"
+                        className="mt-1 block rounded-lg border border-black/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[color:var(--trite-muted)] hover:bg-black/[0.03]"
+                      >
+                        Resolve
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -465,6 +683,127 @@ function AdminSettlementsPageInner() {
           </div>
         </div>
       </div>
-    </>
+      {resolveTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <h2 className="text-lg font-bold text-[color:var(--trite-ink)]">
+              Resolve a stuck payout
+            </h2>
+            <p className="mt-2 text-sm text-[color:var(--trite-muted)]">
+              This transfer left the merchant&apos;s balance but never came back with an
+              answer. Check the provider&apos;s own records first — this cannot be undone.
+            </p>
+
+            <div className="mt-4 space-y-2 rounded-xl bg-gray-50 p-4 text-sm">
+              <div className="flex justify-between">
+                <span className="text-[color:var(--trite-muted)]">Settlement</span>
+                <span className="font-mono font-semibold text-[color:var(--trite-ink)]">
+                  {resolveTarget.settlement_id_display}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[color:var(--trite-muted)]">Merchant</span>
+                <span className="font-medium text-[color:var(--trite-ink)]">
+                  {resolveTarget.business_name ?? "—"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[color:var(--trite-muted)]">Net sent</span>
+                <span className="font-bold text-[color:var(--trite-ink)]">
+                  {formatGHS(resolveTarget.net_amount)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[color:var(--trite-muted)]">Destination</span>
+                <span className="font-medium text-[color:var(--trite-ink)]">
+                  {resolveTarget.provider_name ?? "—"} {resolveTarget.account_number ?? ""}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setResolveOutcome("PAID")}
+                className={`rounded-xl border p-3 text-left transition-colors ${
+                  resolveOutcome === "PAID"
+                    ? "border-[color:var(--trite-lime-strong)] bg-[color:var(--trite-lime)]/10"
+                    : "border-black/10 hover:bg-black/[0.02]"
+                }`}
+              >
+                <span className="block text-sm font-semibold text-[color:var(--trite-ink)]">
+                  It was paid
+                </span>
+                <span className="mt-0.5 block text-xs text-[color:var(--trite-muted)]">
+                  Completes the settlement. The merchant keeps the money.
+                </span>
+              </button>
+              <button
+                onClick={() => setResolveOutcome("NOT_PAID")}
+                className={`rounded-xl border p-3 text-left transition-colors ${
+                  resolveOutcome === "NOT_PAID"
+                    ? "border-red-400 bg-red-50"
+                    : "border-black/10 hover:bg-black/[0.02]"
+                }`}
+              >
+                <span className="block text-sm font-semibold text-[color:var(--trite-ink)]">
+                  It was not paid
+                </span>
+                <span className="mt-0.5 block text-xs text-[color:var(--trite-muted)]">
+                  Returns the amount and the fee to the merchant&apos;s balance.
+                </span>
+              </button>
+            </div>
+
+            {resolveOutcome === "PAID" && (
+              <div className="mt-4">
+                <label className="text-sm font-medium text-[color:var(--trite-ink)]">
+                  Provider reference (optional)
+                </label>
+                <input
+                  value={resolveReference}
+                  onChange={(e) => setResolveReference(e.target.value)}
+                  placeholder="Transfer code or receipt from the provider"
+                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none focus:border-[color:var(--trite-lime-strong)]"
+                />
+              </div>
+            )}
+
+            <div className="mt-4">
+              <label className="text-sm font-medium text-[color:var(--trite-ink)]">
+                How did you confirm this? <span className="text-red-600">*</span>
+              </label>
+              <textarea
+                value={resolveNote}
+                onChange={(e) => setResolveNote(e.target.value)}
+                rows={2}
+                placeholder="e.g. Paystack support confirmed the transfer never left"
+                className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none focus:border-[color:var(--trite-lime-strong)]"
+              />
+            </div>
+
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => setResolveTarget(null)}
+                disabled={resolving}
+                className="flex-1 rounded-lg border border-black/10 py-2.5 text-sm font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.03]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitResolve}
+                disabled={resolving || !resolveNote.trim()}
+                className={`flex-1 rounded-lg py-2.5 text-sm font-semibold text-white disabled:opacity-50 ${
+                  resolveOutcome === "PAID"
+                    ? "bg-[color:var(--trite-lime)] hover:bg-[color:var(--trite-lime-strong)]"
+                    : "bg-red-600 hover:bg-red-700"
+                }`}
+              >
+                {resolving ? "Recording..." : resolveOutcome === "PAID" ? "Mark completed" : "Return the funds"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </AdminPermissionGuard>
   );
 }

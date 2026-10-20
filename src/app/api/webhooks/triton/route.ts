@@ -18,7 +18,7 @@ import { getCryptoProvider } from "@/lib/payments";
  * x-triton-timestamp header, a period, and the JSON-serialized body — with
  * the signing secret returned at webhook registration.
  */
-function verifyWebhookSignature(
+export function verifyWebhookSignature(
   timestamp: string | null,
   body: unknown,
   signature: string | null,

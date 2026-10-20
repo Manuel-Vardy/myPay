@@ -18,12 +18,15 @@ export interface SettlementSchedule {
    * withdrawable (manual withdrawals and auto-settlement). 0 disables aging.
    */
   withdrawal_age_hours: number;
+  /** Master platform toggle for automatic settlement sweeps. Default true. */
+  auto_settlements_enabled: boolean;
 }
 
 export const DEFAULT_SETTLEMENT_SCHEDULE: SettlementSchedule = {
   payout_time: "18:00",
   payout_threshold_minor: null,
   withdrawal_age_hours: 24,
+  auto_settlements_enabled: true,
 };
 
 /** Max configurable aging window: 30 days. */
@@ -61,6 +64,10 @@ export async function getSettlementSchedule(): Promise<SettlementSchedule> {
     withdrawal_age_hours: isValidWithdrawalAgeHours(value?.withdrawal_age_hours)
       ? value.withdrawal_age_hours
       : DEFAULT_SETTLEMENT_SCHEDULE.withdrawal_age_hours,
+    auto_settlements_enabled:
+      typeof value?.auto_settlements_enabled === "boolean"
+        ? value.auto_settlements_enabled
+        : DEFAULT_SETTLEMENT_SCHEDULE.auto_settlements_enabled,
   };
 }
 

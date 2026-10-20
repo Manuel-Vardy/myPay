@@ -43,6 +43,30 @@ export async function GET(request: NextRequest) {
       .count("id as cnt")
       .first();
 
+    // Payment success rate over the last 24h.
+    //
+    // This replaces a hardcoded "99.99%" uptime figure that was never measured
+    // against anything. Availability monitoring is infrastructure work that
+    // doesn't exist yet, so rather than publish a number we cannot evidence to
+    // an examiner, this reports something the ledger can actually prove.
+    // Returns null — not a fabricated 100% — when there is nothing to measure.
+    const settlementOutcomes = await db("transactions")
+      .where("created_at", ">=", db.raw("NOW() - INTERVAL '24 hours'"))
+      .whereIn("status", ["SETTLED", "FAILED"])
+      .select("status")
+      .count("id as cnt")
+      .groupBy("status");
+
+    const outcomeCounts: Record<string, number> = {};
+    for (const row of settlementOutcomes as Array<{ status: string; cnt: string | number }>) {
+      outcomeCounts[row.status] = Number(row.cnt);
+    }
+    const settled = outcomeCounts.SETTLED ?? 0;
+    const failed = outcomeCounts.FAILED ?? 0;
+    const attempted = settled + failed;
+    const paymentSuccessRate24h =
+      attempted > 0 ? Math.round((settled / attempted) * 1000) / 10 : null;
+
     // Recent transactions (last 10)
     const rawRecentTransactions = await db("transactions")
       .orderBy("created_at", "desc")
@@ -73,7 +97,8 @@ export async function GET(request: NextRequest) {
     return Response.json({
       total_platform_volume: fromMinorUnits(volumeResult?.total || 0),
       active_merchants: Number(merchantCount?.cnt || 0),
-      system_uptime: "99.99%",
+      payment_success_rate_24h: paymentSuccessRate24h,
+      payment_attempts_24h: attempted,
       liquidity_inbound: fromMinorUnits(inboundResult?.total || 0),
       liquidity_outbound: fromMinorUnits(outboundResult?.total || 0),
       security_alerts: Number(alertCount?.cnt || 0),

@@ -19,6 +19,15 @@ ARG NEXT_PUBLIC_CHECKOUT_BASE_URL
 ARG NEXT_PUBLIC_API_BASE_URL
 ENV NEXT_PUBLIC_CHECKOUT_BASE_URL=$NEXT_PUBLIC_CHECKOUT_BASE_URL
 ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+# Fingerprint's *public* key — it ships to every browser by design, so it is a
+# build arg, not a secret. Setting it as a Cloud Run env var instead does
+# nothing: the bundle is already built, checkout silently loads no agent, and
+# every payment records `no_device_claim`. The secret half of the pair
+# (FINGERPRINT_SERVER_API_KEY) is runtime-only and must never be an ARG here.
+ARG NEXT_PUBLIC_FINGERPRINT_API_KEY
+ARG NEXT_PUBLIC_FINGERPRINT_REGION
+ENV NEXT_PUBLIC_FINGERPRINT_API_KEY=$NEXT_PUBLIC_FINGERPRINT_API_KEY
+ENV NEXT_PUBLIC_FINGERPRINT_REGION=$NEXT_PUBLIC_FINGERPRINT_REGION
 RUN npm run build
 
 # Migration job — full deps (knex CLI needs ts-node for .ts migrations).

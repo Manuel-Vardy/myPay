@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAdminFetch } from "@/lib/hooks/useAdminFetch";
+import { AdminPermissionGuard } from "@/components/admin/AdminPermissionGuard";
 import {
   Search,
   Filter,
@@ -23,19 +24,26 @@ type KycRow = {
   business_name: string | null;
 };
 
+type KycActivityItem = {
+  id: string;
+  identity_id: string;
+  status: string;
+  tier: string;
+  submitted_at: string;
+  reviewed_at: string | null;
+  updated_at: string;
+  target_email: string;
+  target_business_name: string | null;
+  reviewer_email: string | null;
+  reviewer_first_name: string | null;
+  reviewer_last_name: string | null;
+};
+
 type KycResponse = {
   data: KycRow[];
   stats: { by_status: Array<{ status: string; count: string }>; avg_process_time_ms: number };
   pagination: { total: number; total_pages: number };
-};
-
-type ActivityItem = {
-  id: string;
-  type: "approved" | "rejected" | "requested";
-  actor: string;
-  target: string;
-  time: string;
-  detailId: string;
+  recent_activities?: KycActivityItem[];
 };
 
 
@@ -83,15 +91,9 @@ export default function AdminKycPage() {
     );
   }, [query, records]);
 
-  const demoActivity: ActivityItem[] = [
-    { id: "ACT-001", type: "approved", actor: "Admin Sarah", target: "User #9921", time: "10 minutes ago", detailId: "ID: TR-KYC-0032" },
-    { id: "ACT-002", type: "rejected", actor: "System", target: "User #8821 (Expired ID)", time: "2 hours ago", detailId: "ID: TR-KYC-9901" },
-    { id: "ACT-003", type: "requested", actor: "Admin David", target: "User #4412", time: "4 hours ago", detailId: "ID: TR-KYC-7721" },
-  ];
-
 
   return (
-    <>
+    <AdminPermissionGuard requiredPermission="approve-kyc">
       {/* Page Header */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -109,13 +111,13 @@ export default function AdminKycPage() {
         </div>
 
         <div className="rounded-2xl border border-black/5 bg-[color:var(--trite-lime)] p-5 text-white">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-white/70">Approved Today</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-white/70">Approved</p>
           <p className="mt-2 text-2xl font-bold text-white">{approvedCount}</p>
           <p className="mt-1 text-[10px] font-bold text-white/70 uppercase tracking-tight">Active Velocity</p>
         </div>
 
         <div className="rounded-2xl bg-[color:var(--trite-ink)] p-5 text-white">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">Rejected (24h)</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">Rejected</p>
           <p className="mt-2 text-2xl font-bold">{rejectedCount}</p>
           <p className="mt-1 text-[10px] font-bold text-white/60 uppercase tracking-tight">Risk Mitigation</p>
         </div>
@@ -327,68 +329,99 @@ export default function AdminKycPage() {
         </div>
       </div>
 
-      {/* Bottom Section */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Activity Logs */}
-        <div className="rounded-2xl border border-black/5 bg-white p-6 lg:col-span-5">
-          <h3 className="text-sm font-semibold text-[color:var(--trite-ink)] uppercase tracking-wide">Recent Activity Logs</h3>
-          <div className="mt-4 space-y-4">
-            {demoActivity.map((act) => (
-              <div key={act.id} className="flex items-start gap-3">
-                <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                  act.type === "approved" ? "bg-[color:var(--trite-lime)]" : 
-                  act.type === "rejected" ? "bg-red-50" : "bg-blue-50"
-                }`}>
-                  {act.type === "approved" ? (
-                    <CheckIcon className="h-4 w-4 text-white" />
-                  ) : act.type === "rejected" ? (
-                    <XIcon className="h-4 w-4 text-red-600" />
-                  ) : (
-                    <DocumentIcon className="h-4 w-4 text-blue-600" />
-                  )}
+      {/* Recent Activity Logs (Full Width) */}
+      <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
+        <div className="flex flex-col gap-1 border-b border-black/5 pb-4">
+          <h3 className="text-sm font-semibold text-[color:var(--trite-ink)] uppercase tracking-wide">
+            Recent Activity Logs
+          </h3>
+          <p className="text-xs text-[color:var(--trite-muted)]">
+            Live audit trail of the 5 most recent compliance decisions and identity submissions
+          </p>
+        </div>
+
+        <div className="mt-4 divide-y divide-black/5">
+          {(kycData?.recent_activities ?? []).map((act) => {
+            const reviewerName = act.reviewer_first_name
+              ? `${act.reviewer_first_name} ${act.reviewer_last_name || ""}`.trim()
+              : act.reviewer_email || null;
+            const targetName = act.target_business_name || act.target_email;
+            const timestamp = new Date(act.updated_at || act.submitted_at).toLocaleString("en-GH", {
+              dateStyle: "medium",
+              timeStyle: "short",
+            });
+
+            return (
+              <div key={act.id} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-3.5">
+                  <div
+                    className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
+                      act.status === "APPROVED"
+                        ? "bg-emerald-50 text-emerald-600"
+                        : act.status === "REJECTED"
+                        ? "bg-red-50 text-red-600"
+                        : act.status === "FLAGGED"
+                        ? "bg-amber-50 text-amber-600"
+                        : "bg-blue-50 text-blue-600"
+                    }`}
+                  >
+                    {act.status === "APPROVED" ? (
+                      <CheckCircle className="h-5 w-5" />
+                    ) : act.status === "REJECTED" ? (
+                      <XCircle className="h-5 w-5" />
+                    ) : act.status === "FLAGGED" ? (
+                      <ShieldCheck className="h-5 w-5" />
+                    ) : (
+                      <FileTextIcon className="h-5 w-5" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-sm text-[color:var(--trite-ink)]">
+                      {act.status === "APPROVED" ? (
+                        <>
+                          <span className="font-semibold">{reviewerName || "Compliance Admin"}</span> approved identity verification for{" "}
+                          <span className="font-semibold">{targetName}</span>
+                        </>
+                      ) : act.status === "REJECTED" ? (
+                        <>
+                          <span className="font-semibold">{reviewerName || "Compliance Admin"}</span> rejected identity verification for{" "}
+                          <span className="font-semibold">{targetName}</span>
+                        </>
+                      ) : act.status === "FLAGGED" ? (
+                        <>
+                          <span className="font-semibold">{reviewerName || "Compliance Engine"}</span> flagged verification for{" "}
+                          <span className="font-semibold">{targetName}</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="font-semibold">{targetName}</span> submitted KYC verification request
+                        </>
+                      )}
+                    </p>
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[color:var(--trite-muted)]">
+                      <span className="font-mono font-medium text-[color:var(--trite-ink)]">{act.identity_id}</span>
+                      <span>•</span>
+                      <span>{timestamp}</span>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-[color:var(--trite-ink)]">
-                    <span className="font-semibold">{act.actor}</span>{" "}
-                    {act.type === "approved" && "approved KYC for"}
-                    {act.type === "rejected" && "auto-rejected"}
-                    {act.type === "requested" && "requested additional documents from"}{" "}
-                    <span className="font-semibold">{act.target}</span>
-                  </p>
-                  <p className="mt-1 text-xs text-[color:var(--trite-muted)]">{act.time} • {act.detailId}</p>
+
+                <div className="flex items-center gap-3 self-end sm:self-auto">
+                  <TierBadge tier={act.tier} />
+                  <StatusBadge status={act.status.toLowerCase()} />
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
+            );
+          })}
 
-        {/* Right Column */}
-        <div className="flex flex-col gap-6 lg:col-span-7">
-          {/* Compliance Alert */}
-          <div className="rounded-2xl bg-[color:var(--trite-ink)] p-6 text-white">
-            <p className="text-xs font-medium text-white/60 uppercase tracking-wide">Compliance Alert</p>
-            <p className="mt-3 text-lg font-semibold">34 users from Greater Accra are reaching their Tier 1 limits. High-priority verification suggested.</p>
-            <button className="mt-4 inline-flex h-10 items-center justify-center rounded-xl bg-[color:var(--trite-lime-strong)] px-4 text-sm font-semibold text-white hover:bg-[color:var(--trite-lime)]">
-              Review High-Priority Queue
-            </button>
-          </div>
-
-          {/* System Integrity */}
-          <div className="rounded-2xl border border-black/5 bg-blue-50 p-6">
-            <div className="flex items-center gap-2">
-              <ShieldCheckIcon className="h-5 w-5 text-[color:var(--trite-ink)]" />
-              <span className="text-sm font-semibold text-[color:var(--trite-ink)]">System Integrity</span>
-            </div>
-            <p className="mt-2 text-xs leading-5 text-[color:var(--trite-muted)]">
-              Verification algorithms are operating at 99.8% accuracy. Last audit completed 3 days ago.
+          {(!kycData?.recent_activities || kycData.recent_activities.length === 0) && (
+            <p className="py-8 text-center text-xs text-[color:var(--trite-muted)]">
+              No recent KYC activities found.
             </p>
-            <button className="mt-3 text-xs font-semibold text-blue-600 hover:text-blue-700">
-              Download Audit Log
-            </button>
-          </div>
+          )}
         </div>
       </div>
-    </>
+    </AdminPermissionGuard>
   );
 }
 

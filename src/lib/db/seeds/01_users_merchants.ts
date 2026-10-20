@@ -17,9 +17,15 @@ export async function seed(knex: Knex): Promise<void> {
     "merchants",
     "users"
   ];
-  for (const table of tables) {
-    await knex.raw(`TRUNCATE TABLE "${table}" CASCADE`);
-  }
+  // `system_logs` is append-only (migration 0044), and TRUNCATE CASCADE from
+  // `transactions` reaches the equally guarded `ledger_entries`. Rebuilding
+  // fixtures is a legitimate bypass, so announce it for the transaction.
+  await knex.transaction(async (trx) => {
+    await trx.raw(`SET LOCAL trite.allow_immutable_writes = 'on'`);
+    for (const table of tables) {
+      await trx.raw(`TRUNCATE TABLE "${table}" CASCADE`);
+    }
+  });
 
   const hash = await bcrypt.hash("Password123!", 12);
 

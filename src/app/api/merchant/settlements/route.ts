@@ -3,16 +3,26 @@ import { type NextRequest } from "next/server";
 import db from "@/lib/db";
 import { requireVerifiedMerchant } from "@/lib/guards";
 import { fromMinorUnits } from "@/lib/utils";
+import { isSettlementStatus, SETTLEMENT_STATUSES } from "@/lib/constants";
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const page = Math.max(1, Number(searchParams.get("page") || 1));
     const per_page = Math.min(50, Math.max(1, Number(searchParams.get("per_page") || 20)));
-    const status = searchParams.get("status"); // PENDING, COMPLETED, FAILED
+    const status = searchParams.get("status"); // see SETTLEMENT_STATUSES
     const guard = await requireVerifiedMerchant();
     if (guard.error) return guard.error;
     const merchant_id = guard.merchant.id;
+
+    // Postgres rejects an unknown value outright when comparing against the
+    // settlement_status enum, so an unvalidated param would surface as a 500.
+    if (status && !isSettlementStatus(status)) {
+      return Response.json(
+        { error: `Invalid status. Expected one of: ${SETTLEMENT_STATUSES.join(", ")}` },
+        { status: 400 }
+      );
+    }
 
     let query = db("settlements").where({ merchant_id });
     if (status) query = query.where("status", status);

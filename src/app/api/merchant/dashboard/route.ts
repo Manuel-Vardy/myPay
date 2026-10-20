@@ -194,6 +194,7 @@ export async function GET(request: NextRequest) {
             ? fromMinorUnits(schedule.payout_threshold_minor)
             : null,
         withdrawal_age_hours: schedule.withdrawal_age_hours,
+        auto_settlements_enabled: schedule.auto_settlements_enabled,
       },
       settlement_account: defaultAccount ? {
         id: defaultAccount.id,

@@ -86,14 +86,6 @@ export default function AnalyticsPage() {
                   </button>
                 ))}
               </div>
-              <button className="flex h-10 items-center gap-2 rounded-lg border border-black/10 bg-white px-4 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-black/[0.02]">
-                <FileTextIcon className="h-4 w-4" />
-                Export PDF
-              </button>
-              <button className="flex h-10 items-center gap-2 rounded-lg bg-[color:var(--trite-ink)] px-4 text-sm font-semibold text-white hover:bg-black">
-                <DownloadIcon className="h-4 w-4" />
-                Export CSV
-              </button>
             </div>
           </div>
 

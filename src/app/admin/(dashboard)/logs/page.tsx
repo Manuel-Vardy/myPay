@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAdminFetch } from "@/lib/hooks/useAdminFetch";
+import { AdminPermissionGuard } from "@/components/admin/AdminPermissionGuard";
 import {
   Search,
   Download,
@@ -113,7 +114,7 @@ export default function AdminLogsPage() {
 
 
   return (
-    <>
+    <AdminPermissionGuard requiredPermission="view-logs">
       {/* Page Header */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -516,6 +517,6 @@ export default function AdminLogsPage() {
           </div>
         </div>
       )}
-    </>
+    </AdminPermissionGuard>
   );
 }

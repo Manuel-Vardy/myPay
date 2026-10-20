@@ -12,11 +12,12 @@ import { MfaSetupModal } from "@/components/mfa-setup-modal";
 import { MfaDisableModal } from "@/components/mfa-disable-modal";
 
 export default function AdminSettingsPage() {
-  const [activeTab, setActiveTab] = useState("profile");
+  const [activeTabState, setActiveTab] = useState("profile");
   const [saving, setSaving] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [mfaSetupOpen, setMfaSetupOpen] = useState(false);
   const [mfaDisableOpen, setMfaDisableOpen] = useState(false);
+  const [mfaPromptDismissed, setMfaPromptDismissed] = useState(false);
   
   // Use any to quickly access user and admin profiles returned from our updated /api/auth/me
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -112,8 +113,21 @@ export default function AdminSettingsPage() {
     }
   };
 
+  const mfaMandatory = Boolean(me?.mfa_mandatory);
+  const mfaEnrollmentRequired = Boolean(me?.mfa_enrollment_required);
+
+  // An admin arriving here from the login redirect has no working portal until
+  // they enroll, so force the security tab and open setup. Derived during
+  // render rather than pushed through an effect — and dismissible, so closing
+  // the modal doesn't trap them on a tab they can't leave.
+  const forceMfaPrompt = mfaEnrollmentRequired && !mfaPromptDismissed;
+  const activeTab = forceMfaPrompt ? "security" : activeTabState;
+
   const handle2FAClick = () => {
+    // Mandatory roles have no disable path — the button stays on "Enable"
+    // until enrolled, then goes inert.
     if (me?.user?.two_factor_enabled) {
+      if (mfaMandatory) return;
       setMfaDisableOpen(true);
     } else {
       setMfaSetupOpen(true);
@@ -171,8 +185,11 @@ export default function AdminSettingsPage() {
       />
 
       <MfaSetupModal
-        isOpen={mfaSetupOpen}
-        onClose={() => setMfaSetupOpen(false)}
+        isOpen={mfaSetupOpen || forceMfaPrompt}
+        onClose={() => {
+          setMfaSetupOpen(false);
+          setMfaPromptDismissed(true);
+        }}
         onEnabled={() => {
           toast.success("2FA enabled successfully");
           refreshMe();
@@ -325,16 +342,39 @@ export default function AdminSettingsPage() {
                   <div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-sm font-semibold text-[color:var(--trite-ink)]">Two-Factor Authentication</h3>
-                        <p className="text-sm text-[color:var(--trite-muted)]">Add an extra layer of security to your account.</p>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm font-semibold text-[color:var(--trite-ink)]">Two-Factor Authentication</h3>
+                          {mfaMandatory && (
+                            <span className="rounded-full bg-black/5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[color:var(--trite-ink)]">
+                              Required
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-[color:var(--trite-muted)]">
+                          {mfaMandatory
+                            ? "Mandatory for administrative access. It cannot be turned off on this account."
+                            : "Add an extra layer of security to your account."}
+                        </p>
                       </div>
-                      <button
-                        onClick={handle2FAClick}
-                        className={`rounded-xl px-4 py-2 text-sm font-semibold text-white ${me?.user?.two_factor_enabled ? "bg-red-500 hover:bg-red-600" : "bg-[color:var(--trite-lime)] hover:bg-[color:var(--trite-lime-strong)]"}`}
-                      >
-                        {me?.user?.two_factor_enabled ? "Disable 2FA" : "Enable 2FA"}
-                      </button>
+                      {mfaMandatory && me?.user?.two_factor_enabled ? (
+                        <span className="rounded-xl bg-black/5 px-4 py-2 text-sm font-semibold text-[color:var(--trite-muted)]">
+                          Enabled
+                        </span>
+                      ) : (
+                        <button
+                          onClick={handle2FAClick}
+                          className={`rounded-xl px-4 py-2 text-sm font-semibold text-white ${me?.user?.two_factor_enabled ? "bg-red-500 hover:bg-red-600" : "bg-[color:var(--trite-lime)] hover:bg-[color:var(--trite-lime-strong)]"}`}
+                        >
+                          {me?.user?.two_factor_enabled ? "Disable 2FA" : "Enable 2FA"}
+                        </button>
+                      )}
                     </div>
+                    {mfaEnrollmentRequired && (
+                      <p className="mt-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                        Administrative access is withheld until you enroll an authenticator app. Other
+                        settings on this page will not load until enrollment is complete.
+                      </p>
+                    )}
                   </div>
                 </div>
               )}

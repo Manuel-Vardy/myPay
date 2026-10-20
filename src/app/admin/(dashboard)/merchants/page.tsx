@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useAdminFetch } from "@/lib/hooks/useAdminFetch";
+import { AdminPermissionGuard } from "@/components/admin/AdminPermissionGuard";
 import {
   Search,
   UserPlus,
@@ -61,7 +62,7 @@ export default function AdminMerchantsPage() {
   };
 
   return (
-    <>
+    <AdminPermissionGuard requiredPermission="manage-merchants">
       {/* Page Header */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -288,6 +289,6 @@ export default function AdminMerchantsPage() {
           </div>
         </div>
       </div>
-    </>
+    </AdminPermissionGuard>
   );
 }

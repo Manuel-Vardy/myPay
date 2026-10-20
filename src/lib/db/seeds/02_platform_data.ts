@@ -2,14 +2,20 @@ import type { Knex } from "knex";
 import crypto from "crypto";
 
 export async function seed(knex: Knex): Promise<void> {
-  await knex("system_logs").del();
-  await knex("support_tickets").del();
-  await knex("kyc_records").del();
-  await knex("settlements").del();
-  await knex("transactions").del();
-  await knex("role_permissions").del();
-  await knex("permissions").del();
-  await knex("roles").del();
+  // `system_logs` is append-only (migration 0044); clearing it to rebuild
+  // fixtures is a legitimate bypass, so announce it for the transaction.
+  await knex.transaction(async (trx) => {
+    await trx.raw(`SET LOCAL trite.allow_immutable_writes = 'on'`);
+    await trx("system_logs").del();
+    await trx("support_tickets").del();
+    await trx("kyc_records").del();
+    await trx("settlements").del();
+    await trx("transactions").del();
+    await trx("admin_roles").del();
+    await trx("role_permissions").del();
+    await trx("permissions").del();
+    await trx("roles").del();
+  });
 
   // --- Roles & Permissions ---
   const roleIds = {
@@ -26,35 +32,57 @@ export async function seed(knex: Knex): Promise<void> {
   ]);
 
   const permIds = {
-    manageUsers: crypto.randomUUID(),
+    manageMerchants: crypto.randomUUID(),
+    manageCustomers: crypto.randomUUID(),
     approveKyc: crypto.randomUUID(),
     refund: crypto.randomUUID(),
     viewLogs: crypto.randomUUID(),
     manageRoles: crypto.randomUUID(),
     settlements: crypto.randomUUID(),
+    manageFees: crypto.randomUUID(),
+    manageIntegrations: crypto.randomUUID(),
   };
   await knex("permissions").insert([
-    { id: permIds.manageUsers, name: "manage-users", description: "Add, suspend, or terminate accounts." },
+    { id: permIds.manageMerchants, name: "manage-merchants", description: "Add, edit, suspend, or manage merchant accounts." },
+    { id: permIds.manageCustomers, name: "manage-customers", description: "View and manage end-payer customer profiles." },
     { id: permIds.approveKyc, name: "approve-kyc", description: "Review identity documents and verify profiles." },
     { id: permIds.refund, name: "refund-transactions", description: "Authorize reversal of funds." },
     { id: permIds.viewLogs, name: "view-logs", description: "Access detailed activity history." },
     { id: permIds.manageRoles, name: "manage-roles", description: "Create or modify permission groups." },
     { id: permIds.settlements, name: "settlement-monitoring", description: "Real-time view of bank transfer flows." },
+    { id: permIds.manageFees, name: "manage-fees", description: "Configure platform revenue models and fee structures." },
+    { id: permIds.manageIntegrations, name: "manage-integrations", description: "Configure external provider credentials." },
   ]);
 
   await knex("role_permissions").insert([
     // Super Admin gets all
     ...Object.values(permIds).map((pid) => ({ role_id: roleIds.superAdmin, permission_id: pid })),
     // Compliance
-    { role_id: roleIds.compliance, permission_id: permIds.manageUsers },
+    { role_id: roleIds.compliance, permission_id: permIds.manageMerchants },
+    { role_id: roleIds.compliance, permission_id: permIds.manageCustomers },
     { role_id: roleIds.compliance, permission_id: permIds.approveKyc },
     { role_id: roleIds.compliance, permission_id: permIds.viewLogs },
     { role_id: roleIds.compliance, permission_id: permIds.settlements },
     // Support
     { role_id: roleIds.support, permission_id: permIds.viewLogs },
+    { role_id: roleIds.support, permission_id: permIds.manageCustomers },
     // Audit
     { role_id: roleIds.audit, permission_id: permIds.viewLogs },
   ]);
+
+  // Map default admin to Super Admin role
+  const defaultAdmin = await knex("admin_profiles")
+    .join("users", "admin_profiles.user_id", "users.id")
+    .where("users.email", "admin@trite.io")
+    .select("admin_profiles.id as admin_profile_id")
+    .first();
+
+  if (defaultAdmin) {
+    await knex("admin_roles").insert({
+      admin_profile_id: defaultAdmin.admin_profile_id,
+      role_id: roleIds.superAdmin,
+    });
+  }
 
   // --- Fetch merchant IDs ---
   const merchants = await knex("merchants").select("id", "region");

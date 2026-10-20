@@ -3,14 +3,14 @@
 //        fee_ledger rows reference schedules with ON DELETE RESTRICT)
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
-import { requireAdmin } from "@/lib/guards";
+import { requirePermission } from "@/lib/guards";
 import { validateScheduleBody } from "../validation";
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const guard = await requireAdmin();
+  const guard = await requirePermission("manage-fees");
   if (guard.error) return guard.error;
 
   try {
@@ -59,6 +59,14 @@ export async function PATCH(
       })
       .returning("*");
 
+    await db("system_logs").insert({
+      level: "INFO",
+      source: "ADMIN_FEES",
+      event_description: `Fee schedule updated (${id})`,
+      actor_id: guard.session.userId,
+      ip_address: request.headers.get("x-forwarded-for") || "unknown",
+    });
+
     return Response.json({ success: true, schedule });
   } catch (error) {
     console.error("Failed to update fee schedule", error);
@@ -70,7 +78,7 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const guard = await requireAdmin();
+  const guard = await requirePermission("manage-fees");
   if (guard.error) return guard.error;
 
   try {
@@ -79,9 +87,18 @@ export async function DELETE(
       .where({ id })
       .update({ is_active: false, updated_at: db.fn.now() });
 
-    return updated
-      ? Response.json({ success: true })
-      : Response.json({ error: "Fee schedule not found" }, { status: 404 });
+    if (updated) {
+      await db("system_logs").insert({
+        level: "WARN",
+        source: "ADMIN_FEES",
+        event_description: `Fee schedule deactivated (${id})`,
+        actor_id: guard.session.userId,
+        ip_address: request.headers.get("x-forwarded-for") || "unknown",
+      });
+      return Response.json({ success: true });
+    }
+
+    return Response.json({ error: "Fee schedule not found" }, { status: 404 });
   } catch (error) {
     console.error("Failed to deactivate fee schedule", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });

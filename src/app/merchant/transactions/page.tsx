@@ -14,19 +14,38 @@ type TxMethod = "CARD" | "MOBILE_MONEY" | "BANK_TRANSFER" | "CRYPTO" | string;
 export type APITransaction = {
   id: string;
   tx_id_display: string;
-  customer_id: string;
-  payer_email: string;
+  description: string | null;
+  customer_id: string | null;
+  payer_email: string | null;
+  payer_name: string | null;
+  payer_phone: string | null;
   method: TxMethod;
   status: TxStatus;
   amount: number;
   created_at: string;
 };
 
+/**
+ * Who paid, in descending order of how much it tells the merchant. Mobile
+ * money is the primary rail and rarely carries an email, so falling straight
+ * from name to "Anonymous" would hide a payer we can actually identify.
+ */
+function payerLabel(tx: APITransaction): string {
+  return tx.payer_name || tx.payer_email || tx.payer_phone || "Anonymous";
+}
+
+function payerInitial(tx: APITransaction): string {
+  const label = payerLabel(tx);
+  if (label === "Anonymous") return "?";
+  // Leading digits of a phone number say nothing; the last two identify.
+  return (/^\+?\d/.test(label) ? label.slice(-2) : label.charAt(0)).toUpperCase();
+}
+
 export default function TransactionsPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("transactions");
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "SETTLED" | "AUTHORIZED" | "FAILED" | "CANCELLED">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "SETTLED" | "AUTHORIZED" | "FAILED" | "CANCELLED">("SETTLED");
   const [page, setPage] = useState(1);
   const [currencyFilter, setCurrencyFilter] = useState<"all" | "fiat" | "stablecoin" | "crypto">("all");
 
@@ -83,6 +102,7 @@ export default function TransactionsPage() {
     setPage(1);
   };
   const [detailTxId, setDetailTxId] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   // Build clean params — exclude empty/default values to match how dashboard fetches
   const fetchParams = useMemo(() => {
@@ -125,6 +145,33 @@ export default function TransactionsPage() {
   };
   const pagination = fetchRes?.pagination ?? { page: 1, per_page: 10, total: 0, total_pages: 1 };
 
+  const handleExportCsv = async () => {
+    setExporting(true);
+    try {
+      const p: Record<string, string> = {};
+      if (query) p.search = query;
+      if (currencyFilter !== "all") p.currency = currencyFilter.toUpperCase();
+      if (dateFrom) p.date_from = dateFrom;
+      if (dateTo) p.date_to = dateTo;
+      const qs = new URLSearchParams(p).toString();
+      const res = await fetch(`/api/merchant/transactions/export${qs ? `?${qs}` : ""}`);
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `transactions-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Failed to export transactions:", err);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const dominantMethod = useMemo(() => {
     if (!stats.method_mix.length) return null;
     return stats.method_mix[0]; // Already sorted by count descending in API
@@ -141,16 +188,6 @@ export default function TransactionsPage() {
               <h1 className="text-xl font-semibold tracking-tight text-[color:var(--trite-ink)] sm:text-2xl">
                 Transaction Monitoring
               </h1>
-            </div>
-            <div className="flex gap-2">
-              <button className="flex h-10 items-center gap-2 rounded-lg border border-black/10 bg-white px-4 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-black/[0.02]">
-                <FileTextIcon className="h-4 w-4" />
-                Export PDF
-              </button>
-              <button className="flex h-10 items-center gap-2 rounded-lg bg-[color:var(--trite-ink)] px-4 text-sm font-semibold text-white hover:bg-black">
-                <DownloadIcon className="h-4 w-4" />
-                Export CSV
-              </button>
             </div>
           </div>
 
@@ -234,7 +271,8 @@ export default function TransactionsPage() {
                 </div>
               </div>
 
-              <div className="mb-4 flex flex-wrap gap-2">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap gap-2">
                 <select
                     value={currencyFilter}
                     onChange={(e) => setCurrencyFilter(e.target.value as any)}
@@ -243,19 +281,19 @@ export default function TransactionsPage() {
                   <option value="all">All Currencies</option>
                   <option value="fiat">Fiat (GHS)</option>
                   <option value="stablecoin">Stablecoins (USDC/USDT)</option>
-                  <option value="crypto">Crypto (BTC)</option>
+                  {/*<option value="crypto">Crypto (BTC)</option>*/}
                 </select>
-                <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value as any)}
-                    className="rounded-lg border border-black/10 px-3 py-1.5 text-sm text-gray-900 outline-none focus:border-[color:var(--trite-lime-strong)]"
-                >
-                  <option value="all">All Status</option>
-                  <option value="SETTLED">Settled</option>
-                  <option value="AUTHORIZED">Authorized</option>
-                  <option value="FAILED">Failed</option>
-                  <option value="CANCELLED">Cancelled</option>
-                </select>
+                {/*<select*/}
+                {/*    value={statusFilter}*/}
+                {/*    onChange={(e) => setStatusFilter(e.target.value as any)}*/}
+                {/*    className="rounded-lg border border-black/10 px-3 py-1.5 text-sm text-gray-900 outline-none focus:border-[color:var(--trite-lime-strong)]"*/}
+                {/*>*/}
+                {/*  <option value="all">All Status</option>*/}
+                {/*  <option value="SETTLED">Settled</option>*/}
+                {/*  <option value="AUTHORIZED">Authorized</option>*/}
+                {/*  <option value="FAILED">Failed</option>*/}
+                {/*  <option value="CANCELLED">Cancelled</option>*/}
+                {/*</select>*/}
                 <div className="relative">
                   <button
                     type="button"
@@ -401,6 +439,16 @@ export default function TransactionsPage() {
                     </>
                   )}
                 </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleExportCsv}
+                  disabled={exporting}
+                  className="flex h-10 items-center gap-2 rounded-lg bg-[color:var(--trite-ink)] px-4 text-sm font-semibold text-white hover:bg-black disabled:opacity-50"
+                >
+                  <DownloadIcon className="h-4 w-4" />
+                  {exporting ? "Exporting..." : "Export CSV"}
+                </button>
               </div>
               <div className="mb-4 flex flex-wrap gap-2">
                 <FilterChip
@@ -477,14 +525,22 @@ export default function TransactionsPage() {
                       </td>
                       <td className="py-4">
                         <div className="font-medium text-[color:var(--trite-ink)]">{tx.tx_id_display}</div>
+                        {tx.description && (
+                          <div className="mt-0.5 max-w-[180px] truncate text-[11px] text-[color:var(--trite-muted)]" title={tx.description}>{tx.description}</div>
+                        )}
                       </td>
                       <td className="py-4">
                         <div className="flex items-center gap-2">
                           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--trite-ink)] text-xs font-semibold text-white">
-                            {tx.payer_email ? tx.payer_email.charAt(0).toUpperCase() : "?"}
+                            {payerInitial(tx)}
                           </div>
                           <div>
-                            <div className="font-medium text-[color:var(--trite-ink)]">{tx.payer_email || "Anonymous"}</div>
+                            <div className="font-medium text-[color:var(--trite-ink)]">{payerLabel(tx)}</div>
+                            {tx.payer_name && (tx.payer_email || tx.payer_phone) && (
+                              <div className="text-xs text-[color:var(--trite-muted)]">
+                                {tx.payer_email || tx.payer_phone}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </td>

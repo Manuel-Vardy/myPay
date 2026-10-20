@@ -1,0 +1,36 @@
+# gitleaks configuration (risk R-07).
+#
+# The allowlist matches on the *value* of the finding, not on the file it lives
+# in. That distinction matters: a path allowlist silences a file forever, so a
+# real credential pasted into the API docs page or a test fixture later would
+# never be reported. Matching the specific placeholder strings keeps the rest
+# of the file — and every other rule — live.
+#
+# Every entry was verified by hand on 2026-08-23. The full history scan
+# returned nine findings, all confirmed placeholders; no live credential has
+# been committed to this repository.
+#
+# If you add an entry here, allowlist the literal, not the location.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Documented placeholders and test fixtures, matched by value"
+regexes = [
+  # API documentation renders example curl invocations. `trite_sk_` is the
+  # public key-format marker shown to integrators and the value is a literal
+  # ellipsis — see src/app/api-docs/page.tsx.
+  '''trite_sk_\.\.\.''',
+
+  # Webhook signature tests need literal signing secrets for the computed HMAC
+  # to be assertable. The three in use are test/webhook-prefixed placeholders
+  # whose body is the sequential digits 0-9, corresponding to no real endpoint.
+  #
+  # The example values are deliberately NOT spelled out here. Writing them into
+  # this comment made Trivy's secret scanner flag this very file as containing a
+  # critical Stripe key — a suppression list that itself trips a scanner is a
+  # self-inflicted false positive. The pattern below is the specification; read
+  # the fixtures in tests/ for the actual values.
+  '''(?:sk_test_|whsec_)[a-z_]*0123456789[a-f0-9]*''',
+]

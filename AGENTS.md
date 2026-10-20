@@ -148,3 +148,10 @@ export async function GET(request: NextRequest) {
 - **Database Precision**: Amounts inside the database are stored as `bigint` representation of minor units (e.g., cents for USD, pesewas for GHS).
 - **Formatting Helpers**: The `@/lib/utils` exports `fromMinorUnits` to safely format `bigint` or integer strings back into standard decimal numbers before sending them to the client or rendering transaction logs (e.g. `fromMinorUnits(session.amount)`).
 
+## Rules
+- Always verify end-o-end endpoint logics you work on, ensuring no regression.
+- Write passing tests for new logics. Also update tests for flows you touch, ensuring they stay passing
+- Never assume a thing, always confirm by reading the code logic (from ui->query layer...)
+- Drill deep leaving nothing unchecked if they smell related. Full blast radius
+- Update notes (vertical_architecture,tmos_integration, design) as you work on new stuff
+- Run type checks after every task

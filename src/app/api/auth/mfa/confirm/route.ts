@@ -4,11 +4,12 @@
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
 import type { User } from "@/lib/types";
-import { requireRole } from "@/lib/guards";
+import { requireRoleAllowingMfaSetup } from "@/lib/guards";
 import { verifyTotpToken, generateBackupCodes } from "@/lib/mfa";
 
 export async function POST(request: NextRequest) {
-  const guard = await requireRole("ADMIN", "MERCHANT");
+  // Same reasoning as /enroll — this is the endpoint that clears the gate.
+  const guard = await requireRoleAllowingMfaSetup("ADMIN", "MERCHANT");
   if (guard.error) return guard.error;
 
   const body = await request.json().catch(() => ({}));

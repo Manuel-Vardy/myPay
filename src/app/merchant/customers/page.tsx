@@ -4,15 +4,20 @@ import { useMemo, useState } from "react";
 import { useMerchantFetch } from "@/lib/hooks/useMerchantFetch";
 
 
-type CustomerTier = "institutional" | "enterprise" | "standard";
+type CustomerTier = "STANDARD" | "PREMIUM";
 
 type Customer = {
   id: string;
   name: string | null;
-  email: string;
+  /** Null for mobile money customers, who are identified by phone. */
+  email: string | null;
+  phone: string | null;
   tier: CustomerTier;
   status: string;
+  /** Settled spend in the reporting currency, major units. */
   total_spent: number;
+  /** Every currency this customer has settled in, major units. */
+  spend_by_currency: Record<string, number>;
   transaction_count: number;
   last_transaction_at: string | null;
 };
@@ -25,16 +30,33 @@ type CustomersResponse = {
 };
 
 const tierLabels: Record<CustomerTier, string> = {
-    institutional: "INSTITUTIONAL",
-    enterprise: "ENTERPRISE",
-    standard: "STANDARD",
+    STANDARD: "STANDARD",
+    PREMIUM: "PREMIUM",
 };
 
 const tierColors: Record<CustomerTier, string> = {
-    institutional: "bg-blue-100 text-blue-700",
-    enterprise: "bg-purple-100 text-purple-700",
-    standard: "bg-gray-100 text-gray-700",
+    STANDARD: "bg-gray-100 text-gray-700",
+    PREMIUM: "bg-purple-100 text-purple-700",
 };
+
+/**
+ * Mobile money customers are identified by phone and often have no email or
+ * name at all, so every display path needs a fallback rather than assuming an
+ * address to slice up.
+ */
+function customerLabel(customer: Customer): string {
+  if (customer.name) return customer.name;
+  if (customer.email) return customer.email.split("@")[0];
+  return customer.phone || "Unknown customer";
+}
+
+function customerInitials(customer: Customer): string {
+  const label = customerLabel(customer);
+  const words = label.split(/\s+/).filter(Boolean);
+  if (words.length > 1) return (words[0][0] + words[1][0]).toUpperCase();
+  // A phone number's last two digits distinguish more than its first two.
+  return (/^\+?\d+$/.test(label) ? label.slice(-2) : label.slice(0, 2)).toUpperCase();
+}
 
 export default function CustomersPage() {
   const [search, setSearch] = useState("");
@@ -44,19 +66,13 @@ export default function CustomersPage() {
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [actionMenuOpen, setActionMenuOpen] = useState<string | null>(null);
 
-  // Add Customer modal state
-  const [addModalOpen, setAddModalOpen] = useState(false);
-  const [addLoading, setAddLoading] = useState(false);
-  const [newCustomerName, setNewCustomerName] = useState("");
-  const [newCustomerEmail, setNewCustomerEmail] = useState("");
-  const [newCustomerPhone, setNewCustomerPhone] = useState("");
-  const [newCustomerTier, setNewCustomerTier] = useState<CustomerTier>("standard");
+  const [exporting, setExporting] = useState(false);
 
   // Edit form state
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
   const [editVolume, setEditVolume] = useState("");
-  const [editTier, setEditTier] = useState<CustomerTier>("standard");
+  const [editTier, setEditTier] = useState<CustomerTier>("STANDARD");
 
   // Key to force refetch after mutations
   const [fetchKey, setFetchKey] = useState(0);
@@ -84,6 +100,31 @@ export default function CustomersPage() {
   const formatGHS = (amount: number) =>
     new Intl.NumberFormat("en-GH", { style: "currency", currency: "GHS", minimumFractionDigits: 2 }).format(amount);
 
+  const handleExportCsv = async () => {
+    setExporting(true);
+    try {
+      const p: Record<string, string> = {};
+      if (search) p.search = search;
+      if (sortBy) p.sort = sortBy;
+      const qs = new URLSearchParams(p).toString();
+      const res = await fetch(`/api/merchant/customers/export${qs ? `?${qs}` : ""}`);
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `customers-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Failed to export customers:", err);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <>
         <div className="px-4 py-5 sm:p-6">
@@ -97,16 +138,13 @@ export default function CustomersPage() {
               </p>
             </div>
             <div className="flex gap-2">
-              <button className="flex h-10 items-center gap-2 rounded-lg border border-black/10 bg-white px-4 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-black/[0.02]">
-                <DownloadIcon className="h-4 w-4" />
-                Export CSV
-              </button>
               <button
-                onClick={() => setAddModalOpen(true)}
-                className="flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700"
+                onClick={handleExportCsv}
+                disabled={exporting}
+                className="flex h-10 items-center gap-2 rounded-lg border border-black/10 bg-white px-4 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-black/[0.02] disabled:opacity-50"
               >
-                <PlusIcon className="h-4 w-4" />
-                Add Customer
+                <DownloadIcon className="h-4 w-4" />
+                {exporting ? "Exporting..." : "Export CSV"}
               </button>
             </div>
           </div>
@@ -154,11 +192,13 @@ export default function CustomersPage() {
                     <td className="py-4">
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-xs font-semibold text-white">
-                          {(customer.name || customer.email).slice(0, 2).toUpperCase()}
+                          {customerInitials(customer)}
                         </div>
                         <div>
-                          <div className="font-medium text-[color:var(--trite-ink)]">{customer.name || customer.email.split("@")[0]}</div>
-                          <div className="text-xs text-[color:var(--trite-muted)]">{customer.email}</div>
+                          <div className="font-medium text-[color:var(--trite-ink)]">{customerLabel(customer)}</div>
+                          <div className="text-xs text-[color:var(--trite-muted)]">
+                            {customer.email || customer.phone || "No contact details"}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -183,7 +223,7 @@ export default function CustomersPage() {
                           onClick={() => {
                             setEditingCustomer(customer);
                             setEditName(customer.name || "");
-                            setEditEmail(customer.email);
+                            setEditEmail(customer.email || "");
                             setEditTier(customer.tier);
                             setEditVolume(customer.total_spent.toString());
                             setEditModalOpen(true);
@@ -206,7 +246,7 @@ export default function CustomersPage() {
                                   onClick={() => {
                                     setEditingCustomer(customer);
                                     setEditName(customer.name || "");
-                                    setEditEmail(customer.email);
+                                    setEditEmail(customer.email || "");
                                     setEditTier(customer.tier);
                                     setEditVolume(customer.total_spent.toString());
                                     setEditModalOpen(true);
@@ -377,9 +417,8 @@ export default function CustomersPage() {
                   onChange={(e) => setEditTier(e.target.value as CustomerTier)}
                   className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-500"
                 >
-                  <option value="standard">Standard</option>
-                  <option value="enterprise">Enterprise (Tier 2)</option>
-                  <option value="institutional">Institutional (Tier 1)</option>
+                  <option value="STANDARD">Standard</option>
+                  <option value="PREMIUM">Premium</option>
                 </select>
               </div>
 
@@ -421,120 +460,7 @@ export default function CustomersPage() {
         </div>
       )}
 
-      {/* Add Customer Modal */}
-      {addModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-            <div className="mb-6 flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-semibold text-[color:var(--trite-ink)]">Add Customer</h2>
-                <p className="text-xs text-[color:var(--trite-muted)]">Create a new customer record</p>
-              </div>
-              <button
-                onClick={() => setAddModalOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.03]"
-              >
-                <XIcon className="h-5 w-5" />
-              </button>
-            </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-[color:var(--trite-ink)]">Full Name</label>
-                <input
-                  type="text"
-                  value={newCustomerName}
-                  onChange={(e) => setNewCustomerName(e.target.value)}
-                  placeholder="e.g., Enter Name"
-                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-[color:var(--trite-ink)]">Email Address</label>
-                <input
-                  type="email"
-                  value={newCustomerEmail}
-                  onChange={(e) => setNewCustomerEmail(e.target.value)}
-                  placeholder="e.g., example@gmail.com"
-                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-[color:var(--trite-ink)]">Phone Number</label>
-                <input
-                  type="tel"
-                  value={newCustomerPhone}
-                  onChange={(e) => setNewCustomerPhone(e.target.value)}
-                  placeholder="e.g., +233 24 123 4567"
-                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-[color:var(--trite-ink)]">Customer Tier</label>
-                <select
-                  value={newCustomerTier}
-                  onChange={(e) => setNewCustomerTier(e.target.value as CustomerTier)}
-                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-500"
-                >
-                  <option value="standard">Standard</option>
-                  <option value="enterprise">Enterprise (Tier 2)</option>
-                  <option value="institutional">Institutional (Tier 1)</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="mt-6 flex gap-3">
-              <button
-                onClick={() => setAddModalOpen(false)}
-                className="flex-1 rounded-lg border border-black/10 py-2.5 text-sm font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.03]"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={async () => {
-                  if (!newCustomerEmail) return;
-                  setAddLoading(true);
-                  try {
-                    const res = await fetch("/api/merchant/customers", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        name: newCustomerName || null,
-                        email: newCustomerEmail,
-                        phone: newCustomerPhone || null,
-                        tier: newCustomerTier,
-                      }),
-                    });
-                    if (!res.ok) {
-                      const err = await res.json();
-                      alert(err.error || "Failed to add customer");
-                      return;
-                    }
-                    // Reset form and refetch
-                    setNewCustomerName("");
-                    setNewCustomerEmail("");
-                    setNewCustomerPhone("");
-                    setNewCustomerTier("standard");
-                    setAddModalOpen(false);
-                    setFetchKey((k) => k + 1);
-                  } catch {
-                    alert("Network error — please try again");
-                  } finally {
-                    setAddLoading(false);
-                  }
-                }}
-                disabled={!newCustomerEmail || addLoading}
-                className="flex-1 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {addLoading ? "Adding…" : "Add Customer"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }
@@ -663,14 +589,6 @@ function DownloadIcon({ className }: { className?: string }) {
   );
 }
 
-function PlusIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-      <line x1="12" y1="5" x2="12" y2="19" />
-      <line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-  );
-}
 
 function EditIcon({ className }: { className?: string }) {
   return (

@@ -5,15 +5,23 @@
 //   amount float → SETTLEMENT_PENDING. The settlement row is inserted as
 //   PROCESSING. After this commits, the funds are reserved: overlapping
 //   runs and crashes can no longer double-pay.
-// Phase 2: external Moolre transfer of exactly the reserved net amount.
-// Phase 3 (atomic):
+// Phase 2: external transfer of exactly the reserved net amount, via the
+//   payout provider that `active_momo_provider` resolves to.
+// Phase 3:
 //   - success            → settlement COMPLETED (net stays in
 //                          SETTLEMENT_PENDING as the in-transit record)
 //   - definitive decline → reserve returned to float, fee reversed and
 //                          waived, settlement FAILED
-//   - unknown outcome    → settlement left PROCESSING with funds reserved;
-//                          flagged for manual reconciliation (the transfer
-//                          may or may not have gone through)
+//   - accepted, pending  → settlement stays PROCESSING with funds reserved;
+//                          Paystack reports the outcome over its webhook and
+//                          the reconciliation cron backstops it
+//   - unknown outcome    → settlement left PROCESSING with funds reserved and
+//                          an admin alert raised (the transfer may or may not
+//                          have gone through)
+//
+// The last two look the same on the row and differ only in intent: PENDING is
+// the expected asynchronous path, UNKNOWN means we lost track. Neither may
+// return the reserve — only a definitive decline can.
 
 import db from "@/lib/db";
 import { chargeSettlementFee, ensureLedgerAccount } from "@/lib/fees";
@@ -22,34 +30,20 @@ import {
   getWithdrawalHoldTotal,
 } from "@/lib/settlements/balance";
 import { getSettlementSchedule } from "@/lib/settlements/schedule";
-import { MoolreProvider } from "@/lib/payments/moolre";
+import { completeSettlement, failSettlement } from "@/lib/settlements/finalize";
+import { getPayoutProvider } from "@/lib/payments";
+import type { PayoutProvider, TransferResult } from "@/lib/payments";
+import { resolveMomoNetwork } from "@/lib/payments/networks";
+import { notifyAdmins } from "@/lib/admin-alerts";
 import crypto from "crypto";
 import { fromMinorUnits } from "@/lib/utils";
-import { enqueueMerchantWebhook } from "@/lib/webhooks/enqueue";
-import { attemptDelivery } from "@/lib/webhooks/deliver";
-
-export interface TransferResult {
-  success: boolean;
-  message: string;
-  providerRef?: string;
-  rawResponse: { error?: unknown } & Record<string, unknown>;
-}
-
-export type TransferFn = (params: {
-  providerName: string;
-  currency: string;
-  amount: number; // minor units
-  receiver: string;
-  externalRef: string;
-}) => Promise<TransferResult>;
-
-const moolreTransfer: TransferFn = (params) =>
-  new MoolreProvider().initiateTransfer(params);
 
 interface SettlementAccountRow {
   id: string;
   provider_name: string;
   account_number: string;
+  account_name?: string | null;
+  provider_metadata?: Record<string, unknown> | string | null;
 }
 
 export interface SettlementOptions {
@@ -63,6 +57,39 @@ export interface SettlementOptions {
    * reserved.
    */
   withdrawalRequestId?: string;
+  /**
+   * Record the transfer fee as waived and charge nothing. Used when an
+   * operator pays out by hand to cover for a rail failure and the platform
+   * absorbs the cost rather than billing the merchant for our outage.
+   */
+  waiveFeeReason?: string;
+  /**
+   * Narration passed to the provider. For a manual payout this is the
+   * operator's receipt number, and it becomes the settlement's provider ref.
+   */
+  reference?: string;
+}
+
+/** Outcome of a settlement attempt, as seen by callers. */
+export type SettlementOutcome =
+  | "COMPLETED"
+  | "PENDING"
+  | "FAILED"
+  | "UNKNOWN"
+  | "SKIPPED";
+
+function parseAccountMetadata(
+  value: SettlementAccountRow["provider_metadata"]
+): Record<string, unknown> | undefined {
+  if (!value) return undefined;
+  if (typeof value === "string") {
+    try {
+      return JSON.parse(value) as Record<string, unknown>;
+    } catch {
+      return undefined;
+    }
+  }
+  return value;
 }
 
 export async function processSettlement(
@@ -70,9 +97,14 @@ export async function processSettlement(
   account: SettlementAccountRow,
   balance: bigint,
   currency: string,
-  transfer: TransferFn = moolreTransfer,
+  /**
+   * Payout adapter override. Defaults to whatever `active_momo_provider`
+   * resolves to, so neither call site passes one — it stays the injectable
+   * seam for exercising this function without touching a provider.
+   */
+  payoutProvider?: PayoutProvider,
   options: SettlementOptions = {}
-): Promise<{ status: string; reason?: string; settlementId?: string }> {
+): Promise<{ status: SettlementOutcome; reason?: string; settlementId?: string }> {
   const logSource = options.source ?? "CRON_SETTLEMENTS";
 
   if (balance <= 0n) {
@@ -81,6 +113,19 @@ export async function processSettlement(
   if (options.requestedAmount !== undefined && options.requestedAmount <= 0n) {
     return { status: "SKIPPED", reason: "Non-positive requested amount" };
   }
+
+  // Resolve the destination telco before reserving anything: an account we
+  // can't route is a skip, not a settlement stuck holding the merchant's
+  // funds.
+  const network = resolveMomoNetwork(account.provider_name);
+  if (!network) {
+    return {
+      status: "SKIPPED",
+      reason: `Unsupported payout destination: ${account.provider_name}`,
+    };
+  }
+
+  const provider = payoutProvider ?? (await getPayoutProvider());
 
   // ---- Phase 1: reserve funds atomically ----
   const reservation = await db.transaction(async (trx) => {
@@ -195,12 +240,21 @@ export async function processSettlement(
         date_range_end: new Date(),
         transaction_count: 0,
         account_id: account.id,
+        // Stamped now, not on success: the reconciler and the payout webhook
+        // both need to know who holds this transfer even if the settlement
+        // never reaches a terminal state.
+        payout_provider: provider.name,
       })
       .returning("*");
 
     // Charge the transfer fee now (fee_ledger + DEBIT float / CREDIT PSP_FEE).
     // The transfer later sends exactly gross - actualFee, so paid == debited.
-    const actualFee = await chargeSettlementFee(trx, settlement, "SETTLEMENT_TRANSFER");
+    const actualFee = await chargeSettlementFee(
+      trx,
+      settlement,
+      "SETTLEMENT_TRANSFER",
+      options.waiveFeeReason
+    );
     const netAmount = grossAmount - actualFee;
 
     if (netAmount <= 0n) {
@@ -269,168 +323,127 @@ export async function processSettlement(
   // ---- Phase 2: external transfer of the reserved amount ----
   let transferResult: TransferResult;
   try {
-    transferResult = await transfer({
-      providerName: account.provider_name,
+    transferResult = await provider.initiateTransfer({
+      network,
       currency,
       amount: Number(netAmount),
       receiver: account.account_number,
+      accountName: account.account_name ?? undefined,
       externalRef: settlement.id,
+      reference: options.reference,
+      accountMetadata: parseAccountMetadata(account.provider_metadata),
     });
   } catch (err) {
+    // An adapter that throws tells us nothing about whether money moved.
     transferResult = {
-      success: false,
+      status: "UNKNOWN",
       message: err instanceof Error ? err.message : String(err),
       rawResponse: { error: String(err) },
     };
   }
 
-  // A response without provider fields means the outcome is UNKNOWN (network
-  // error) — the transfer may have gone through. Never reverse in that case.
-  const definitiveDecline =
-    !transferResult.success && transferResult.rawResponse?.error === undefined;
+  // Cache any handle the provider issued (e.g. a Paystack recipient code) so
+  // the next payout to this account skips the setup call. Best-effort: never
+  // let bookkeeping affect the payout outcome.
+  if (transferResult.accountMetadataPatch) {
+    await db("settlement_accounts")
+      .where({ id: account.id })
+      .update({
+        provider_metadata: JSON.stringify({
+          ...(parseAccountMetadata(account.provider_metadata) ?? {}),
+          ...transferResult.accountMetadataPatch,
+        }),
+        updated_at: new Date(),
+      })
+      .catch(() => null);
+  }
 
-  // ---- Phase 3: finalize ----
-  let webhookEventId: string | null = null;
-  const payoutWebhookData = {
-    settlement_id_display: settlement.settlement_id_display,
-    amount: fromMinorUnits(netAmount),
-    fee: fromMinorUnits(actualFee),
-    currency,
-    provider: account.provider_name,
+  const providerMetadata = {
+    payout_initiated_at: new Date().toISOString(),
+    payout_provider_ref: transferResult.providerRef ?? null,
+    payout_provider_message: transferResult.message,
   };
 
-  const result = await db.transaction(async (trx) => {
-    if (transferResult.success) {
-      await trx("settlements").where({ id: settlement.id }).update({
-        status: "COMPLETED",
-        bank_reference: transferResult.providerRef || null,
-        updated_at: new Date(),
-      });
+  // ---- Phase 3: finalize ----
+  if (transferResult.status === "SUCCESS") {
+    await completeSettlement({
+      settlementId: settlement.id,
+      providerRef: transferResult.providerRef ?? null,
+      source: logSource,
+      providerMetadata,
+    });
+    return { status: "COMPLETED", settlementId: settlement.id };
+  }
 
-      webhookEventId = await enqueueMerchantWebhook(trx, {
-        merchantId,
-        eventType: "payout.success",
-        data: { ...payoutWebhookData, status: "COMPLETED" },
-      });
-
-      await trx("system_logs").insert({
-        level: "INFO",
-        source: logSource,
-        event_description:
-          `Settlement ${settlement.settlement_id_display} COMPLETED via ${account.provider_name}. ` +
-          `Net: ${fromMinorUnits(netAmount)} ${currency}, fee: ${fromMinorUnits(actualFee)} ${currency}`,
-      });
-
-      return { status: "COMPLETED", settlementId: settlement.id };
-    }
-
-    if (!definitiveDecline) {
-      // Unknown outcome: keep funds reserved and the row PROCESSING so no
-      // further settlement can run for this merchant until reconciled.
-      await trx("system_logs").insert({
-        level: "ERROR",
-        source: logSource,
-        event_description:
-          `Settlement ${settlement.settlement_id_display} outcome UNKNOWN ` +
-          `(${transferResult.message}). Funds remain reserved — manual reconciliation required.`,
-      });
-      return { status: "UNKNOWN", settlementId: settlement.id, reason: transferResult.message };
-    }
-
-    // Definitive provider decline: return the reserve and reverse the fee.
-    const merchantAccount = await trx("ledger_accounts")
-      .where({ owner_id: merchantId, account_type: "MERCHANT_FLOAT", currency })
-      .first();
-    const pendingAccount = await trx("ledger_accounts")
-      .where({ owner_id: null, account_type: "SETTLEMENT_PENDING", currency })
-      .first();
-
-    const entryIdPrefix = `LE-${Date.now().toString(36).toUpperCase()}-${crypto
-      .randomUUID()
-      .slice(0, 4)
-      .toUpperCase()}`;
-
-    await trx("ledger_entries").insert([
-      {
-        entry_id_display: `${entryIdPrefix}-RDR`,
-        settlement_id: settlement.id,
-        account_id: pendingAccount.id,
-        entry_type: "DEBIT",
-        amount: netAmount.toString(),
-        currency,
-        description: `Settlement reserve returned (transfer declined): ${settlement.settlement_id_display}`,
-      },
-      {
-        entry_id_display: `${entryIdPrefix}-RCR`,
-        settlement_id: settlement.id,
-        account_id: merchantAccount.id,
-        entry_type: "CREDIT",
-        amount: netAmount.toString(),
-        currency,
-        description: `Settlement reserve returned (transfer declined): ${settlement.settlement_id_display}`,
-      },
-    ]);
-
-    if (actualFee > 0n) {
-      const feeAccount = await trx("ledger_accounts")
-        .where({ owner_id: null, account_type: "PSP_FEE", currency })
-        .first();
-
-      await trx("ledger_entries").insert([
-        {
-          entry_id_display: `${entryIdPrefix}-WDR`,
-          settlement_id: settlement.id,
-          account_id: feeAccount.id,
-          entry_type: "DEBIT",
-          amount: actualFee.toString(),
-          currency,
-          description: `Settlement fee reversed (transfer declined): ${settlement.settlement_id_display}`,
-        },
-        {
-          entry_id_display: `${entryIdPrefix}-WCR`,
-          settlement_id: settlement.id,
-          account_id: merchantAccount.id,
-          entry_type: "CREDIT",
-          amount: actualFee.toString(),
-          currency,
-          description: `Settlement fee reversed (transfer declined): ${settlement.settlement_id_display}`,
-        },
-      ]);
-
-      // Waiver semantics per the fee ledger design: the row stays, flagged.
-      await trx("fee_ledger").where({ settlement_id: settlement.id }).update({
-        is_waived: true,
-        waiver_reason: "Settlement transfer declined by provider",
-      });
-    }
-
-    await trx("settlements").where({ id: settlement.id }).update({
+  if (transferResult.status === "FAILED") {
+    await failSettlement({
+      settlementId: settlement.id,
+      reason: transferResult.message,
+      source: logSource,
+      providerMetadata,
+    });
+    return {
       status: "FAILED",
-      failure_reason: transferResult.message,
+      settlementId: settlement.id,
+      reason: transferResult.message,
+    };
+  }
+
+  // Everything below leaves the settlement PROCESSING with the funds still
+  // reserved. The in-flight guard in phase 1 then blocks further settlements
+  // for this merchant until the payout resolves — which is correct: the money
+  // is out of the float and may be in transit.
+  await db("settlements")
+    .where({ id: settlement.id })
+    .update({
+      bank_reference: transferResult.providerRef || null,
+      provider_metadata: JSON.stringify(providerMetadata),
       updated_at: new Date(),
     });
 
-    webhookEventId = await enqueueMerchantWebhook(trx, {
-      merchantId,
-      eventType: "payout.failed",
-      data: {
-        ...payoutWebhookData,
-        status: "FAILED",
-        failure_reason: transferResult.message,
-      },
-    });
-
-    await trx("system_logs").insert({
-      level: "ERROR",
+  if (transferResult.status === "PENDING") {
+    // The expected Paystack path, not a fault: the provider accepted the
+    // transfer and reports the outcome over its webhook.
+    await db("system_logs").insert({
+      level: "INFO",
       source: logSource,
       event_description:
-        `Settlement ${settlement.settlement_id_display} FAILED via ${account.provider_name}: ` +
-        `${transferResult.message}. Reserve and fee returned to merchant float.`,
+        `Settlement ${settlement.settlement_id_display} accepted by ${provider.name} and ` +
+        `awaiting confirmation (${transferResult.message}). ` +
+        `Net: ${fromMinorUnits(netAmount)} ${currency}, fee: ${fromMinorUnits(actualFee)} ${currency}`,
     });
+    return {
+      status: "PENDING",
+      settlementId: settlement.id,
+      reason: transferResult.message,
+    };
+  }
 
-    return { status: "FAILED", settlementId: settlement.id, reason: transferResult.message };
+  // UNKNOWN / NOT_FOUND: we never learned the outcome. Hold the reserve and
+  // get a human involved — the reconciler will keep re-checking meanwhile.
+  await db("system_logs").insert({
+    level: "ERROR",
+    source: logSource,
+    event_description:
+      `Settlement ${settlement.settlement_id_display} outcome UNKNOWN via ${provider.name} ` +
+      `(${transferResult.message}). Funds remain reserved — reconciliation required.`,
   });
 
-  if (webhookEventId) attemptDelivery(webhookEventId).catch(() => null);
-  return result;
+  await notifyAdmins({
+    category: "SYSTEM_ALERT",
+    severity: "CRITICAL",
+    title: "Payout outcome unknown",
+    message:
+      `Settlement ${settlement.settlement_id_display} (${fromMinorUnits(netAmount)} ${currency}) ` +
+      `via ${provider.name} did not return a definitive outcome: ${transferResult.message}. ` +
+      `Funds stay reserved and further payouts for this merchant are blocked until it resolves.`,
+    dedupeKey: `payout-unknown:${settlement.id}`,
+    metadata: { settlement_id: settlement.id, merchant_id: merchantId, provider: provider.name },
+  }).catch(() => null);
+
+  return {
+    status: "UNKNOWN",
+    settlementId: settlement.id,
+    reason: transferResult.message,
+  };
 }

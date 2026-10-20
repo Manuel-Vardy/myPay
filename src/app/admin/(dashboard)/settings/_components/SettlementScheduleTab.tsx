@@ -9,6 +9,7 @@ type ScheduleData = {
   payout_time: string; // "HH:MM" GMT
   payout_threshold: number | null; // GHS; null = disabled
   withdrawal_age_hours: number; // 0 = aging disabled
+  auto_settlements_enabled: boolean;
 };
 
 export default function SettlementScheduleTab() {
@@ -20,6 +21,7 @@ export default function SettlementScheduleTab() {
     payoutTime: "18:00",
     payoutThreshold: "",
     withdrawalAgeHours: "24",
+    autoSettlementsEnabled: true,
   });
   const [saving, setSaving] = useState(false);
 
@@ -29,6 +31,7 @@ export default function SettlementScheduleTab() {
         payoutTime: data.payout_time,
         payoutThreshold: data.payout_threshold != null ? String(data.payout_threshold) : "",
         withdrawalAgeHours: String(data.withdrawal_age_hours ?? 24),
+        autoSettlementsEnabled: data.auto_settlements_enabled ?? true,
       });
     }
   }, [data]);
@@ -43,6 +46,7 @@ export default function SettlementScheduleTab() {
           payout_time: form.payoutTime,
           payout_threshold: form.payoutThreshold === "" ? null : Number(form.payoutThreshold),
           withdrawal_age_hours: Number(form.withdrawalAgeHours),
+          auto_settlements_enabled: form.autoSettlementsEnabled,
         }),
       });
       if (res.ok) {
@@ -77,6 +81,24 @@ export default function SettlementScheduleTab() {
         Merchant payouts run automatically on whichever happens first: the daily payout time,
         or the moment a merchant&apos;s available balance reaches the payout threshold.
       </p>
+
+      <div className="rounded-xl border border-black/5 p-4 flex items-center justify-between">
+        <div>
+          <p className="font-semibold text-[color:var(--trite-ink)] text-sm">Automatic Settlements Master Flag</p>
+          <p className="text-xs text-[color:var(--trite-muted)]">
+            When paused, automated payout sweeps across all merchants will be suspended.
+          </p>
+        </div>
+        <label className="relative inline-flex cursor-pointer items-center">
+          <input
+            type="checkbox"
+            checked={form.autoSettlementsEnabled}
+            onChange={(e) => setForm({ ...form, autoSettlementsEnabled: e.target.checked })}
+            className="peer sr-only"
+          />
+          <div className="peer h-6 w-11 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-emerald-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none" />
+        </label>
+      </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         <div>

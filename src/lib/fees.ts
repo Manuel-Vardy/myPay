@@ -181,15 +181,27 @@ export async function ensureLedgerAccount(
   currency: string,
   label: string
 ) {
-  let account = await trx("ledger_accounts")
-    .where({ owner_id: ownerId, account_type: accountType, currency })
-    .first();
-  if (!account) {
-    [account] = await trx("ledger_accounts")
-      .insert({ owner_id: ownerId, account_type: accountType, currency, label })
-      .returning("*");
-  }
-  return account;
+  const find = () =>
+    trx("ledger_accounts")
+      .where({ owner_id: ownerId, account_type: accountType, currency })
+      .first();
+
+  const existing = await find();
+  if (existing) return existing;
+
+  // Concurrent callers can both miss the SELECT above. ON CONFLICT DO NOTHING
+  // (untargeted, so it covers both the owner_id constraint and the
+  // null-owner partial index from migration 0035) makes the loser a no-op
+  // rather than a unique violation that would abort the caller's whole
+  // settlement transaction. Re-read to pick up whichever row won.
+  await trx.raw(
+    `INSERT INTO ledger_accounts (owner_id, account_type, currency, label)
+     VALUES (?, ?::ledger_account_type, ?, ?)
+     ON CONFLICT DO NOTHING`,
+    [ownerId, accountType, currency, label]
+  );
+
+  return find();
 }
 
 interface ChargeParams {
@@ -204,6 +216,13 @@ interface ChargeParams {
   method?: PaymentMethod | null;
   /** Reference shown in ledger entry descriptions. */
   displayRef: string;
+  /**
+   * Record the fee but move no money. The fee_ledger row is written with
+   * `is_waived` set so the waiver is auditable and reporting still sees what
+   * the fee would have been — the same semantics a declined transfer uses
+   * when it reverses one.
+   */
+  waiverReason?: string;
 }
 
 /**
@@ -230,6 +249,8 @@ async function chargeFee(trx: Knex.Transaction, params: ChargeParams): Promise<b
 
   const fee = calculateFee(schedule, params.basisAmount);
 
+  const waived = Boolean(params.waiverReason);
+
   await trx("fee_ledger").insert({
     fee_schedule_id: schedule.id,
     fee_type: params.feeType,
@@ -241,7 +262,11 @@ async function chargeFee(trx: Knex.Transaction, params: ChargeParams): Promise<b
     flat_amount_applied: String(schedule.flat_amount ?? 0),
     percentage_rate_applied: schedule.percentage_rate ?? 0,
     basis_amount: params.basisAmount.toString(),
+    ...(waived && { is_waived: true, waiver_reason: params.waiverReason }),
   });
+
+  // A waived fee is recorded and charged to nobody, so callers must see 0.
+  if (waived) return 0n;
 
   // ledger_entries.amount must be > 0 — a zero fee is recorded in
   // fee_ledger only.
@@ -344,7 +369,9 @@ export async function chargeSettlementFee(
     gross_amount: number | string;
     currency: string;
   },
-  feeType: FeeType = "SETTLEMENT_TRANSFER"
+  feeType: FeeType = "SETTLEMENT_TRANSFER",
+  /** Set to record the fee as waived and charge nothing. */
+  waiverReason?: string
 ): Promise<bigint> {
   return chargeFee(trx, {
     feeType,
@@ -353,5 +380,6 @@ export async function chargeSettlementFee(
     basisAmount: BigInt(String(settlement.gross_amount)),
     settlementId: settlement.id,
     displayRef: settlement.settlement_id_display,
+    waiverReason,
   });
 }

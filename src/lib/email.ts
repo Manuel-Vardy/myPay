@@ -1,8 +1,11 @@
 import "server-only";
-import sgMail from "@sendgrid/mail";
+import { Client as MailjetClient, type SendEmailV3_1 } from "node-mailjet";
+import { logDeliveryFailure } from "@/lib/delivery-log";
 
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+const MJ_APIKEY_PUBLIC = process.env.MJ_APIKEY_PUBLIC;
+const MJ_APIKEY_PRIVATE = process.env.MJ_APIKEY_PRIVATE;
 const FROM_EMAIL = process.env.EMAIL_FROM || "no-reply@trite.tech";
+const FROM_NAME = process.env.EMAIL_FROM_NAME || "TRITE";
 // Merchant portal (dashboard.trite.tech in prod) — used for signup verification
 // and merchant password resets. Same env var proxy.ts already uses to redirect
 // the marketing site's /login and /get-started to the dashboard domain.
@@ -12,70 +15,90 @@ const DASHBOARD_BASE_URL = process.env.DASHBOARD_BASE_URL || "http://localhost:3
 // for local single-server dev where there's no service split.
 const ADMIN_BASE_URL = process.env.ADMIN_BASE_URL || DASHBOARD_BASE_URL;
 
-if (SENDGRID_API_KEY) {
-  sgMail.setApiKey(SENDGRID_API_KEY);
-}
+const mailjet =
+  MJ_APIKEY_PUBLIC && MJ_APIKEY_PRIVATE
+    ? new MailjetClient({ apiKey: MJ_APIKEY_PUBLIC, apiSecret: MJ_APIKEY_PRIVATE })
+    : null;
 
 interface SendEmailOptions {
   to: string;
   subject: string;
   html: string;
   text: string;
+  /** Attributes the failure to a user in the admin log feed. */
+  actorId?: string | null;
+  /**
+   * Whether a delivery failure should raise an admin alert. Must be false for
+   * the alert emails themselves, or a failing alert would alert about itself.
+   */
+  alertAdmins?: boolean;
 }
 
 /**
- * Send an email via SendGrid. If SENDGRID_API_KEY isn't configured (e.g.
- * local dev without a key), logs the send instead of throwing so auth flows
- * that trigger email don't hard-fail.
+ * Send an email via Mailjet. If MJ_APIKEY_PUBLIC/PRIVATE aren't configured
+ * (e.g. local dev without keys), logs the send instead of throwing so auth
+ * flows that trigger email don't hard-fail.
+ *
+ * Failures are recorded in `system_logs` before being re-thrown, so a silent
+ * delivery outage is visible to admins rather than only to whoever is reading
+ * stdout. Callers keep their existing throw/catch behaviour.
  */
-export async function sendEmail({ to, subject, html, text }: SendEmailOptions): Promise<void> {
-  if (!SENDGRID_API_KEY) {
-    console.warn(`[email] SENDGRID_API_KEY not set — skipping send to ${to}: "${subject}"`);
+export async function sendEmail({ to, subject, html, text, actorId, alertAdmins = true }: SendEmailOptions): Promise<void> {
+  if (!mailjet) {
+    console.warn(`[email] MJ_APIKEY_PUBLIC/MJ_APIKEY_PRIVATE not set — skipping send to ${to}: "${subject}"`);
+    // Unconfigured dev is expected; unconfigured production means nobody is
+    // receiving mail at all, which admins need to see immediately.
+    if (process.env.NODE_ENV === "production") {
+      await logDeliveryFailure({
+        channel: "EMAIL",
+        provider: "mailjet",
+        recipient: to,
+        event: subject,
+        error: new Error("MJ_APIKEY_PUBLIC/MJ_APIKEY_PRIVATE not configured — email was not sent"),
+        actorId,
+        critical: true,
+        alertAdmins,
+      });
+    }
     return;
   }
 
-  await sgMail.send({ to, from: FROM_EMAIL, subject, html, text });
-}
+  const body: SendEmailV3_1.Body = {
+    Messages: [
+      {
+        From: { Email: FROM_EMAIL, Name: FROM_NAME },
+        To: [{ Email: to }],
+        Subject: subject,
+        TextPart: text,
+        HTMLPart: html,
+      },
+    ],
+  };
 
-function wrapTemplate(heading: string, bodyHtml: string, ctaLabel: string, ctaUrl: string): string {
-  return `
-  <div style="background:#f6f7fb;padding:32px 16px;font-family:Helvetica,Arial,sans-serif;">
-    <div style="max-width:480px;margin:0 auto;background:#fff;border-radius:16px;padding:32px;">
-      <p style="font-weight:800;font-size:18px;color:#000;margin:0 0 24px;">TRITE</p>
-      <h1 style="font-size:20px;color:#000;margin:0 0 12px;">${heading}</h1>
-      <div style="font-size:14px;line-height:1.6;color:#444;margin:0 0 24px;">${bodyHtml}</div>
-      <a href="${ctaUrl}" style="display:inline-block;background:#22c55e;color:#fff;font-weight:700;font-size:14px;text-decoration:none;padding:12px 24px;border-radius:12px;">${ctaLabel}</a>
-      <p style="font-size:12px;color:#999;margin:24px 0 0;">If the button doesn't work, copy this link into your browser:<br />${ctaUrl}</p>
-    </div>
-  </div>`;
-}
+  try {
+    const result = await mailjet.post("send", { version: "v3.1" }).request(body);
 
-export async function sendPasswordResetEmail(to: string, resetUrl: string): Promise<void> {
-  await sendEmail({
-    to,
-    subject: "Reset your TRITE password",
-    html: wrapTemplate(
-      "Reset your password",
-      "We received a request to reset the password on your TRITE account. This link expires in 1 hour. If you didn't request this, you can safely ignore this email.",
-      "Reset Password",
-      resetUrl
-    ),
-    text: `Reset your TRITE password: ${resetUrl} (expires in 1 hour). If you didn't request this, you can ignore this email.`,
-  });
-}
-
-export async function sendVerificationEmail(to: string, verifyUrl: string): Promise<void> {
-  await sendEmail({
-    to,
-    subject: "Verify your TRITE account",
-    html: wrapTemplate(
-      "Verify your email address",
-      "Thanks for signing up for TRITE. Confirm your email address to finish setting up your merchant account. This link expires in 24 hours.",
-      "Verify Email",
-      verifyUrl
-    ),
-    text: `Verify your TRITE account: ${verifyUrl} (expires in 24 hours).`,
-  });
+    // Mailjet reports per-message rejections inside a 200 response, so a
+    // resolved promise alone doesn't mean the mail was accepted.
+    const message = (result?.body as SendEmailV3_1.Response | undefined)?.Messages?.[0];
+    if (message && message.Status !== "success") {
+      const reason =
+        message.Errors?.map((e) => e.ErrorMessage).filter(Boolean).join("; ") ||
+        `Mailjet returned status "${message.Status}"`;
+      throw new Error(reason);
+    }
+  } catch (error) {
+    await logDeliveryFailure({
+      channel: "EMAIL",
+      provider: "mailjet",
+      recipient: to,
+      event: subject,
+      error,
+      actorId,
+      alertAdmins,
+    });
+    throw error;
+  }
 }
 
 export { DASHBOARD_BASE_URL, ADMIN_BASE_URL };

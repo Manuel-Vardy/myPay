@@ -179,6 +179,8 @@ export default async function LinkResolverPage({
       redirect_url: linkRecord.redirect_url,
       status: "ACTIVE",
       expires_at: expiresAt,
+      // No key behind a shared link — see the note in /api/payments/link-session.
+      origin: "PAYMENT_LINK",
     });
 
     await db("system_logs").insert({

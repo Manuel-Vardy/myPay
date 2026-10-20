@@ -25,6 +25,7 @@ export async function GET() {
           ? fromMinorUnits(schedule.payout_threshold_minor)
           : null,
       withdrawal_age_hours: schedule.withdrawal_age_hours,
+      auto_settlements_enabled: schedule.auto_settlements_enabled,
     });
   } catch (error) {
     console.error("Failed to fetch settlement schedule", error);
@@ -68,10 +69,16 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    const autoSettlementsEnabled =
+      typeof body.auto_settlements_enabled === "boolean"
+        ? body.auto_settlements_enabled
+        : true;
+
     const value = {
       payout_time: body.payout_time,
       payout_threshold_minor: thresholdMinor,
       withdrawal_age_hours: ageHours,
+      auto_settlements_enabled: autoSettlementsEnabled,
     };
 
     await db("platform_settings")
@@ -84,10 +91,19 @@ export async function PUT(request: NextRequest) {
       .onConflict("key")
       .merge();
 
+    await db("system_logs").insert({
+      level: "INFO",
+      source: "ADMIN_SETTINGS",
+      event_description: `Settlement schedule updated: auto_settlements=${autoSettlementsEnabled ? "ENABLED" : "PAUSED"}, time=${body.payout_time}, aging=${ageHours}h`,
+      actor_id: guard.session.userId,
+      ip_address: request.headers.get("x-forwarded-for") || "unknown",
+    });
+
     return Response.json({
       payout_time: value.payout_time,
       payout_threshold: thresholdMinor != null ? fromMinorUnits(thresholdMinor) : null,
       withdrawal_age_hours: value.withdrawal_age_hours,
+      auto_settlements_enabled: value.auto_settlements_enabled,
     });
   } catch (error) {
     console.error("Failed to update settlement schedule", error);

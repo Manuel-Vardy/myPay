@@ -20,50 +20,56 @@ export async function GET(request: NextRequest) {
     if (guard.error) return guard.error;
     const merchant_id = guard.merchant.id;
 
-    let query = db("transactions").where({ merchant_id });
+    let query = db("transactions")
+      .leftJoin("payment_sessions", "transactions.payment_session_id", "payment_sessions.id")
+      .select("transactions.*", "payment_sessions.description as description")
+      .where({ "transactions.merchant_id": merchant_id });
 
-    if (status) query = query.where("status", status);
+    if (status) query = query.where("transactions.status", status);
     if (currency) {
       if (currency === "FIAT") {
-        query = query.whereIn("currency", ["GHS", "USD", "EUR", "NGN"]);
+        query = query.whereIn("transactions.currency", ["GHS", "USD", "EUR", "NGN"]);
       } else if (currency === "STABLECOIN") {
-        query = query.whereIn("currency", ["USDC", "USDT", "DAI", "BUSD"]);
+        query = query.whereIn("transactions.currency", ["USDC", "USDT", "DAI", "BUSD"]);
       } else if (currency === "CRYPTO") {
-        query = query.whereNotIn("currency", ["GHS", "USD", "EUR", "NGN", "USDC", "USDT", "DAI", "BUSD"]);
+        query = query.whereNotIn("transactions.currency", ["GHS", "USD", "EUR", "NGN", "USDC", "USDT", "DAI", "BUSD"]);
       } else {
-        query = query.where("currency", currency);
+        query = query.where("transactions.currency", currency);
       }
     }
-    if (method) query = query.where("method", method);
+    if (method) query = query.where("transactions.method", method);
     if (date_range) {
       const days = parseInt(date_range);
       if (!isNaN(days)) {
         const dateLimit = new Date();
         dateLimit.setDate(dateLimit.getDate() - days);
-        query = query.where("created_at", ">=", dateLimit.toISOString());
+        query = query.where("transactions.created_at", ">=", dateLimit.toISOString());
       }
     }
-    if (date_from) query = query.where("created_at", ">=", date_from);
-    if (date_to) query = query.where("created_at", "<=", date_to);
+    if (date_from) query = query.where("transactions.created_at", ">=", date_from);
+    if (date_to) query = query.where("transactions.created_at", "<=", date_to);
     if (search) {
+      // Payers are identified by whichever of these we have — searching only
+      // by email would miss every mobile money customer.
       query = query.where(function () {
-        this.where("tx_id_display", "ilike", `%${search}%`).orWhere(
-          "payer_email",
-          "ilike",
-          `%${search}%`
-        );
+        this.where("transactions.tx_id_display", "ilike", `%${search}%`)
+          .orWhere("transactions.payer_email", "ilike", `%${search}%`)
+          .orWhere("transactions.payer_name", "ilike", `%${search}%`)
+          .orWhere("transactions.payer_phone", "ilike", `%${search}%`)
+          .orWhere("payment_sessions.description", "ilike", `%${search}%`);
       });
     }
 
-    const countQuery = query.clone().count("id as cnt").first();
+    const countQuery = query.clone().clearSelect().count("transactions.id as cnt").first();
     const total = Number((await countQuery)?.cnt || 0);
 
     // Global Stats Aggregations
     const statsQuery = query.clone()
-      .select('status')
-      .sum('amount as total_amount')
-      .count('id as count')
-      .groupBy('status');
+      .clearSelect()
+      .select('transactions.status')
+      .sum('transactions.amount as total_amount')
+      .count('transactions.id as count')
+      .groupBy('transactions.status');
     const statusStats = await statsQuery;
 
     let totalVolume = 0;
@@ -81,9 +87,10 @@ export async function GET(request: NextRequest) {
 
     // Method Mix Aggregation
     const methodsQuery = query.clone()
-      .select('method')
-      .count('id as count')
-      .groupBy('method')
+      .clearSelect()
+      .select('transactions.method')
+      .count('transactions.id as count')
+      .groupBy('transactions.method')
       .orderBy('count', 'desc');
     const methodMixRows = await methodsQuery;
 
@@ -129,7 +136,7 @@ export async function GET(request: NextRequest) {
     }
 
     const transactions = await query
-      .orderBy("created_at", "desc")
+      .orderBy("transactions.created_at", "desc")
       .limit(per_page)
       .offset((page - 1) * per_page);
       

@@ -1,9 +1,9 @@
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
-import { requireAdmin } from "@/lib/guards";
+import { requirePermission } from "@/lib/guards";
 
 export async function GET(request: NextRequest) {
-  const guard = await requireAdmin();
+  const guard = await requirePermission("manage-integrations");
   if (guard.error) return guard.error;
 
   try {
@@ -21,14 +21,14 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const guard = await requireAdmin();
+  const guard = await requirePermission("manage-integrations");
   if (guard.error) return guard.error;
 
   try {
     const body = await request.json();
     const { provider, fallback_enabled } = body;
 
-    if (!["moolre", "anm"].includes(provider)) {
+    if (!["moolre", "anm", "paystack"].includes(provider)) {
       return Response.json({ error: "Invalid provider" }, { status: 400 });
     }
 
@@ -49,6 +49,14 @@ export async function PATCH(request: NextRequest) {
         updated_at: db.fn.now(),
         updated_by: guard.session.userId,
       });
+
+    await db("system_logs").insert({
+      level: "WARN",
+      source: "ADMIN_INTEGRATIONS",
+      event_description: `MoMo active provider set to ${provider} (fallback=${fallback_enabled ? "true" : "false"})`,
+      actor_id: guard.session.userId,
+      ip_address: request.headers.get("x-forwarded-for") || "unknown",
+    });
 
     return Response.json({ success: true, provider, fallback_enabled });
   } catch (error: any) {

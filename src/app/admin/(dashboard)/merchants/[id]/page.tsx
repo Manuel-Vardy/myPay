@@ -16,6 +16,7 @@ import {
   Calendar,
   Globe,
   Mail,
+  Phone,
   KeyRound,
   Shield,
   Receipt,
@@ -24,6 +25,9 @@ import {
 type MerchantProfile = {
   id: string;
   email: string;
+  email_verified_at: string | null;
+  mobile_number: string | null;
+  mobile_verified_at: string | null;
   role: string;
   status: string;
   two_factor_enabled: boolean;
@@ -231,7 +235,35 @@ export default function MerchantProfilePage() {
               <h1 className="text-xl font-semibold text-[color:var(--trite-ink)]">
                 {profile.business_name || profile.email}
               </h1>
-              <p className="mt-0.5 text-xs text-[color:var(--trite-muted)]">{profile.email}</p>
+              <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-[color:var(--trite-muted)]">
+                <span>{profile.email}</span>
+                {profile.email_verified_at ? (
+                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-600">
+                    <CircleCheck className="h-2.5 w-2.5" />
+                    Verified
+                  </span>
+                ) : (
+                  <span className="rounded bg-amber-50 px-1 py-0.2 text-[9px] font-bold text-amber-600 border border-amber-200">
+                    Unverified
+                  </span>
+                )}
+                {profile.mobile_number && (
+                  <>
+                    <span>•</span>
+                    <span className="font-mono">{profile.mobile_number}</span>
+                    {profile.mobile_verified_at ? (
+                      <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-600">
+                        <CircleCheck className="h-2.5 w-2.5" />
+                        Verified
+                      </span>
+                    ) : (
+                      <span className="rounded bg-amber-50 px-1 py-0.2 text-[9px] font-bold text-amber-600 border border-amber-200">
+                        Unverified
+                      </span>
+                    )}
+                  </>
+                )}
+              </p>
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <span className="font-mono text-[10px] font-bold text-[color:var(--trite-ink)] bg-black/[0.03] rounded-md px-2 py-1 tracking-wider">
                   {profile.merchant_display_id || "—"}
@@ -316,8 +348,43 @@ export default function MerchantProfilePage() {
           <div className="flex items-start gap-3">
             <Mail className="mt-0.5 h-4 w-4 text-[color:var(--trite-muted)]" />
             <div>
-              <p className="text-[10px] font-bold text-[color:var(--trite-muted)] uppercase tracking-widest">Email</p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-[10px] font-bold text-[color:var(--trite-muted)] uppercase tracking-widest">Email</p>
+                {profile.email_verified_at ? (
+                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-600">
+                    <CircleCheck className="h-2.5 w-2.5" />
+                    Verified
+                  </span>
+                ) : (
+                  <span className="rounded bg-amber-50 px-1 py-0.2 text-[9px] font-bold text-amber-600 border border-amber-200">
+                    Unverified
+                  </span>
+                )}
+              </div>
               <p className="mt-1 text-sm font-medium text-[color:var(--trite-ink)]">{profile.email}</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <Phone className="mt-0.5 h-4 w-4 text-[color:var(--trite-muted)]" />
+            <div>
+              <div className="flex items-center gap-1.5">
+                <p className="text-[10px] font-bold text-[color:var(--trite-muted)] uppercase tracking-widest">Mobile Number</p>
+                {profile.mobile_number && (
+                  profile.mobile_verified_at ? (
+                    <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-600">
+                      <CircleCheck className="h-2.5 w-2.5" />
+                      Verified
+                    </span>
+                  ) : (
+                    <span className="rounded bg-amber-50 px-1 py-0.2 text-[9px] font-bold text-amber-600 border border-amber-200">
+                      Unverified
+                    </span>
+                  )
+                )}
+              </div>
+              <p className="mt-1 text-sm font-medium font-mono text-[color:var(--trite-ink)]">
+                {profile.mobile_number || "—"}
+              </p>
             </div>
           </div>
           <div className="flex items-start gap-3">

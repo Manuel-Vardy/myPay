@@ -26,6 +26,7 @@ type DashboardData = {
     payout_time: string; // "HH:MM" GMT
     payout_threshold: number | null; // GHS; null = disabled
     withdrawal_age_hours: number; // 0 = aging disabled
+    auto_settlements_enabled?: boolean;
   };
   settlement_account: {
     id: string;
@@ -86,7 +87,7 @@ export default function DashboardPage() {
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [withdrawMethod, setWithdrawMethod] = useState("bank");
   const [txFilter, setTxFilter] = useState<"all" | "fiat" | "stablecoin" | "crypto">("all");
-  const [txStatus, setTxStatus] = useState<"all" | "SETTLED" | "AUTHORIZED" | "FAILED" | "CANCELLED">("all");
+  const [txStatus, setTxStatus] = useState<"all" | "SETTLED" | "AUTHORIZED" | "FAILED" | "CANCELLED">("SETTLED");
   const [txSearch, setTxSearch] = useState("");
   const [dateRange, setDateRange] = useState<"7d" | "30d" | "90d" | "all">("30d");
   const [chartPeriod, setChartPeriod] = useState<"day" | "week" | "month" | "year">("week");
@@ -115,31 +116,52 @@ export default function DashboardPage() {
     }
   };
 
-    const getGreetingData = () => {
-        const hour = new Date().getHours();
-        const name = dashData?.merchant?.business_name || "";
-        if (hour >= 5 && hour < 12) {
-            return {
-                title: `Good morning, ${name}!`,
-                description: "Hope your morning is off to a great start. We're ready to help you power secure global payments today.",
-            };
-        } else if (hour >= 12 && hour < 18) {
-            return {
-                title: `Good afternoon, ${name}!`,
-                description: "Hope your day is going wonderfully. Your Trite portal is running smoothly with excellent transaction success rates.",
-            };
-        } else if (hour >= 18 && hour < 22) {
-            return {
-                title: `Good evening, ${name}!`,
-                description: "We hope you're having a pleasant and relaxing finish to your day. Here's a quick look at today's achievements.",
-            };
-        } else {
-            return {
-                title: `Working late, ${name}?`,
-                description: "We're up with you. Your global payment infrastructure is running perfectly and secure in the background.",
-            };
-        }
+  const [currentTime, setCurrentTime] = useState<Date>(() => new Date());
+
+  useEffect(() => {
+    // Sync to client local time on mount and keep updated every minute
+    setCurrentTime(new Date());
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000);
+
+    const handleFocus = () => setCurrentTime(new Date());
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleFocus);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleFocus);
     };
+  }, []);
+
+  const getGreetingData = () => {
+    const hour = currentTime.getHours();
+    const name = dashData?.merchant?.business_name?.trim();
+    const nameSuffix = name ? `, ${name}` : "";
+    if (hour >= 5 && hour < 12) {
+      return {
+        title: `Good morning${nameSuffix}!`,
+        description: "Hope your morning is off to a great start. We're ready to help you power secure global payments today.",
+      };
+    } else if (hour >= 12 && hour < 18) {
+      return {
+        title: `Good afternoon${nameSuffix}!`,
+        description: "Hope your day is going wonderfully. Your Trite portal is running smoothly with excellent transaction success rates.",
+      };
+    } else if (hour >= 18 && hour < 22) {
+      return {
+        title: `Good evening${nameSuffix}!`,
+        description: "We hope you're having a pleasant and relaxing finish to your day. Here's a quick look at today's achievements.",
+      };
+    } else {
+      return {
+        title: `Working late${nameSuffix}?`,
+        description: "We're up with you. Your global payment infrastructure is running perfectly and secure in the background.",
+      };
+    }
+  };
   const { data: dashData, mutate: refreshDash } = useMerchantFetch<DashboardData>("/api/merchant/dashboard");
   const { data: txData } = useMerchantFetch<{ data: TxRow[] }>("/api/merchant/transactions", { per_page: "5" });
   const { data: settlementData } = useMerchantFetch<{ data: SettlementRow[] }>("/api/merchant/settlements");
@@ -169,7 +191,7 @@ export default function DashboardPage() {
     const time = dashData?.settlement_schedule?.payout_time;
     if (!time) return "—";
     const [hours, minutes] = time.split(":").map(Number);
-    const now = new Date();
+    const now = currentTime;
     const todayPayout = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), hours, minutes));
     return `${now < todayPayout ? "Today" : "Tomorrow"} ${time} GMT`;
   })();
@@ -203,10 +225,10 @@ export default function DashboardPage() {
     <>
         <div className="px-4 py-5 sm:p-6">
           <div className="mb-8">
-            <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--trite-ink)]">
+            <h1 suppressHydrationWarning className="text-3xl font-semibold tracking-tight text-[color:var(--trite-ink)]">
               {greeting.title}
             </h1>
-            <p className="mt-2 text-sm text-[color:var(--trite-muted)]">
+            <p suppressHydrationWarning className="mt-2 text-sm text-[color:var(--trite-muted)]">
               {greeting.description}
             </p>
           </div>
@@ -262,39 +284,41 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="mt-6 rounded-2xl bg-[color:var(--trite-ink)] p-6 text-white ring-1 ring-black/10">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="text-sm font-medium text-white/80">Settlement Status</div>
-                    {dashData?.settlement_account ? (
-                      <>
-                        <div className="mt-2 text-2xl font-bold">Next: {nextPayoutLabel}</div>
-                        <p className="mt-2 text-xs leading-5 text-white/80">
-                          Auto-settlement to {dashData.settlement_account.provider_name} account ending in {dashData.settlement_account.account_number.replace(/\*+/, '')}. Expected: {formatGHS(dashData?.expected_payout ?? 0)}
-                          {dashData.settlement_schedule?.payout_threshold != null &&
-                            ` Pays out instantly once your balance reaches ${formatGHS(dashData.settlement_schedule.payout_threshold)}.`}
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <div className="mt-2 text-2xl font-bold">Not Configured</div>
-                        <p className="mt-2 text-xs leading-5 text-white/80">
-                          No settlement account configured. Add one to enable auto-settlements.
-                        </p>
-                      </>
-                    )}
+              {dashData?.settlement_schedule?.auto_settlements_enabled !== false && (
+                <div className="mt-6 rounded-2xl bg-[color:var(--trite-ink)] p-6 text-white ring-1 ring-black/10">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="text-sm font-medium text-white/80">Settlement Status</div>
+                      {dashData?.settlement_account ? (
+                        <>
+                          <div className="mt-2 text-2xl font-bold">Next: {nextPayoutLabel}</div>
+                          <p className="mt-2 text-xs leading-5 text-white/80">
+                            Auto-settlement to {dashData.settlement_account.provider_name} account ending in {dashData.settlement_account.account_number.replace(/\*+/, '')}. Expected: {formatGHS(dashData?.expected_payout ?? 0)}
+                            {dashData.settlement_schedule?.payout_threshold != null &&
+                              ` Pays out instantly once your balance reaches ${formatGHS(dashData.settlement_schedule.payout_threshold)}.`}
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <div className="mt-2 text-2xl font-bold">Not Configured</div>
+                          <p className="mt-2 text-xs leading-5 text-white/80">
+                            No settlement account configured. Add one to enable auto-settlements.
+                          </p>
+                        </>
+                      )}
+                    </div>
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
+                      <HistoryIcon className="h-5 w-5 text-white" />
+                    </div>
                   </div>
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
-                    <HistoryIcon className="h-5 w-5 text-white" />
-                  </div>
+                  <button 
+                    onClick={() => router.push("/merchant/settlements")}
+                    className="mt-4 inline-flex h-9 items-center justify-center rounded-lg bg-[color:var(--trite-lime)] px-4 text-xs font-semibold text-white hover:bg-[color:var(--trite-lime-strong)]"
+                  >
+                    {dashData?.settlement_account ? 'Manage Settlements' : 'Add Settlement Account'}
+                  </button>
                 </div>
-                <button 
-                  onClick={() => router.push("/merchant/settlements")}
-                  className="mt-4 inline-flex h-9 items-center justify-center rounded-lg bg-[color:var(--trite-lime)] px-4 text-xs font-semibold text-white hover:bg-[color:var(--trite-lime-strong)]"
-                >
-                  {dashData?.settlement_account ? 'Manage Settlements' : 'Add Settlement Account'}
-                </button>
-              </div>
+              )}
             </div>
 
             <div className="space-y-4">

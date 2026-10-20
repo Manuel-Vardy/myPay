@@ -110,6 +110,46 @@ function LinkIcon(props: any) {
   );
 }
 
+function StorefrontIcon(props: any) {
+  return (
+    <svg {...props} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <path d="M3 9l1.5-5h15L21 9" />
+      <path d="M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9" />
+      <path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0" />
+      <path d="M9 20v-6h6v6" />
+    </svg>
+  );
+}
+
+function ArrowUpRightIcon(props: any) {
+  return (
+    <svg {...props} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <line x1="7" y1="17" x2="17" y2="7" />
+      <polyline points="7 7 17 7 17 17" />
+    </svg>
+  );
+}
+
+function SidebarCollapseIcon({ className, ...props }: any) {
+  return (
+    <svg className={className} {...props} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <path d="M9 3v18" />
+      <path d="m14 9-3 3 3 3" />
+    </svg>
+  );
+}
+
+function SidebarExpandIcon({ className, ...props }: any) {
+  return (
+    <svg className={className} {...props} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <path d="M9 3v18" />
+      <path d="m13 15 3-3-3-3" />
+    </svg>
+  );
+}
+
 const sidebarItems = [
   { id: "dashboard", label: "Dashboard", href: "/merchant", icon: LayoutGridIcon },
   { id: "analytics", label: "Analytics", href: "/merchant/analytics", icon: BarChartIcon },
@@ -135,6 +175,26 @@ export default function MerchantLayout({ children }: { children: React.ReactNode
   const pathname = usePathname();
   const [profile, setProfile] = useState<{ first_name?: string; last_name?: string; merchant?: { business_name: string; } } | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("trite_merchant_sidebar_collapsed");
+      if (saved !== null) {
+        setIsCollapsed(saved === "true");
+      }
+    } catch {}
+  }, []);
+
+  const toggleSidebarCollapse = () => {
+    setIsCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("trite_merchant_sidebar_collapsed", String(next));
+      } catch {}
+      return next;
+    });
+  };
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState<{
     id: string;
@@ -146,6 +206,15 @@ export default function MerchantLayout({ children }: { children: React.ReactNode
   const [emailVerifiedAt, setEmailVerifiedAt] = useState<string | null | undefined>(undefined);
   const [kycStatus, setKycStatus] = useState<string | null | undefined>(undefined);
   const [resendState, setResendState] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  // undefined = still loading; false = redirecting to /verify-phone; true = allowed
+  const [mobileGatePassed, setMobileGatePassed] = useState<boolean | undefined>(undefined);
+
+  // Shop management (TMOS) sign-in state. The handoff endpoint mints a
+  // short-lived token and hands back a URL; it is not a redirect, so the click
+  // has to fetch, then navigate. `shopError` carries whichever gate stopped it
+  // — mobile, email, KYC or "not configured" — so the link is never a dead end.
+  const [shopLoading, setShopLoading] = useState(false);
+  const [shopError, setShopError] = useState<string | null>(null);
 
   const isEmailVerified = !!emailVerifiedAt;
   const isKycApproved = kycStatus === "APPROVED";
@@ -154,12 +223,19 @@ export default function MerchantLayout({ children }: { children: React.ReactNode
     fetch("/api/auth/me")
       .then((r) => r.json())
       .then((d) => {
+        // Hard gate: an unverified mobile number can't reach the dashboard.
+        if (d.user?.role === "MERCHANT" && !d.user?.mobile_verified_at) {
+          setMobileGatePassed(false);
+          router.replace("/verify-phone");
+          return;
+        }
+        setMobileGatePassed(true);
         setProfile(d.user ? { ...d.user, merchant: d.merchant } : null);
         setEmailVerifiedAt(d.user?.email_verified_at ?? null);
         setKycStatus(d.kyc_status ?? null);
       })
       .catch(() => {});
-  }, []);
+  }, [router]);
 
   const handleResendVerification = async () => {
     setResendState("sending");
@@ -192,7 +268,52 @@ export default function MerchantLayout({ children }: { children: React.ReactNode
     }
   };
 
+  // Block the dashboard until the mobile-verification gate resolves, so
+  // unverified merchants never see portal content flash before the redirect.
+  if (mobileGatePassed !== true) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-black/10 border-t-[color:var(--trite-lime)]" />
+      </div>
+    );
+  }
+
   // Derive active tab from pathname
+  async function handleOpenShop() {
+    if (shopLoading) return;
+    setShopLoading(true);
+    setShopError(null);
+    try {
+      const res = await fetch("/api/merchant/tmos/handoff");
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setShopError(
+          data.code === "MOBILE_NOT_VERIFIED"
+            ? "Verify your mobile number first."
+            : data.code === "EMAIL_NOT_VERIFIED"
+              ? "Verify your email address first."
+              : data.code === "KYC_NOT_APPROVED"
+                ? "Complete KYC to open TMOS Management."
+                : data.code === "TMOS_NOT_CONFIGURED"
+                  ? "TMOS Management isn't available yet."
+                  : res.status === 429
+                    ? "Too many attempts. Try again in a minute."
+                    : "Couldn't open TMOS Management."
+        );
+        return;
+      }
+
+      // The token is single-use and expires in a minute, so go straight there
+      // rather than opening a tab the browser might defer.
+      window.location.href = data.url;
+    } catch {
+      setShopError("Couldn't reach TMOS Management.");
+    } finally {
+      setShopLoading(false);
+    }
+  }
+
   const activeTab = sidebarItems.find(item => {
     if (item.href === "/merchant") return pathname === "/merchant";
     return pathname?.startsWith(item.href);
@@ -208,18 +329,80 @@ export default function MerchantLayout({ children }: { children: React.ReactNode
         />
       )}
 
-      <aside className={`fixed left-0 top-0 z-50 h-screen w-56 border-r border-black/5 bg-white transition-transform duration-300 lg:translate-x-0 ${
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      }`}>
+      <aside
+        className={`fixed left-0 top-0 z-50 h-screen border-r border-black/5 bg-white transition-all duration-300 overflow-x-hidden ${
+          sidebarOpen ? "translate-x-0 w-60 shadow-2xl" : "-translate-x-full"
+        } lg:translate-x-0 ${isCollapsed ? "lg:w-20" : "lg:w-56"}`}
+      >
         <div className="flex h-full flex-col">
-          <div className="flex h-16 items-center border-b border-black/5 px-5">
-            <Link href="/" className="flex items-center gap-3">
-              <Image src="/logos/trite-logo-black.png" alt="Trite logo" width={85} height={20} className="h-6 w-auto object-contain" priority />
-            </Link>
+          {/* Sidebar Header */}
+          <div
+            className={`flex h-16 items-center border-b border-black/5 ${
+              isCollapsed
+                ? "justify-between px-4 lg:justify-center lg:px-2"
+                : "justify-between px-4"
+            }`}
+          >
+            {/* Logo: full logo on mobile, or on desktop when expanded */}
+            <div className={`flex items-center gap-3 ${isCollapsed ? "lg:hidden" : ""}`}>
+              <Link href="/" className="flex items-center gap-3" title="Trite Home">
+                <Image src="/logos/trite-logo-black.png" alt="Trite logo" width={85} height={20} className="h-6 w-auto object-contain" priority />
+              </Link>
+            </div>
+
+            {/* In collapsed desktop mode: interactive icon button that expands sidebar */}
+            {isCollapsed && (
+              <div className="hidden lg:flex items-center justify-center">
+                <button
+                  type="button"
+                  onClick={toggleSidebarCollapse}
+                  className="group relative flex h-10 w-10 items-center justify-center rounded-xl hover:bg-black/[0.04] transition-colors"
+                  title="Expand sidebar"
+                  aria-label="Expand sidebar"
+                >
+                  <Image
+                    src="/icon.png"
+                    alt="Trite logo"
+                    width={28}
+                    height={28}
+                    className="rounded-lg shadow-xs group-hover:scale-90 transition-transform"
+                    priority
+                  />
+                  <span className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <SidebarExpandIcon className="h-4 w-4 text-[color:var(--trite-ink)]" />
+                  </span>
+                </button>
+              </div>
+            )}
+
+            {/* In expanded desktop mode: collapse toggle button */}
+            {!isCollapsed && (
+              <button
+                type="button"
+                onClick={toggleSidebarCollapse}
+                className="hidden lg:flex h-8 w-8 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.04] hover:text-[color:var(--trite-ink)] transition-colors"
+                title="Collapse sidebar"
+                aria-label="Collapse sidebar"
+              >
+                <SidebarCollapseIcon className="h-4 w-4" />
+              </button>
+            )}
+
+            {/* Mobile close button */}
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(false)}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-[color:var(--trite-muted)] hover:bg-black/[0.04] hover:text-[color:var(--trite-ink)] transition-colors lg:hidden"
+              aria-label="Close sidebar"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
 
-          <nav className="flex-1 overflow-y-auto px-3 pt-10 pb-4">
-            <ul className="space-y-2">
+          <nav className={`flex-1 overflow-y-auto pt-6 pb-4 ${isCollapsed ? "px-3 lg:px-2" : "px-3"}`}>
+            <ul className="space-y-1.5">
               {sidebarItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
@@ -227,27 +410,102 @@ export default function MerchantLayout({ children }: { children: React.ReactNode
                   <li key={item.id}>
                     <button
                       onClick={() => router.push(item.href)}
-                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                      title={item.label}
+                      className={`flex w-full items-center rounded-xl py-2.5 text-sm font-medium transition-colors ${
+                        isCollapsed
+                          ? "justify-start px-3 gap-3 lg:justify-center lg:px-0 lg:gap-0"
+                          : "justify-start px-3 gap-3"
+                      } ${
                         isActive
-                          ? "bg-[color:var(--trite-lime)] text-white"
+                          ? "bg-[color:var(--trite-lime)] text-white shadow-xs"
                           : "text-[color:var(--trite-muted)] hover:bg-black/[0.03] hover:text-[color:var(--trite-ink)]"
                       }`}
                     >
-                      <Icon className="h-5 w-5 hover:scale-110 transition-transform" />
-                      {item.label}
+                      <Icon className="h-5 w-5 shrink-0 hover:scale-110 transition-transform" />
+                      <span className={`truncate ${isCollapsed ? "lg:hidden" : ""}`}>
+                        {item.label}
+                      </span>
                     </button>
                   </li>
                 );
               })}
+
+              {/* Shop Management (TMOS) — deliberately outside `sidebarItems`.
+                  It is not a route in this app: it signs the merchant into a
+                  separate product, so it never takes the active state and it
+                  carries its own affordance. */}
+              <li className="pt-2">
+                <div className="mb-2 border-t border-black/5" />
+                <button
+                  onClick={handleOpenShop}
+                  disabled={shopLoading}
+                  aria-busy={shopLoading}
+                  title="TMOS Management"
+                  className={`group relative flex w-full items-center overflow-hidden rounded-xl border border-[color:var(--trite-lime)]/30 bg-[color:var(--trite-lime)]/[0.07] py-2.5 text-sm font-medium text-[color:var(--trite-ink)] transition-colors hover:bg-[color:var(--trite-lime)]/[0.14] disabled:cursor-wait disabled:opacity-70 ${
+                    isCollapsed
+                      ? "justify-start px-3 gap-3 lg:justify-center lg:px-0 lg:gap-0"
+                      : "justify-start px-3 gap-3"
+                  }`}
+                >
+                  <StorefrontIcon className="h-5 w-5 shrink-0 text-[color:var(--trite-lime)] transition-transform group-hover:scale-110" />
+                  <span className={`flex-1 text-left truncate ${isCollapsed ? "lg:hidden" : ""}`}>
+                    TMOS Management
+                  </span>
+                  {shopLoading ? (
+                    <span className="h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-[color:var(--trite-lime)] border-t-transparent" />
+                  ) : (
+                    <ArrowUpRightIcon
+                      className={`h-3.5 w-3.5 shrink-0 text-[color:var(--trite-muted)] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 ${
+                        isCollapsed ? "lg:hidden" : ""
+                      }`}
+                    />
+                  )}
+                </button>
+                {shopError && (
+                  <p
+                    role="status"
+                    className={`mt-1.5 px-3 text-[11px] font-medium leading-snug text-red-600 ${
+                      isCollapsed ? "lg:hidden" : ""
+                    }`}
+                  >
+                    {shopError}
+                  </p>
+                )}
+              </li>
+
+              {/* Desktop quick collapse/expand action button */}
+              <li className="pt-2 hidden lg:block">
+                <div className="mb-2 border-t border-black/5" />
+                <button
+                  type="button"
+                  onClick={toggleSidebarCollapse}
+                  title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                  className={`flex w-full items-center rounded-xl py-2 text-xs font-medium text-[color:var(--trite-muted)] hover:bg-black/[0.03] hover:text-[color:var(--trite-ink)] transition-colors ${
+                    isCollapsed ? "justify-center px-0" : "justify-start px-3 gap-3"
+                  }`}
+                >
+                  {isCollapsed ? (
+                    <SidebarExpandIcon className="h-4 w-4" />
+                  ) : (
+                    <>
+                      <SidebarCollapseIcon className="h-4 w-4 shrink-0" />
+                      <span>Collapse</span>
+                    </>
+                  )}
+                </button>
+              </li>
             </ul>
           </nav>
 
-          <div className="border-t border-black/5 p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[color:var(--trite-ink)] shadow-sm">
+          <div className={`border-t border-black/5 ${isCollapsed ? "p-4 lg:p-2 lg:py-4" : "p-4"}`}>
+            <div className={`flex items-center ${isCollapsed ? "gap-3 lg:justify-center lg:gap-0" : "gap-3"}`}>
+              <div
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[color:var(--trite-ink)] shadow-sm"
+                title={`${fullName}${fullName !== businessName ? ` (${businessName})` : ""}`}
+              >
                 <span className="text-sm font-semibold text-white">{initials}</span>
               </div>
-              <div className="flex-1 min-w-0">
+              <div className={`flex-1 min-w-0 ${isCollapsed ? "lg:hidden" : ""}`}>
                 <div className="text-sm font-bold text-[color:var(--trite-ink)] truncate" title={fullName}>
                   {fullName}
                 </div>
@@ -260,19 +518,24 @@ export default function MerchantLayout({ children }: { children: React.ReactNode
             </div>
             <button
               onClick={handleSignOut}
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-red-50 py-2.5 text-xs font-bold text-red-600 transition-all hover:bg-red-100 active:scale-[0.98]"
+              title="Sign Out"
+              className={`mt-4 flex items-center justify-center rounded-xl bg-red-50 text-red-600 transition-all hover:bg-red-100 active:scale-[0.98] ${
+                isCollapsed
+                  ? "w-full py-2.5 text-xs font-bold gap-2 lg:w-10 lg:h-10 lg:p-0 lg:mx-auto"
+                  : "w-full py-2.5 text-xs font-bold gap-2"
+              }`}
             >
               <LogOutIcon className="h-3.5 w-3.5" />
-              Sign Out
+              <span className={isCollapsed ? "lg:hidden" : ""}>Sign Out</span>
             </button>
           </div>
         </div>
       </aside>
 
-      <main className="transition-all duration-300 lg:ml-56">
+      <main className={`transition-all duration-300 ${isCollapsed ? "lg:ml-20" : "lg:ml-56"}`}>
         <header className="sticky top-0 z-30 border-b border-black/5 bg-white/80 backdrop-blur">
           <div className="flex h-16 items-center justify-between px-4 sm:px-6">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <Link href="/" className="lg:hidden">
                 <Image
                   src="/logos/trite-logo-black.png"
@@ -283,6 +546,19 @@ export default function MerchantLayout({ children }: { children: React.ReactNode
                   priority
                 />
               </Link>
+              <button
+                type="button"
+                onClick={toggleSidebarCollapse}
+                className="hidden lg:flex h-9 w-9 items-center justify-center rounded-lg border border-black/5 text-[color:var(--trite-muted)] hover:bg-black/[0.03] hover:text-[color:var(--trite-ink)] transition-colors"
+                title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              >
+                {isCollapsed ? (
+                  <SidebarExpandIcon className="h-4 w-4" />
+                ) : (
+                  <SidebarCollapseIcon className="h-4 w-4" />
+                )}
+              </button>
               <h1 className="hidden lg:block text-lg sm:text-xl font-semibold text-[color:var(--trite-ink)]">
                 {sidebarItems.find(i => i.id === activeTab)?.label || "Merchant"}
               </h1>

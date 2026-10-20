@@ -40,6 +40,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-/knowledge/
+# Working notes and reference material stay local; they are shared out of band.
+# Written as /knowledge/* rather than /knowledge/ so a single file can be
+# re-included with a ! rule later — that is impossible once the directory
+# itself is excluded.
+/knowledge/*
 /.claude/
 /scripts/
+
+# test coverage
+coverage
+
+# Belt and braces alongside .dockerignore: never let a CI credentials file be
+# committed if one is ever produced in a working tree.
+gha-creds-*.json

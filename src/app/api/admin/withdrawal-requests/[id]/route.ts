@@ -9,7 +9,7 @@
 //   - settlement skipped            → request reverts to PENDING, 409 returned
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
-import { requireAdmin } from "@/lib/guards";
+import { requirePermission } from "@/lib/guards";
 import { fromMinorUnits } from "@/lib/utils";
 import { processSettlement } from "@/lib/settlements/process";
 
@@ -17,7 +17,7 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const guard = await requireAdmin();
+  const guard = await requirePermission("settlement-monitoring");
   if (guard.error) return guard.error;
   const adminUserId = guard.session.userId;
 
@@ -113,7 +113,16 @@ export async function PATCH(
       }
     );
 
-    if (result.status === "COMPLETED" || result.status === "UNKNOWN") {
+    // PENDING means the provider accepted the transfer and will report the
+    // outcome later (Paystack's normal path); UNKNOWN means we lost track of
+    // it. Either way the funds have left the float, so the request is
+    // approved — `failSettlement` walks it back to FAILED if the transfer
+    // later declines.
+    if (
+      result.status === "COMPLETED" ||
+      result.status === "PENDING" ||
+      result.status === "UNKNOWN"
+    ) {
       await db("withdrawal_requests").where({ id }).update({
         status: "APPROVED",
         settlement_id: result.settlementId,

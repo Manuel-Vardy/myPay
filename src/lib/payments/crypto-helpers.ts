@@ -4,12 +4,15 @@
 // polling endpoint to avoid duplicating settlement logic.
 // ============================================================
 
+import crypto from "node:crypto";
 import db from "@/lib/db";
-import { chargeTransactionFee } from "@/lib/fees";
+import { chargeTransactionFee, ensureLedgerAccount } from "@/lib/fees";
 import { recordTransactionEvent } from "@/lib/payments/tx-events";
+import { tryLinkTransactionCustomer } from "@/lib/payments/customers";
 import { enqueueMerchantWebhook } from "@/lib/webhooks/enqueue";
 import { attemptDelivery } from "@/lib/webhooks/deliver";
 import { buildPaymentWebhookData } from "@/lib/webhooks/payloads";
+import { notifyTransactionSettled } from "@/lib/notifications";
 
 interface FinaliseCryptoPaymentParams {
   /** Our internal transaction UUID. */
@@ -83,48 +86,35 @@ export async function finaliseCryptoPayment(
         .update({ status: "COMPLETED", updated_at: new Date() });
     }
 
+    // 3b. Link the payer to the merchant's customer directory. Only lands
+    // when the payer has a contactable identity — a crypto payer with no
+    // merchant-supplied email is anonymous, since the deposit address is ours
+    // and leased fresh per payment. Best-effort either way.
+    await tryLinkTransactionCustomer(trx, tx, "CRYPTO_SETTLEMENT");
+
     // 4. Write ledger entries (migration 0012)
-    // Find or create the merchant's MERCHANT_FLOAT ledger account.
-    let merchantAccount = await trx("ledger_accounts")
-      .where({
-        owner_id: tx.merchant_id,
-        account_type: "MERCHANT_FLOAT",
-        currency: tx.currency,
-      })
-      .first();
+    const merchantAccount = await ensureLedgerAccount(
+      trx,
+      tx.merchant_id,
+      "MERCHANT_FLOAT",
+      tx.currency,
+      `Merchant float (${tx.currency})`
+    );
+    const escrowAccount = await ensureLedgerAccount(
+      trx,
+      null,
+      "ESCROW",
+      tx.currency,
+      `System escrow (${tx.currency})`
+    );
 
-    if (!merchantAccount) {
-      [merchantAccount] = await trx("ledger_accounts")
-        .insert({
-          owner_id: tx.merchant_id,
-          account_type: "MERCHANT_FLOAT",
-          currency: tx.currency,
-          label: `Merchant float (${tx.currency})`,
-        })
-        .returning("*");
-    }
-
-    // Find or create the system ESCROW account.
-    let escrowAccount = await trx("ledger_accounts")
-      .where({
-        owner_id: null,
-        account_type: "ESCROW",
-        currency: tx.currency,
-      })
-      .first();
-
-    if (!escrowAccount) {
-      [escrowAccount] = await trx("ledger_accounts")
-        .insert({
-          owner_id: null,
-          account_type: "ESCROW",
-          currency: tx.currency,
-          label: `System escrow (${tx.currency})`,
-        })
-        .returning("*");
-    }
-
-    const entryIdPrefix = `LE-${Date.now().toString(36).toUpperCase()}`;
+    // entry_id_display is UNIQUE: a timestamp alone collides when two
+    // settlements commit in the same millisecond, which would roll the whole
+    // settlement back. Random suffix, matching chargeFee.
+    const entryIdPrefix = `LE-${Date.now().toString(36).toUpperCase()}-${crypto
+      .randomUUID()
+      .slice(0, 8)
+      .toUpperCase()}`;
 
     // CREDIT merchant float
     await trx("ledger_entries").insert({
@@ -186,6 +176,7 @@ export async function finaliseCryptoPayment(
   });
 
   if (settled && webhookEventId) attemptDelivery(webhookEventId).catch(() => null);
+  if (settled) notifyTransactionSettled(transactionId).catch(() => null);
   return settled;
 }
 

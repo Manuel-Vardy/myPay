@@ -1,13 +1,13 @@
 // GET /api/admin/logs — system audit logs (real-time feed)
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
-import { requireAdmin } from "@/lib/guards";
+import { requirePermission } from "@/lib/guards";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
-    const guard = await requireAdmin();
+    const guard = await requirePermission("view-logs");
     if (guard.error) return guard.error;
 
     const searchParams = request.nextUrl.searchParams;

@@ -50,6 +50,20 @@ const PROVIDERS: ProviderConfig[] = [
       { value: "payment.failed",  label: "Payment Failed" },
     ],
   },
+  {
+    id: "paystack",
+    label: "Paystack",
+    description:
+      "Mobile money collections and payouts. Both are webhook-driven — add this URL in the Paystack dashboard under Settings → API Keys & Webhooks, for both test and live mode, and subscribe to every event below. Payouts also require Transfers enabled and \u201cOTP for transfers\u201d switched off.",
+    defaultWebhookUrl: `${API_BASE_URL}/api/webhooks/paystack`,
+    eventTypes: [
+      { value: "charge.success",    label: "Charge Success" },
+      { value: "charge.failed",     label: "Charge Failed" },
+      { value: "transfer.success",  label: "Payout Success" },
+      { value: "transfer.failed",   label: "Payout Failed" },
+      { value: "transfer.reversed", label: "Payout Reversed" },
+    ],
+  },
 ];
 
 type WebhookRecord = {
@@ -305,6 +319,10 @@ export default function IntegrationsTab({ webhooks, refreshWebhooks }: Integrati
               <label className="block text-xs font-semibold text-[color:var(--trite-muted)] uppercase tracking-wider mb-2">
                 Primary Mobile Money Provider
               </label>
+              <p className="mb-2 text-xs text-[color:var(--trite-muted)]">
+                Governs both collections and merchant payouts. AppsNMobile has no
+                disbursement API, so selecting it keeps payouts on Moolre.
+              </p>
               <select
                 value={activeMomoProvider}
                 onChange={(e) => setActiveMomoProvider(e.target.value)}
@@ -312,6 +330,7 @@ export default function IntegrationsTab({ webhooks, refreshWebhooks }: Integrati
               >
                 <option value="moolre">Moolre</option>
                 <option value="anm">AppsNMobile (Orchard)</option>
+                <option value="paystack">Paystack</option>
               </select>
             </div>
 

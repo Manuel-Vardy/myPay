@@ -23,6 +23,14 @@ export async function PUT(request: NextRequest) {
         updated_at: new Date(),
       });
 
+    await db("system_logs").insert({
+      level: "INFO",
+      source: "ADMIN_SETTINGS",
+      event_description: `Admin profile updated: ${first_name} ${last_name}`,
+      actor_id: session.userId,
+      ip_address: request.headers.get("x-forwarded-for") || "unknown",
+    });
+
     return Response.json({ success: true });
   } catch (error) {
     console.error("Profile update error:", error);

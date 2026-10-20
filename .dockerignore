@@ -7,3 +7,11 @@ coverage
 knowledge
 README.md
 *.tsbuildinfo
+
+# Written into the workspace by google-github-actions/auth during CI. The
+# migrate stage does `COPY . .`, so without this it is baked into a published
+# image in Artifact Registry — the app stages copy only build output and were
+# never affected. It is a Workload Identity config file rather than a private
+# key, but it names the provider and service account and has no business in a
+# layer.
+gha-creds-*.json

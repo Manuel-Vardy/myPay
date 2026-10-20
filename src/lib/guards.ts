@@ -4,6 +4,11 @@ import db from "@/lib/db";
 import { getSession, type SessionPayload } from "@/lib/session";
 import { hashApiKey, API_KEY_PREFIX } from "@/lib/api-keys";
 import type { Merchant, UserRole } from "@/lib/types";
+import {
+  mfaRequiredForRole,
+  MFA_ENROLLMENT_REQUIRED_CODE,
+  MFA_ENROLLMENT_REQUIRED_MESSAGE,
+} from "@/lib/mfa-policy";
 
 /**
  * Result of an auth guard check.
@@ -16,19 +21,11 @@ export type GuardResult =
   | { session?: undefined; error: Response };
 
 /**
- * Require a valid session whose role matches one of the `allowedRoles`.
- * Returns either the verified session or a ready-to-return error Response.
- *
- * Usage in a route handler:
- * ```ts
- * const guard = await requireRole("ADMIN");
- * if (guard.error) return guard.error;
- * const { session } = guard;
- * ```
+ * Session validity, expiry, role and revocation — everything except the MFA
+ * enrollment gate. Split out so the enrollment endpoints themselves can be
+ * reached by a user who is being told to enroll.
  */
-export async function requireRole(
-  ...allowedRoles: UserRole[]
-): Promise<GuardResult> {
+async function resolveSession(allowedRoles: UserRole[]): Promise<GuardResult> {
   const session = await getSession();
 
   if (!session) {
@@ -83,10 +80,158 @@ export async function requireRole(
 }
 
 /**
+ * Reject a privileged session that has no TOTP enrolled.
+ *
+ * Enforced here rather than only at login on purpose: sessions carry a 7-day
+ * TTL, so gating at login alone would leave every already-issued admin cookie
+ * unenforced for a week. Applying it at the guard closes existing sessions the
+ * moment this ships.
+ *
+ * Costs one indexed primary-key lookup, and only for roles in
+ * `MFA_REQUIRED_ROLES` — merchant traffic is untouched.
+ */
+async function enforceMfaEnrollment(session: SessionPayload): Promise<GuardResult> {
+  if (!mfaRequiredForRole(session.role)) return { session };
+
+  const row = await db("users")
+    .where({ id: session.userId })
+    .first("two_factor_enabled");
+
+  if (row?.two_factor_enabled) return { session };
+
+  return {
+    error: Response.json(
+      {
+        error: MFA_ENROLLMENT_REQUIRED_MESSAGE,
+        code: MFA_ENROLLMENT_REQUIRED_CODE,
+      },
+      { status: 403 }
+    ),
+  };
+}
+
+/**
+ * Require a valid session whose role matches one of the `allowedRoles`.
+ * Returns either the verified session or a ready-to-return error Response.
+ *
+ * For roles in `MFA_REQUIRED_ROLES` this also requires TOTP to be enrolled,
+ * failing with 403 `MFA_ENROLLMENT_REQUIRED` if it is not.
+ *
+ * Usage in a route handler:
+ * ```ts
+ * const guard = await requireRole("ADMIN");
+ * if (guard.error) return guard.error;
+ * const { session } = guard;
+ * ```
+ */
+export async function requireRole(
+  ...allowedRoles: UserRole[]
+): Promise<GuardResult> {
+  const guard = await resolveSession(allowedRoles);
+  if (guard.error) return guard;
+  return enforceMfaEnrollment(guard.session);
+}
+
+/**
+ * As `requireRole`, but without the MFA enrollment gate.
+ *
+ * Only for the enrollment endpoints themselves (`/api/auth/mfa/enroll`,
+ * `/api/auth/mfa/confirm`). Using this anywhere else reopens the hole this
+ * guard exists to close.
+ */
+export async function requireRoleAllowingMfaSetup(
+  ...allowedRoles: UserRole[]
+): Promise<GuardResult> {
+  return resolveSession(allowedRoles);
+}
+
+/**
  * Convenience wrapper: require ADMIN role.
  */
 export function requireAdmin(): Promise<GuardResult> {
   return requireRole("ADMIN");
+}
+
+export type AdminRoleInfo = { id: string; name: string; is_system_role: boolean };
+
+/**
+ * Resolve roles and permissions for an admin user.
+ */
+export async function getAdminPermissionsAndRoles(userId: string): Promise<{
+  roles: AdminRoleInfo[];
+  permissions: string[];
+  isSuperAdmin: boolean;
+}> {
+  const profile = await db("admin_profiles").where({ user_id: userId }).first("id");
+  if (!profile) {
+    return { roles: [], permissions: [], isSuperAdmin: false };
+  }
+
+  const roles: AdminRoleInfo[] = await db("admin_roles")
+    .join("roles", "admin_roles.role_id", "roles.id")
+    .where("admin_roles.admin_profile_id", profile.id)
+    .select("roles.id", "roles.name", "roles.is_system_role");
+
+  // Backward compatibility: admins who exist in admin_profiles but have no
+  // admin_roles entries predate RBAC enforcement.  Treat them as Super Admin
+  // so they are not locked out.  Once a role is explicitly assigned via the
+  // Roles page, the normal permission resolution takes over.
+  if (roles.length === 0) {
+    return { roles: [], permissions: [], isSuperAdmin: true };
+  }
+
+  const isSuperAdmin = roles.some(
+    (r) => r.name.toLowerCase() === "super admin"
+  );
+
+  const roleIds = roles.map((r) => r.id);
+  const permissionRows = roleIds.length
+    ? await db("role_permissions")
+        .join("permissions", "role_permissions.permission_id", "permissions.id")
+        .whereIn("role_permissions.role_id", roleIds)
+        .distinct("permissions.name")
+    : [];
+
+  const permissions = permissionRows.map((p: { name: string }) => p.name);
+
+  return { roles, permissions, isSuperAdmin };
+}
+
+export type PermissionGuardResult =
+  | { session: SessionPayload; permissions: string[]; isSuperAdmin: boolean; roles: AdminRoleInfo[]; error?: undefined }
+  | { session?: undefined; permissions?: undefined; isSuperAdmin?: undefined; roles?: undefined; error: Response };
+
+/**
+ * Require ADMIN role and at least one of the specified permissions (or Super Admin).
+ */
+export async function requirePermission(
+  ...allowedPermissions: string[]
+): Promise<PermissionGuardResult> {
+  const guard = await requireAdmin();
+  if (guard.error) return { error: guard.error };
+
+  const { session } = guard;
+  const { roles, permissions, isSuperAdmin } = await getAdminPermissionsAndRoles(session.userId);
+
+  if (isSuperAdmin) {
+    return { session, permissions, isSuperAdmin, roles };
+  }
+
+  const hasAccess = allowedPermissions.some((perm) => permissions.includes(perm));
+  if (!hasAccess) {
+    return {
+      error: Response.json(
+        {
+          error: "Insufficient permissions to perform this action",
+          code: "FORBIDDEN",
+          requiredPermissions: allowedPermissions,
+        },
+        { status: 403 }
+      ),
+    };
+  }
+
+  return { session, permissions, isSuperAdmin, roles };
 }
 
 /**
@@ -107,7 +252,7 @@ export type MerchantGuardResult =
   | {
       session: SessionPayload;
       merchant: Merchant;
-      user: { id: string; email_verified_at: Date | null };
+      user: { id: string; email_verified_at: Date | null; mobile_verified_at: Date | null };
       kycStatus: string | null;
       error?: undefined;
     }
@@ -125,7 +270,7 @@ async function loadMerchantVerificationState(): Promise<MerchantGuardResult> {
 
   const user = await db("users")
     .where({ id: session.userId })
-    .select("id", "email_verified_at")
+    .select("id", "email_verified_at", "mobile_verified_at")
     .first();
 
   if (!user) {
@@ -175,6 +320,18 @@ export async function requireVerifiedMerchant(): Promise<MerchantGuardResult> {
   const state = await loadMerchantVerificationState();
   if (state.error) return { error: state.error };
 
+  if (!state.user.mobile_verified_at) {
+    return {
+      error: Response.json(
+        {
+          error: "Mobile number verification required",
+          code: "MOBILE_NOT_VERIFIED",
+        },
+        { status: 403 }
+      ),
+    };
+  }
+
   if (!state.user.email_verified_at) {
     return {
       error: Response.json(
@@ -204,6 +361,18 @@ export async function requireVerifiedMerchant(): Promise<MerchantGuardResult> {
 export async function requireActiveMerchant(): Promise<MerchantGuardResult> {
   const state = await loadMerchantVerificationState();
   if (state.error) return { error: state.error };
+
+  if (!state.user.mobile_verified_at) {
+    return {
+      error: Response.json(
+        {
+          error: "Mobile number verification required",
+          code: "MOBILE_NOT_VERIFIED",
+        },
+        { status: 403 }
+      ),
+    };
+  }
 
   if (!state.user.email_verified_at) {
     return {

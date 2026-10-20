@@ -3,6 +3,7 @@ import db from "@/lib/db";
 import { processSettlement } from "@/lib/settlements/process";
 import { getSettlementSchedule, payoutTimeToday } from "@/lib/settlements/schedule";
 import { getMerchantFloatBalances } from "@/lib/settlements/balance";
+import { resolveMomoNetwork } from "@/lib/payments/networks";
 
 export async function POST(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
@@ -16,6 +17,22 @@ export async function POST(request: NextRequest) {
     // Payouts trigger on whichever comes first: the float balance reaching
     // the platform threshold, or the daily payout time (once per day).
     const schedule = await getSettlementSchedule();
+
+    if (schedule.auto_settlements_enabled === false) {
+      await db("system_logs").insert({
+        level: "WARN",
+        source: "CRON_SETTLEMENTS",
+        event_description: "Auto-settlement cron execution skipped: auto-settlements are paused by platform admin",
+      });
+      return Response.json({
+        success: true,
+        message: "Auto settlements are paused by platform admin",
+        processed: 0,
+        skipped: 0,
+        failed: 0,
+      });
+    }
+
     const threshold =
       schedule.payout_threshold_minor != null
         ? BigInt(schedule.payout_threshold_minor)
@@ -28,9 +45,9 @@ export async function POST(request: NextRequest) {
       .where({ account_type: "MERCHANT_FLOAT" })
       .where("balance", ">", 0);
 
-    const processed = [];
-    const skipped = [];
-    const failed = [];
+    const processed: { merchantId: string; status?: string }[] = [];
+    const skipped: { merchantId: string; reason: string }[] = [];
+    const failed: { merchantId: string; error: string }[] = [];
 
     for (const balanceRecord of balances) {
       const merchantId = balanceRecord.owner_id;
@@ -81,9 +98,9 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
-      // Check if provider name is supported
-      const provider = defaultAccount.provider_name.toLowerCase();
-      if (!provider.includes("mtn") && !provider.includes("telecel") && !provider.includes("vodafone") && !provider.includes("at") && !provider.includes("airteltigo")) {
+      // Check the destination telco is one we can route to. Same resolver
+      // the payout adapters use, so this can't drift from what they accept.
+      if (!resolveMomoNetwork(defaultAccount.provider_name)) {
         skipped.push({ merchantId, reason: `Unsupported provider: ${defaultAccount.provider_name}` });
         await db("system_logs").insert({
           level: "WARN",
@@ -94,8 +111,14 @@ export async function POST(request: NextRequest) {
       }
 
       try {
-        await processSettlement(merchantId, defaultAccount, balance, currency);
-        processed.push({ merchantId });
+        const result = await processSettlement(merchantId, defaultAccount, balance, currency);
+        // PENDING is a completed run, not a stalled one: the provider has the
+        // transfer and the webhook or reconciler will finish it.
+        if (result.status === "SKIPPED") {
+          skipped.push({ merchantId, reason: result.reason ?? "Skipped" });
+        } else {
+          processed.push({ merchantId, status: result.status });
+        }
       } catch (err) {
         console.error(`Failed to process settlement for merchant ${merchantId}:`, err);
         failed.push({ merchantId, error: err instanceof Error ? err.message : String(err) });

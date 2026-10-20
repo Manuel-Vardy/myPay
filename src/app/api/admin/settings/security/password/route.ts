@@ -35,6 +35,14 @@ export async function PUT(request: NextRequest) {
         updated_at: new Date(),
       });
 
+    await db("system_logs").insert({
+      level: "WARN",
+      source: "AUTH_CORE",
+      event_description: `Admin password changed`,
+      actor_id: session.userId,
+      ip_address: request.headers.get("x-forwarded-for") || "unknown",
+    });
+
     return Response.json({ success: true });
   } catch (error) {
     console.error("Password update error:", error);

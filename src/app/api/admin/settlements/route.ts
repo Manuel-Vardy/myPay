@@ -2,12 +2,13 @@
 // and per-status summary totals.
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
-import { requireAdmin } from "@/lib/guards";
+import { requirePermission } from "@/lib/guards";
 import { fromMinorUnits } from "@/lib/utils";
+import { whereNeedsAttention, STALE_PAYOUT_HOURS } from "@/lib/settlements/stuck";
 
 export async function GET(request: NextRequest) {
   try {
-    const guard = await requireAdmin();
+    const guard = await requirePermission("settlement-monitoring");
     if (guard.error) return guard.error;
 
     const searchParams = request.nextUrl.searchParams;
@@ -18,6 +19,10 @@ export async function GET(request: NextRequest) {
     const merchant_id = searchParams.get("merchant_id");
     const date_from = searchParams.get("date_from");
     const date_to = searchParams.get("date_to");
+    // Payouts stuck in flight. Deliberately overrides the status and date
+    // filters — a stuck payout is urgent because it is old, so the default
+    // "last 30 days" window is exactly what must not hide it.
+    const needsAttention = searchParams.get("needs_attention") === "true";
 
     let query = db("settlements")
       .join("merchants", "settlements.merchant_id", "merchants.id")
@@ -44,10 +49,14 @@ export async function GET(request: NextRequest) {
           .orWhereILike("settlements.bank_reference", term)
       );
     }
-    if (status) query = query.where("settlements.status", status);
     if (merchant_id) query = query.where("settlements.merchant_id", merchant_id);
-    if (date_from) query = query.where("settlements.created_at", ">=", date_from);
-    if (date_to) query = query.where("settlements.created_at", "<=", date_to);
+    if (needsAttention) {
+      query = whereNeedsAttention(query);
+    } else {
+      if (status) query = query.where("settlements.status", status);
+      if (date_from) query = query.where("settlements.created_at", ">=", date_from);
+      if (date_to) query = query.where("settlements.created_at", "<=", date_to);
+    }
 
     const countQuery = query
       .clone()
@@ -88,9 +97,24 @@ export async function GET(request: NextRequest) {
       net: s.net != null ? fromMinorUnits(s.net) : 0,
     }));
 
+    // Always reported, whatever the current filters are: the operator has to
+    // be able to see that stuck payouts exist without first guessing the
+    // right date range.
+    const needsAttentionCount = Number(
+      (
+        await whereNeedsAttention(db("settlements"))
+          .count("settlements.id as cnt")
+          .first()
+      )?.cnt || 0
+    );
+
     return Response.json({
       data,
       summary,
+      needs_attention: {
+        count: needsAttentionCount,
+        stale_after_hours: STALE_PAYOUT_HOURS,
+      },
       pagination: {
         page,
         per_page,

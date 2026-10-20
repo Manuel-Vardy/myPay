@@ -6,6 +6,7 @@ import { type NextRequest } from "next/server";
 import db from "@/lib/db";
 import crypto from "node:crypto";
 import { recordTransactionEvent } from "@/lib/payments/tx-events";
+import { normalizeMsisdn } from "@/lib/utils";
 
 export async function POST(
   request: NextRequest,
@@ -70,6 +71,21 @@ export async function POST(
     }
 
     // 3. Create transaction in AUTHORIZED state
+    //
+    // Identity matters more here than on any other rail: the deposit address
+    // is ours and leased per payment, and Triton reports no sender, so an
+    // email or phone is the only thing that can ever name this payer. Session
+    // values (from the merchant) outrank whatever the payer typed.
+    const body = await request.json().catch(() => ({}));
+    const payerEmail =
+      session.customer_email?.trim().toLowerCase() ||
+      (typeof body.payer_email === "string" ? body.payer_email.trim().toLowerCase() : null) ||
+      null;
+    const payerName =
+      session.customer_name?.trim() ||
+      (typeof body.payer_name === "string" ? body.payer_name.trim() : null) ||
+      null;
+
     const txIdDisplay = `TX-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
     const idempotencyKey = `crypto-confirm-${sessionId}`;
 
@@ -94,6 +110,9 @@ export async function POST(
           status: "AUTHORIZED",
           gateway_reference: metadata.triton_invoice_id,
           payer_wallet_address: metadata.triton_deposit_address,
+          payer_email: payerEmail,
+          payer_name: payerName,
+          payer_phone: normalizeMsisdn(session.customer_phone),
           idempotency_key: idempotencyKey,
           metadata: JSON.stringify({
             session_id: sessionId,

@@ -1,9 +1,12 @@
+import crypto from "node:crypto";
 import db from "@/lib/db";
-import { chargeTransactionFee } from "@/lib/fees";
+import { chargeTransactionFee, ensureLedgerAccount } from "@/lib/fees";
 import { recordTransactionEvent } from "@/lib/payments/tx-events";
+import { tryLinkTransactionCustomer } from "@/lib/payments/customers";
 import { enqueueMerchantWebhook } from "@/lib/webhooks/enqueue";
 import { buildPaymentWebhookData } from "@/lib/webhooks/payloads";
 import { attemptDelivery } from "@/lib/webhooks/deliver";
+import { notifyTransactionSettled } from "@/lib/notifications";
 
 interface SettleMomoParams {
   transactionId: string;
@@ -13,11 +16,20 @@ interface SettleMomoParams {
   thirdPartyRef?: string | null;
 }
 
-export async function settleMomoPayment(params: SettleMomoParams): Promise<void> {
+/**
+ * Settle a mobile money payment.
+ *
+ * Returns true when this call is the one that performed the transition, false
+ * when it found the transaction already settled. Callers must not treat a
+ * false as a failure — it means someone else got there first — but anything
+ * that should happen once per payment (notifying the payer, say) has to be
+ * gated on it, because every settlement path can race every other one.
+ */
+export async function settleMomoPayment(params: SettleMomoParams): Promise<boolean> {
   const { transactionId, providerRef, providerName, source, thirdPartyRef } = params;
   let webhookEventId: string | null = null;
 
-  await db.transaction(async (trx) => {
+  const settled = await db.transaction(async (trx) => {
     // 1. Fetch the transaction to ensure we have its current state.
     // Row lock: the status poll, provider webhook, and reconciliation cron
     // can all try to settle the same transaction — the lock makes the
@@ -31,7 +43,7 @@ export async function settleMomoPayment(params: SettleMomoParams): Promise<void>
     // Double-check we haven't already settled
     if (transaction.status === "SETTLED") {
       console.log(`Transaction ${transactionId} already settled, skipping.`);
-      return;
+      return false;
     }
 
     // 2. Parse existing metadata
@@ -70,48 +82,33 @@ export async function settleMomoPayment(params: SettleMomoParams): Promise<void>
         .update({ status: "COMPLETED", updated_at: new Date() });
     }
 
+    // 4b. Link the payer to the merchant's customer directory. Best-effort:
+    // never let directory bookkeeping roll back a settled payment.
+    await tryLinkTransactionCustomer(trx, transaction, source);
+
     // 5. Ledger Entries
-    // Credit merchant float
-    let merchantAccount = await trx("ledger_accounts")
-      .where({
-        owner_id: transaction.merchant_id,
-        account_type: "MERCHANT_FLOAT",
-        currency: transaction.currency,
-      })
-      .first();
+    const merchantAccount = await ensureLedgerAccount(
+      trx,
+      transaction.merchant_id,
+      "MERCHANT_FLOAT",
+      transaction.currency,
+      `Merchant float (${transaction.currency})`
+    );
+    const escrowAccount = await ensureLedgerAccount(
+      trx,
+      null,
+      "ESCROW",
+      transaction.currency,
+      `System escrow (${transaction.currency})`
+    );
 
-    if (!merchantAccount) {
-      [merchantAccount] = await trx("ledger_accounts")
-        .insert({
-          owner_id: transaction.merchant_id,
-          account_type: "MERCHANT_FLOAT",
-          currency: transaction.currency,
-          label: `Merchant float (${transaction.currency})`,
-        })
-        .returning("*");
-    }
-
-    // Debit system escrow
-    let escrowAccount = await trx("ledger_accounts")
-      .where({
-        owner_id: null,
-        account_type: "ESCROW",
-        currency: transaction.currency,
-      })
-      .first();
-
-    if (!escrowAccount) {
-      [escrowAccount] = await trx("ledger_accounts")
-        .insert({
-          owner_id: null,
-          account_type: "ESCROW",
-          currency: transaction.currency,
-          label: `System escrow (${transaction.currency})`,
-        })
-        .returning("*");
-    }
-
-    const entryIdPrefix = `LE-${Date.now().toString(36).toUpperCase()}`;
+    // entry_id_display is UNIQUE: a timestamp alone collides when two
+    // settlements commit in the same millisecond, which would roll the whole
+    // settlement back. Random suffix, matching chargeFee.
+    const entryIdPrefix = `LE-${Date.now().toString(36).toUpperCase()}-${crypto
+      .randomUUID()
+      .slice(0, 8)
+      .toUpperCase()}`;
 
     await trx("ledger_entries").insert({
       entry_id_display: `${entryIdPrefix}-CR`,
@@ -153,9 +150,17 @@ export async function settleMomoPayment(params: SettleMomoParams): Promise<void>
       source,
       event_description: `MoMo payment settled: tx ${transaction.tx_id_display} via ${providerName} | amount=${transaction.amount} | provider_ref=${providerRef}`,
     });
+
+    return true;
   });
 
   if (webhookEventId) attemptDelivery(webhookEventId).catch(() => null);
+  // Only the caller that actually settled notifies. Otherwise a webhook
+  // racing the reconciliation cron would email the merchant twice and tell
+  // the payer by SMS, twice, that they had paid.
+  if (settled) notifyTransactionSettled(transactionId).catch(() => null);
+
+  return settled;
 }
 
 export async function failMomoPayment(params: SettleMomoParams & { providerMessage?: string }): Promise<void> {

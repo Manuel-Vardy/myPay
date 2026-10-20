@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useMerchantFetch } from "@/lib/hooks/useMerchantFetch";
 import { useRouter } from "next/navigation";
+import type { SettlementStatus } from "@/lib/types";
 
 type Bank = { id: string; name: string; short_code: string };
 
@@ -24,7 +25,7 @@ export type APISettlement = {
   gross_amount: number;
   fees: number;
   net_amount: number;
-  status: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED" | "CANCELLED";
+  status: SettlementStatus;
   account_id?: string;
   account?: APISettlementAccount | null;
   created_at: string;
@@ -60,14 +61,81 @@ function formatGHS(amount: number) {
   return new Intl.NumberFormat("en-GH", { style: "currency", currency: "GHS" }).format(amount);
 }
 
+type ChipVariant = "default" | "success" | "info" | "warning" | "danger" | "neutral";
+
+// Mirrors the status badge colours used in the table below, so a selected
+// chip reads as the same state as the rows it filters to.
+const STATUS_CHIPS: { value: SettlementStatus; label: string; variant: ChipVariant }[] = [
+  { value: "COMPLETED", label: "Completed", variant: "success" },
+  { value: "PROCESSING", label: "Processing", variant: "info" },
+  { value: "PENDING", label: "Pending", variant: "warning" },
+  { value: "FAILED", label: "Failed", variant: "danger" },
+  { value: "CANCELLED", label: "Cancelled", variant: "neutral" },
+];
+
+function FilterChip({
+  label,
+  count,
+  active,
+  onClick,
+  variant = "default",
+}: {
+  label: string;
+  count?: number;
+  active: boolean;
+  onClick: () => void;
+  variant?: ChipVariant;
+}) {
+  const activeStyles: Record<ChipVariant, string> = {
+    default: "bg-[color:var(--trite-ink)] text-white",
+    success: "bg-[color:var(--trite-lime)] text-white",
+    info: "bg-blue-500 text-white",
+    warning: "bg-amber-500 text-white",
+    danger: "bg-red-500 text-white",
+    neutral: "bg-gray-500 text-white",
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
+        active
+          ? activeStyles[variant]
+          : "bg-black/[0.04] text-[color:var(--trite-ink)] hover:bg-black/[0.06]"
+      }`}
+    >
+      {label}
+      {count !== undefined && (
+        <span
+          className={`rounded-full px-1.5 text-[10px] font-bold tabular-nums ${
+            active ? "bg-white/25" : "bg-black/[0.06]"
+          }`}
+        >
+          {count}
+        </span>
+      )}
+    </button>
+  );
+}
+
 export default function SettlementsPage() {
   const router = useRouter();
-  const [ledgerFilter, setLedgerFilter] = useState<"all" | "deposits" | "withdrawals" | "transfers">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | SettlementStatus>("all");
   const [page, setPage] = useState(1);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [adding, setAdding] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [kycStatus, setKycStatus] = useState<string | null | undefined>(undefined);
+  const [exporting, setExporting] = useState(false);
+
+  // Selecting a chip re-filters from the first page — otherwise a narrower
+  // filter can land on a page that no longer exists.
+  const handleStatusFilter = (next: "all" | SettlementStatus) => {
+    setStatusFilter(next);
+    setPage(1);
+  };
 
   const [form, setForm] = useState({
     account_type: "BANK",
@@ -112,7 +180,11 @@ export default function SettlementsPage() {
     pagination: any;
   }>(
     "/api/merchant/settlements",
-    { page: page.toString(), per_page: "20" }
+    {
+      page: page.toString(),
+      per_page: "20",
+      ...(statusFilter !== "all" && { status: statusFilter }),
+    }
   );
 
   const { data: accountsRes, loading: accountsLoading } = useMerchantFetch<{ data: APISettlementAccount[] }>("/api/merchant/settlement-accounts");
@@ -146,6 +218,48 @@ export default function SettlementsPage() {
       }
     });
   }
+
+  // Chip counts come from the summary, which the API aggregates across every
+  // settlement regardless of the active filter — so the numbers stay put as
+  // the merchant clicks between chips instead of collapsing to the current page.
+  const statusCounts = (fetchRes?.summary ?? []).reduce(
+    (acc, stat) => {
+      const n = Number(stat.count) || 0;
+      acc[stat.status as SettlementStatus] = n;
+      acc.all += n;
+      return acc;
+    },
+    // Seeded so a status the merchant has none of still reads "0" rather than
+    // rendering a bare label.
+    STATUS_CHIPS.reduce(
+      (seed, chip) => ({ ...seed, [chip.value]: 0 }),
+      { all: 0 } as Record<SettlementStatus | "all", number>
+    )
+  );
+
+  const handleExportCsv = async () => {
+    setExporting(true);
+    try {
+      const qs = new URLSearchParams(
+        statusFilter !== "all" ? { status: statusFilter } : {}
+      ).toString();
+      const res = await fetch(`/api/merchant/settlements/export${qs ? `?${qs}` : ""}`);
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `settlements-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Failed to export settlements:", err);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const handleDeleteAccount = async (id: string) => {
     if (!confirm("Are you sure you want to remove this account?")) return;
@@ -198,16 +312,6 @@ export default function SettlementsPage() {
             Settlement Reports
           </h1>
           <p className="mt-1 text-sm text-[color:var(--trite-muted)]">Manage payout accounts and track completed settlements</p>
-        </div>
-        <div className="flex gap-2">
-          <button className="flex h-10 items-center gap-2 rounded-lg border border-black/10 bg-white px-4 text-sm font-semibold text-[color:var(--trite-ink)] hover:bg-black/[0.02]">
-            <ReceiptIcon className="h-4 w-4" />
-            Download PDF
-          </button>
-          <button className="flex h-10 items-center gap-2 rounded-lg bg-[color:var(--trite-ink)] px-4 text-sm font-semibold text-white hover:bg-black">
-            <DownloadIcon className="h-4 w-4" />
-            Export CSV
-          </button>
         </div>
       </div>
 
@@ -400,8 +504,34 @@ export default function SettlementsPage() {
       )}
 
       <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
-        <div className="mb-6 flex flex-wrap items-center gap-2">
-          <button onClick={() => setLedgerFilter("all")} className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${ledgerFilter === "all" ? "bg-[color:var(--trite-ink)] text-white" : "bg-black/[0.04] text-[color:var(--trite-ink)] hover:bg-black/[0.06]"}`}>All</button>
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <FilterChip
+              label="All"
+              count={statusCounts.all}
+              active={statusFilter === "all"}
+              onClick={() => handleStatusFilter("all")}
+            />
+            {STATUS_CHIPS.map((chip) => (
+              <FilterChip
+                key={chip.value}
+                label={chip.label}
+                count={statusCounts[chip.value]}
+                active={statusFilter === chip.value}
+                onClick={() => handleStatusFilter(chip.value)}
+                variant={chip.variant}
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            disabled={exporting}
+            className="flex h-10 items-center gap-2 rounded-lg bg-[color:var(--trite-ink)] px-4 text-sm font-semibold text-white hover:bg-black disabled:opacity-50"
+          >
+            <DownloadIcon className="h-4 w-4" />
+            {exporting ? "Exporting..." : "Export CSV"}
+          </button>
         </div>
 
         <div className="overflow-x-auto">

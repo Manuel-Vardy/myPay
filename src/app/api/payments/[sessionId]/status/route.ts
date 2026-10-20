@@ -1,14 +1,13 @@
 // GET /api/payments/[sessionId]/status — poll transaction status
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
-import { getMobileMoneyProvider, getCryptoProvider } from "@/lib/payments";
+import { getCryptoProvider } from "@/lib/payments";
 import {
   finaliseCryptoPayment,
   expireCryptoPayment,
 } from "@/lib/payments/crypto-helpers";
 import { fromMinorUnits } from "@/lib/utils";
-import { chargeTransactionFee } from "@/lib/fees";
-import { settleMomoPayment, failMomoPayment } from "@/lib/payments/settle-momo";
+import { pollAndSettleMomo } from "@/lib/payments/charge";
 
 export async function GET(
   request: NextRequest,
@@ -29,52 +28,8 @@ export async function GET(
     }
 
     // --- Live provider check for in-flight mobile money transactions ---
-    if (
-      transaction.method === "MOBILE_MONEY" &&
-      transaction.status === "INITIATED"
-    ) {
-      try {
-        const provider = await getMobileMoneyProvider();
-        const statusResult = await provider.checkStatus({
-          externalRef: transaction.tx_id_display,
-        });
-
-        // If the provider reports a terminal state, update DB.
-        // Provider "SUCCESS" maps to the SETTLED enum value (funds are
-        // credited to the merchant float immediately below).
-        // NOT_FOUND is treated like PENDING here: while the payer is on the
-        // checkout page the provider may not have created the transaction
-        // yet (e.g. OTP flow) — only the reconciliation cron ages those out.
-        if (statusResult.status === "SUCCESS" || statusResult.status === "FAILED") {
-          const newStatus =
-            statusResult.status === "SUCCESS" ? "SETTLED" : "FAILED";
-
-          if (newStatus === "SETTLED") {
-            await settleMomoPayment({
-              transactionId: transaction.id,
-              providerRef: statusResult.providerRef || null,
-              thirdPartyRef: statusResult.thirdPartyRef || null,
-              providerName: provider.name,
-              source: "STATUS_POLL",
-            });
-          } else {
-            await failMomoPayment({
-              transactionId: transaction.id,
-              providerRef: statusResult.providerRef || null,
-              providerMessage: statusResult.message,
-              providerName: provider.name,
-              source: "STATUS_POLL",
-            });
-          }
-
-          // Update the in-memory transaction for the response below
-          transaction.status = newStatus;
-        }
-      } catch (pollError) {
-        // Log but don't fail the request — return current DB status
-        console.warn("Provider status poll error:", pollError);
-      }
-    }
+    // The checkout page paces itself at 5s, so no extra throttle here.
+    transaction.status = await pollAndSettleMomo(transaction);
 
     // --- Live provider check for in-flight crypto transactions ---
     if (

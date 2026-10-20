@@ -9,8 +9,8 @@ import db from "@/lib/db";
 import { requireActiveMerchant, requireVerifiedMerchant } from "@/lib/guards";
 import { fromMinorUnits, toMinorUnits } from "@/lib/utils";
 import { getMerchantFloatBalances } from "@/lib/settlements/balance";
+import { resolveMomoNetwork } from "@/lib/payments/networks";
 
-const SUPPORTED_PROVIDERS = ["mtn", "telecel", "vodafone", "at", "airteltigo"];
 
 export async function GET() {
   const guard = await requireVerifiedMerchant();
@@ -89,8 +89,9 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    const provider = String(account.provider_name).toLowerCase();
-    if (!SUPPORTED_PROVIDERS.some((p) => provider.includes(p))) {
+    // Same resolver the payout adapters use, so a request can't be accepted
+    // here and then skipped forever by the settlement cron.
+    if (!resolveMomoNetwork(account.provider_name)) {
       return Response.json(
         { error: `Withdrawals via ${account.provider_name} are not supported yet` },
         { status: 400 }

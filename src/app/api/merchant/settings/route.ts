@@ -4,6 +4,7 @@
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
 import { requireMerchant, requireVerifiedMerchant } from "@/lib/guards";
+import { isValidE164 } from "@/lib/sms";
 
 import bcrypt from "bcryptjs";
 
@@ -30,6 +31,19 @@ export async function GET(request: NextRequest) {
       return Response.json({ error: "User not found" }, { status: 404 });
     }
 
+    const rawLogo = merchant.logo_url || null;
+    const { getSignedUrl, extractStorageKey } = await import("@/lib/storage");
+    const logoKey = extractStorageKey(rawLogo);
+    let resolvedLogoUrl = rawLogo;
+    if (logoKey) {
+      try {
+        const bucketName = process.env.GCS_BUCKET_NAME || "trite-kyc-bucket";
+        resolvedLogoUrl = await getSignedUrl(bucketName, logoKey);
+      } catch (e) {
+        console.warn("Failed to generate signed url for merchant logo:", e);
+      }
+    }
+
     return Response.json({
       user: {
         ...user,
@@ -37,6 +51,11 @@ export async function GET(request: NextRequest) {
       },
       merchant_display_id: merchant.merchant_display_id,
       business_name: merchant.business_name,
+      business_type: merchant.business_type || null,
+      logo_url: resolvedLogoUrl,
+      logo_key: logoKey || (!rawLogo?.startsWith("http") ? rawLogo : null),
+      gps_address: merchant.gps_address || null,
+      company_phone: merchant.company_phone || null,
       fee_bearer: merchant.fee_bearer,
       notification_email: merchant.notification_email,
       notification_settings: merchant.notification_settings,
@@ -63,6 +82,10 @@ export async function PUT(request: NextRequest) {
       notification_email,
       notification_settings,
       business_name,
+      business_type,
+      logo_url,
+      gps_address,
+      company_phone,
       fee_bearer,
       region,
       business_address_line1,
@@ -82,6 +105,24 @@ export async function PUT(request: NextRequest) {
 
     // Update merchant fields
     const merchantUpdates: Record<string, unknown> = {};
+
+    if (business_type !== undefined) {
+      merchantUpdates.business_type = business_type;
+    }
+
+    if (logo_url !== undefined) {
+      const { extractStorageKey } = await import("@/lib/storage");
+      const extractedKey = extractStorageKey(logo_url);
+      merchantUpdates.logo_url = extractedKey ?? (logo_url || null);
+    }
+
+    if (gps_address !== undefined) {
+      merchantUpdates.gps_address = gps_address;
+    }
+
+    if (company_phone !== undefined) {
+      merchantUpdates.company_phone = company_phone;
+    }
 
     if (notification_email !== undefined) {
       merchantUpdates.notification_email = notification_email;
@@ -140,6 +181,32 @@ export async function PUT(request: NextRequest) {
           }
         }
       });
+
+      // A merchant's number is gated on SMS confirmation, so it can't be
+      // silently swapped for an unverified one — that would make the gate
+      // meaningless. Validate the new value, and when it actually changes,
+      // drop the verification so /verify-phone re-confirms it.
+      if (userUpdates.mobile_number !== undefined) {
+        const next = String(userUpdates.mobile_number ?? "").trim();
+
+        // Blanking it would strand the account behind a gate it can't clear.
+        if (!isValidE164(next)) {
+          return Response.json(
+            { error: "Enter a valid mobile number in international format, e.g. +233201234567" },
+            { status: 400 }
+          );
+        }
+
+        const current = await db("users")
+          .where({ id: session.userId })
+          .select("mobile_number")
+          .first();
+
+        userUpdates.mobile_number = next;
+        if (current?.mobile_number !== next) {
+          userUpdates.mobile_verified_at = null;
+        }
+      }
     }
 
     // Handle password change

@@ -7,13 +7,17 @@
 // ============================================================
 
 import type {
-  MobileMoneyProvider,
   MobileMoneyNetwork,
   InitiatePaymentParams,
   InitiatePaymentResult,
   CheckStatusParams,
   CheckStatusResult,
+  CheckTransferStatusParams,
+  InitiateTransferParams,
+  PayoutProvider,
+  PayoutStatus,
   ProviderTxStatus,
+  TransferResult,
 } from "./types";
 import { fromMinorUnits } from "@/lib/utils";
 
@@ -54,7 +58,7 @@ function requireEnv(key: string): string {
 
 // ---------- Provider ----------
 
-export class MoolreProvider implements MobileMoneyProvider {
+export class MoolreProvider implements PayoutProvider {
   readonly name = "Moolre";
 
   private get apiUser(): string {
@@ -236,33 +240,25 @@ export class MoolreProvider implements MobileMoneyProvider {
     }
   }
 
-  // ---- Initiate Transfer (Settlement) ----
+  // ---- Payouts ----
 
   /**
-   * Maps a free-text provider name to a Moolre transfer channel.
-   * Transfer channels: 1=MTN, 6=Telecel, 7=AT, 2=Instant Bank Transfer.
-   * 
-   * @throws Error if provider is not supported for transfers yet.
+   * Moolre transfer channels. A different map from CHANNEL_MAP: the collection
+   * and transfer endpoints do not share channel numbering (MTN is 13 to
+   * collect, 1 to send).
    */
-  private mapTransferChannel(providerName: string): string {
-    const normalized = providerName.toLowerCase();
-    if (normalized.includes("mtn")) return "1";
-    if (normalized.includes("telecel") || normalized.includes("vodafone")) return "6";
-    if (normalized.includes("at") || normalized.includes("airteltigo")) return "7";
-    
-    throw new Error(`Unsupported transfer provider: ${providerName}`);
-  }
+  private static readonly TRANSFER_CHANNEL_MAP: Record<MobileMoneyNetwork, string> = {
+    MTN: "1",
+    TELECEL: "6",
+    AT: "7",
+  };
 
-  async initiateTransfer(params: {
-    providerName: string;
-    currency: string;
-    amount: number; // minor units
-    receiver: string;
-    externalRef: string;
-    sublistid?: string;
-    reference?: string;
-  }): Promise<{ success: boolean; message: string; providerRef?: string; rawResponse: any }> {
-    const channel = this.mapTransferChannel(params.providerName);
+  /**
+   * Moolre transfers are synchronous — the POST response is the outcome, so
+   * this never returns PENDING. Only an unreachable API leaves us unsure.
+   */
+  async initiateTransfer(params: InitiateTransferParams): Promise<TransferResult> {
+    const channel = MoolreProvider.TRANSFER_CHANNEL_MAP[params.network];
 
     const body: Record<string, unknown> = {
       type: 1,
@@ -272,7 +268,6 @@ export class MoolreProvider implements MobileMoneyProvider {
       receiver: params.receiver,
       externalref: params.externalRef,
       accountnumber: this.accountNumber,
-      ...(params.sublistid && { sublistid: params.sublistid }),
       ...(params.reference && { reference: params.reference }),
     };
 
@@ -282,34 +277,104 @@ export class MoolreProvider implements MobileMoneyProvider {
         headers: {
           "Content-Type": "application/json",
           "X-API-USER": this.apiUser,
-          "X-API-KEY": this.apiKey, // Transfer uses Private Key
+          "X-API-KEY": this.apiKey, // Transfer uses the private key
         },
         body: JSON.stringify(body),
       });
 
       const data = await response.json();
 
-      // Successful initiation — code OBGH01 and status 1
-      if (data.status === "1" && data.code === "OBGH01" && data.data) {
+      // Successful initiation — code OBGH01. Note `status` comes back as the
+      // string "1" here, unlike the numeric 1 on payment/status.
+      if (String(data.status) === "1" && data.code === "OBGH01" && data.data) {
         return {
-          success: true,
+          status: "SUCCESS",
           providerRef: data.data.transactionid,
-          message: data.message ? (Array.isArray(data.message) ? data.message.join(" ") : data.message) : "Transfer successful",
+          message: flattenMessage(data.message) || "Transfer successful",
           rawResponse: data,
         };
       }
 
+      // A parsed rejection is definitive — Moolre looked at it and said no
+      // (unsupported channel, insufficient balance, duplicate externalref).
       return {
-        success: false,
-        message: data.message ? (Array.isArray(data.message) ? data.message.join(" ") : data.message) : "Transfer failed",
+        status: "FAILED",
+        message: flattenMessage(data.message) || "Transfer failed",
         rawResponse: data,
       };
     } catch (error) {
+      // Never FAILED: the transfer may have gone through and reversing the
+      // reserve here would double-pay the merchant.
       return {
-        success: false,
+        status: "UNKNOWN",
         message: error instanceof Error ? error.message : "Network error initiating transfer",
         rawResponse: { error: String(error) },
       };
     }
   }
+
+  /**
+   * Look a transfer up by our own reference. Transfers are synchronous, so
+   * this exists for the reconciler: it resolves settlements left in an
+   * UNKNOWN state by a network failure mid-transfer.
+   */
+  async checkTransferStatus(params: CheckTransferStatusParams): Promise<TransferResult> {
+    const body = {
+      type: 1,
+      idtype: "1", // 1 = lookup by externalref
+      id: params.externalRef,
+      accountnumber: this.accountNumber,
+    };
+
+    try {
+      const response = await fetch("https://api.moolre.com/open/transact/status", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-USER": this.apiUser,
+          "X-API-PUBKEY": this.apiPubKey,
+        },
+        body: JSON.stringify(body),
+      });
+
+      const data = await response.json();
+
+      if (data.status === 1 && data.data) {
+        return {
+          status: TX_TO_PAYOUT_STATUS[mapTxStatus(data.data.txstatus)],
+          providerRef: data.data.transactionid,
+          message: flattenMessage(data.message) || "Transfer status retrieved",
+          rawResponse: data,
+        };
+      }
+
+      // No usable body: we learned nothing. Leave the settlement reserved.
+      return {
+        status: "UNKNOWN",
+        message: flattenMessage(data.message) || "Transfer status unavailable",
+        rawResponse: data,
+      };
+    } catch (error) {
+      return {
+        status: "UNKNOWN",
+        message: error instanceof Error ? error.message : "Network error checking transfer status",
+        rawResponse: { error: String(error) },
+      };
+    }
+  }
 }
+
+/** Moolre sometimes returns `message` as an array of strings. */
+function flattenMessage(message: unknown): string {
+  if (Array.isArray(message)) return message.join(" ");
+  if (typeof message === "string") return message;
+  return "";
+}
+
+/** The status lookup is shared with collections, so reuse its mapping. */
+const TX_TO_PAYOUT_STATUS: Record<ProviderTxStatus, PayoutStatus> = {
+  SUCCESS: "SUCCESS",
+  FAILED: "FAILED",
+  NOT_FOUND: "NOT_FOUND",
+  PENDING: "PENDING",
+};

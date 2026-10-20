@@ -25,6 +25,11 @@ type SettingsData = {
   };
   merchant_display_id: string;
   business_name: string;
+  business_type?: "LIMITED_LIABILITY" | "SOLE_PROPRIETORSHIP" | "PARTNERSHIP" | null;
+  logo_url?: string | null;
+  logo_key?: string | null;
+  gps_address?: string | null;
+  company_phone?: string | null;
   fee_bearer: "MERCHANT" | "CUSTOMER";
   notification_email: string | null;
   notification_settings: {
@@ -47,6 +52,9 @@ type ApiKeyRow = {
   last_used_at: string | null;
   revoked_at: string | null;
   created_at: string;
+  /** Checkout sessions this key has created, and how many can still be paid. */
+  session_count: number;
+  live_session_count: number;
 };
 
 type WebhookEndpointData = {
@@ -101,6 +109,12 @@ export default function SettingsPage() {
   const [businessCity, setBusinessCity] = useState("");
   const [businessRegion, setBusinessRegion] = useState("");
   const [businessCountry, setBusinessCountry] = useState("GH");
+  const [businessType, setBusinessType] = useState<"LIMITED_LIABILITY" | "SOLE_PROPRIETORSHIP" | "PARTNERSHIP">("LIMITED_LIABILITY");
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [logoKey, setLogoKey] = useState<string | null>(null);
+  const [gpsAddress, setGpsAddress] = useState("");
+  const [companyPhone, setCompanyPhone] = useState("");
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [webhookUrl, setWebhookUrl] = useState("");
   const [webhookEvents, setWebhookEvents] = useState<string[]>([]);
@@ -154,6 +168,11 @@ export default function SettingsPage() {
     if (settings) {
       setUser(settings.user);
       setBusinessName(settings.business_name);
+      setBusinessType(settings.business_type ?? "LIMITED_LIABILITY");
+      setLogoUrl(settings.logo_url ?? null);
+      setLogoKey(settings.logo_key ?? null);
+      setGpsAddress(settings.gps_address ?? "");
+      setCompanyPhone(settings.company_phone ?? "");
       setFeeBearer(settings.fee_bearer ?? "MERCHANT");
       setEmail(settings.notification_email ?? "");
       setRegion(settings.region ?? "Greater Accra (Ghana)");
@@ -234,6 +253,30 @@ export default function SettingsPage() {
     }
   }
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/merchant/settings/logo", {
+        method: "POST",
+        body: formData,
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to upload logo");
+      setLogoUrl(json.data.url);
+      if (json.data.storage_key) setLogoKey(json.data.storage_key);
+      setSaveMsg("Company logo updated successfully!");
+      setTimeout(() => setSaveMsg(""), 3000);
+    } catch (err: any) {
+      setSaveMsg(err.message || "Failed to upload logo");
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
   async function handleUpdateProfile() {
     setSaving(true);
     const res = await fetch("/api/merchant/settings", {
@@ -242,6 +285,10 @@ export default function SettingsPage() {
       body: JSON.stringify({
         notification_email: email,
         business_name: business_name,
+        business_type: businessType,
+        logo_url: logoKey || logoUrl,
+        gps_address: gpsAddress,
+        company_phone: companyPhone,
         fee_bearer: feeBearer,
         region: region,
         business_address_line1: businessAddressLine1,
@@ -441,11 +488,31 @@ export default function SettingsPage() {
     setTimeout(() => setSaveMsg(""), 3000);
   }
 
-  async function handleRevokeKey(keyId: string) {
-    if (!confirm("Are you sure you want to revoke this API key? Requests using it will stop working immediately.")) return;
+  async function handleRevokeKey(key: ApiKeyRow) {
+    // Revoking is the reflex after a leak, so the confirmation is where the
+    // merchant has to learn the two things the action does not do: it does not
+    // reverse the payments this key already took, and it does not cancel the
+    // checkout sessions it minted — those stay payable until they expire.
+    const lines = [
+      `Revoke "${key.label}" (${key.prefix}...)? Requests using it will stop working immediately.`,
+    ];
+    if (key.session_count > 0) {
+      lines.push(
+        `This key created ${key.session_count.toLocaleString()} checkout ${
+          key.session_count === 1 ? "session" : "sessions"
+        }.`
+      );
+    }
+    if (key.live_session_count > 0) {
+      lines.push(
+        `${key.live_session_count} of them can still be paid — revoking does not cancel them. ` +
+          `To stop those too, use "Stop accepting payments" on this page.`
+      );
+    }
+    if (!confirm(lines.join("\n\n"))) return;
 
     setSaving(true);
-    const res = await fetch(`/api/merchant/api-keys/${keyId}`, { method: "DELETE" });
+    const res = await fetch(`/api/merchant/api-keys/${key.id}`, { method: "DELETE" });
     const json = await res.json();
     if (res.ok) refreshKeys();
     setSaveMsg(json.message ?? json.error ?? "");
@@ -496,7 +563,7 @@ export default function SettingsPage() {
           <div className="mb-8 flex border-b border-black/5">
             {[
               { id: "general", label: "General" },
-              { id: "kyc", label: "KYC" },
+              { id: "kyc", label: "Compliance" },
               { id: "notifications", label: "Notifications" },
               { id: "security", label: "Security" },
               { id: "integrations", label: "Integrations" },
@@ -625,17 +692,88 @@ export default function SettingsPage() {
 
                   {/* Business Details */}
                   <div className="rounded-2xl bg-white p-6 ring-1 ring-black/5">
-                    <h3 className="mb-6 text-lg font-semibold text-[color:var(--trite-ink)]">Business Details</h3>
+                    <h3 className="mb-6 text-lg font-semibold text-[color:var(--trite-ink)]">Business Details & Compliance</h3>
+
+                    {/* Logo & Entity Row */}
+                    <div className="mb-6 flex flex-col sm:flex-row items-start gap-5 p-4 rounded-xl border border-black/5 bg-gray-50/50">
+                      <div className="relative">
+                        <div className="flex h-20 w-20 items-center justify-center rounded-xl border border-black/10 bg-white overflow-hidden shadow-sm">
+                          {logoUrl ? (
+                            <img src={logoUrl} alt="Company Logo" className="h-full w-full object-contain p-1" />
+                          ) : (
+                            <div className="text-center p-2 text-xs font-semibold text-gray-400">
+                              No Logo
+                            </div>
+                          )}
+                        </div>
+                        <label className={`absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-white shadow-md cursor-pointer hover:bg-blue-700 ${uploadingLogo ? "opacity-50 pointer-events-none" : ""}`}>
+                          <CameraIcon className="h-3.5 w-3.5" />
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                            onChange={handleLogoUpload}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-sm font-semibold text-[color:var(--trite-ink)]">Company Logo</h4>
+                        <p className="mt-1 text-xs text-[color:var(--trite-muted)]">
+                          Upload your official company emblem. Used on merchant receipts, checkout branding, and for institutional KYC verification.
+                        </p>
+                        {uploadingLogo && <p className="mt-1 text-xs text-blue-600 font-medium">Uploading logo...</p>}
+                      </div>
+                    </div>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
-                          Business Name
+                          Business Legal Name
                         </label>
                         <input
                           type="text"
                           value={business_name}
                           onChange={(e) => setBusinessName(e.target.value)}
                           className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
+                          Company Type (Entity Structure)
+                        </label>
+                        <select
+                          value={businessType}
+                          onChange={(e) => setBusinessType(e.target.value as any)}
+                          className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none focus:border-blue-500 font-medium"
+                        >
+                          <option value="LIMITED_LIABILITY">Limited Liability Company (LLC) — Form 3</option>
+                          <option value="SOLE_PROPRIETORSHIP">Sole Proprietorship — Form A</option>
+                          <option value="PARTNERSHIP">Partnership Firm — Form B / Deed</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
+                          <span>GhanaPost GPS Digital Address</span>
+                          <span className="text-[10px] font-bold text-green-700 bg-green-100 px-1.5 py-0.2 rounded">GH-POST</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={gpsAddress}
+                          placeholder="e.g. GA-183-9024"
+                          onChange={(e) => setGpsAddress(e.target.value.toUpperCase())}
+                          className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm font-mono text-[color:var(--trite-ink)] outline-none focus:border-blue-500 uppercase tracking-wider"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--trite-muted)]">
+                          Company Phone Number (Call Number)
+                        </label>
+                        <input
+                          type="text"
+                          value={companyPhone}
+                          placeholder="e.g. +233 24 123 4567"
+                          onChange={(e) => setCompanyPhone(e.target.value)}
+                          className="mt-1 w-full rounded-lg border border-black/10 bg-gray-50 px-3 py-2 text-sm text-[color:var(--trite-ink)] outline-none focus:border-blue-500"
                         />
                       </div>
                       <div>
@@ -1126,6 +1264,7 @@ export default function SettingsPage() {
                               <th className="px-4 py-3">Label</th>
                               <th className="px-4 py-3">Key Prefix</th>
                               <th className="px-4 py-3">Status</th>
+                              <th className="px-4 py-3">Sessions</th>
                               <th className="px-4 py-3">Last Used</th>
                               <th className="px-4 py-3 text-right">Action</th>
                             </tr>
@@ -1133,7 +1272,7 @@ export default function SettingsPage() {
                           <tbody className="text-xs divide-y divide-black/5 text-[color:var(--trite-ink)]">
                             {apiKeys.length === 0 && (
                               <tr>
-                                <td colSpan={5} className="px-4 py-6 text-center text-gray-400">
+                                <td colSpan={6} className="px-4 py-6 text-center text-gray-400">
                                   No API keys yet — create one below to call the API.
                                 </td>
                               </tr>
@@ -1154,13 +1293,40 @@ export default function SettingsPage() {
                                     </span>
                                   )}
                                 </td>
+                                <td className="px-4 py-3">
+                                  {key.session_count === 0 && key.last_used_at ? (
+                                    // The key has demonstrably been used, but its
+                                    // sessions predate attribution — showing "0"
+                                    // would read as "never used, safe to revoke".
+                                    <span
+                                      className="text-gray-400"
+                                      title="Sessions created before payment attribution shipped are not counted against a key."
+                                    >
+                                      —
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-1.5">
+                                      <span className="font-medium tabular-nums">
+                                        {key.session_count.toLocaleString()}
+                                      </span>
+                                      {key.live_session_count > 0 && (
+                                        <span
+                                          className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700"
+                                          title="Checkout sessions this key created that can still be paid. Revoking the key does not cancel them."
+                                        >
+                                          {key.live_session_count} payable
+                                        </span>
+                                      )}
+                                    </span>
+                                  )}
+                                </td>
                                 <td className="px-4 py-3 text-gray-400">
                                   {key.last_used_at ? new Date(key.last_used_at).toLocaleDateString() : "Never"}
                                 </td>
                                 <td className="px-4 py-3 text-right">
                                   {!key.revoked_at && (
                                     <button
-                                      onClick={() => handleRevokeKey(key.id)}
+                                      onClick={() => handleRevokeKey(key)}
                                       className="text-red-500 hover:text-red-700 p-1"
                                     >
                                       <TrashIcon className="h-4 w-4" />

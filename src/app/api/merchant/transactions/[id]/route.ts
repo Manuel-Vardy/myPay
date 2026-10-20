@@ -20,8 +20,15 @@ export async function GET(
       return Response.json({ error: "Merchant profile not found" }, { status: 404 });
     }
 
+    // description lives on the session, not the transaction — it is the
+    // merchant's own order reference, passed to /v1/payments/initiate or
+    // /v1/payments/charge. Explicit select: payment_sessions shares column
+    // names with transactions (id, amount, currency, status, metadata), so a
+    // bare join would silently overwrite them.
     const transaction = await db("transactions")
-      .where({ id, merchant_id: merchant.id })
+      .leftJoin("payment_sessions", "transactions.payment_session_id", "payment_sessions.id")
+      .where({ "transactions.id": id, "transactions.merchant_id": merchant.id })
+      .select("transactions.*", "payment_sessions.description as description")
       .first();
 
     if (!transaction) {

@@ -1,16 +1,18 @@
 // POST /api/auth/forgot-password — issue a password reset link by email
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
+import { normalizeEmail } from "@/lib/email-validation";
 import type { User } from "@/lib/types";
 import { generateToken, hashToken } from "@/lib/tokens";
-import { sendPasswordResetEmail, DASHBOARD_BASE_URL, ADMIN_BASE_URL } from "@/lib/email";
+import { sendPasswordResetEmail } from "@/lib/notifications";
+import { DASHBOARD_BASE_URL, ADMIN_BASE_URL } from "@/lib/email";
 
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email } = body;
+    const email = normalizeEmail(body.email);
 
     if (!email) {
       return Response.json({ error: "Email is required" }, { status: 400 });
@@ -23,7 +25,9 @@ export async function POST(request: NextRequest) {
     const user = await db<User>("users").where({ email }).first();
 
     // Don't reveal whether the email exists — always look identical to the caller.
-    if (!user) {
+    // `user.email` is nullable since payer accounts can be phone-only, though
+    // a lookup by email can only ever match a row that has one.
+    if (!user || !user.email) {
       return Response.json(genericResponse);
     }
 
@@ -42,7 +46,7 @@ export async function POST(request: NextRequest) {
     const baseUrl = isAdmin ? ADMIN_BASE_URL : DASHBOARD_BASE_URL;
     const resetUrl = `${baseUrl}/reset-password?token=${token}${isAdmin ? "&admin=true" : ""}`;
     // Don't let an email provider outage turn into a 500 that reveals this address is registered.
-    await sendPasswordResetEmail(user.email, resetUrl).catch((err) =>
+    await sendPasswordResetEmail(user.email, resetUrl, user.id).catch((err) =>
       console.error("Failed to send password reset email:", err)
     );
 

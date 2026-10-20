@@ -85,6 +85,14 @@ export async function POST(request: NextRequest) {
       })
       .returning("*");
 
+    await db("system_logs").insert({
+      level: "INFO",
+      source: "ADMIN_SUPPORT",
+      event_description: `Support ticket ${ticket.ticket_id_display} created for merchant ${merchant.merchant_display_id || merchant_id}`,
+      actor_id: guard.session.userId,
+      ip_address: request.headers.get("x-forwarded-for") || "unknown",
+    });
+
     return Response.json(ticket, { status: 201 });
   } catch (error) {
     console.error("Admin support POST error:", error);

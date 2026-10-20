@@ -3,6 +3,10 @@ import { getSession } from "@/lib/session";
 import db from "@/lib/db";
 import type { User, Merchant, AdminProfile } from "@/lib/types";
 import { fromMinorUnits } from "@/lib/utils";
+import { getMerchantFloatBalances } from "@/lib/settlements/balance";
+
+import { getAdminPermissionsAndRoles } from "@/lib/guards";
+import { mfaRequiredForRole } from "@/lib/mfa-policy";
 
 export async function GET() {
   const session = await getSession();
@@ -23,7 +27,7 @@ export async function GET() {
 
   const user = await db<User>("users")
     .where({ id: session.userId })
-    .select("id", "email", "first_name", "last_name", "role", "status", "last_login", "email_verified_at", "two_factor_enabled", "created_at")
+    .select("id", "email", "first_name", "last_name", "role", "status", "last_login", "email_verified_at", "mobile_number", "mobile_verified_at", "two_factor_enabled", "created_at")
     .first();
 
   if (!user) {
@@ -46,20 +50,17 @@ export async function GET() {
       .first();
       
     if (merchant) {
-      const floatBalanceRow = await db("ledger_account_balances")
-        .where({ owner_id: merchant.id, account_type: "MERCHANT_FLOAT", currency: "GHS" })
-        .first();
-        
-      const available_balance = fromMinorUnits(floatBalanceRow?.balance || 0);
+      const floatBalances = await getMerchantFloatBalances(merchant.id, "GHS");
+      const available_balance = fromMinorUnits(floatBalances.total);
+      const withdrawable_balance = fromMinorUnits(floatBalances.withdrawable);
 
-      // Load KYC status for frontend gating
       const kycRecord = await db("kyc_records")
         .where({ user_id: user.id })
         .select("status")
         .first();
 
       profile = {
-        merchant: { ...merchant, available_balance },
+        merchant: { ...merchant, available_balance, withdrawable_balance },
         kyc_status: kycRecord?.status ?? null,
       };
     } else {
@@ -70,8 +71,25 @@ export async function GET() {
       .where({ user_id: user.id })
       .select("id", "admin_id_display", "notification_settings")
       .first();
-    profile = { admin };
+
+    const { roles, permissions, isSuperAdmin } = await getAdminPermissionsAndRoles(user.id);
+
+    profile = {
+      admin,
+      roles,
+      permissions,
+      isSuperAdmin,
+    };
   }
 
-  return Response.json({ user, ...profile });
+  // This endpoint deliberately stays reachable while enrollment is pending —
+  // it is how the settings page renders the enrollment prompt.
+  const mfa_mandatory = mfaRequiredForRole(user.role);
+
+  return Response.json({
+    user,
+    mfa_mandatory,
+    mfa_enrollment_required: mfa_mandatory && !user.two_factor_enabled,
+    ...profile,
+  });
 }

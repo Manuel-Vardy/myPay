@@ -2,12 +2,12 @@
 // POST /api/admin/admins — create a new admin account and assign it role(s)
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
-import { requireAdmin } from "@/lib/guards";
+import { requirePermission } from "@/lib/guards";
 import { hashPassword } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   try {
-    const guard = await requireAdmin();
+    const guard = await requirePermission("manage-roles");
     if (guard.error) return guard.error;
 
     const roleId = request.nextUrl.searchParams.get("role_id");
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const guard = await requireAdmin();
+    const guard = await requirePermission("manage-roles");
     if (guard.error) return guard.error;
 
     const body = await request.json();

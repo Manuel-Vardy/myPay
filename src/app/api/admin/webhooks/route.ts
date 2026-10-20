@@ -53,7 +53,10 @@ export async function POST(request: NextRequest) {
       const res = await triton.registerWebhook(url, eventTypes);
       webhookId = res.id;
       webhookSecret = res.signingSecret;
-    } else if (provider === "moolre") {
+    } else if (["moolre", "paystack"].includes(provider)) {
+      // Neither registers webhooks over an API — the URL is configured in the
+      // provider's own dashboard, so we only persist it for display. Paystack
+      // signs with the account secret key, so there is no secret to store.
       webhookId = randomUUID();
       webhookSecret = "";
     } else {
@@ -82,6 +85,14 @@ export async function POST(request: NextRequest) {
         updated_by: guard.session.userId,
       });
 
+    await db("system_logs").insert({
+      level: "INFO",
+      source: "ADMIN_WEBHOOKS",
+      event_description: `Webhook registered for provider ${provider}: ${url}`,
+      actor_id: guard.session.userId,
+      ip_address: request.headers.get("x-forwarded-for") || "unknown",
+    });
+
     return Response.json({ success: true, id: webhookId });
   } catch (error: any) {
     console.error("Failed to register webhook", error);
@@ -101,9 +112,18 @@ export async function DELETE(request: NextRequest) {
       .where({ key: `integration:${provider}:webhook` })
       .delete();
 
-    return deleted
-      ? Response.json({ success: true })
-      : Response.json({ error: "Webhook not found" }, { status: 404 });
+    if (deleted) {
+      await db("system_logs").insert({
+        level: "WARN",
+        source: "ADMIN_WEBHOOKS",
+        event_description: `Webhook deleted for provider ${provider}`,
+        actor_id: guard.session.userId,
+        ip_address: request.headers.get("x-forwarded-for") || "unknown",
+      });
+      return Response.json({ success: true });
+    }
+
+    return Response.json({ error: "Webhook not found" }, { status: 404 });
   } catch (error) {
     console.error("Failed to delete webhook", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });

@@ -2,12 +2,12 @@
 // (or past) admin review, with filters and status summary.
 import { type NextRequest } from "next/server";
 import db from "@/lib/db";
-import { requireAdmin } from "@/lib/guards";
+import { requirePermission } from "@/lib/guards";
 import { fromMinorUnits } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
   try {
-    const guard = await requireAdmin();
+    const guard = await requirePermission("settlement-monitoring");
     if (guard.error) return guard.error;
 
     const searchParams = request.nextUrl.searchParams;
