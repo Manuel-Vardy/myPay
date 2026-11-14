@@ -1,0 +1,14 @@
+export { WarningDisclaimerContent } from "./policies/warning-disclaimer";
+export { AntiMoneyLaunderingContent } from "./policies/aml";
+export { RefundPolicyContent } from "./policies/refund";
+export { PrivacyPolicyContent } from "./policies/privacy";
+export { OverviewContent } from "./policies/overview";
+export { MobileMessagingTermsContent } from "./policies/mobile-messaging";
+export { InformationSecurityPolicyContent } from "./policies/information-security";
+export { KycPolicyContent } from "./policies/kyc";
+export { GeneralTermsOfUseContent } from "./policies/general-terms";
+export { ConsumerProtectionPolicyContent } from "./policies/consumer-protection";
+export { ChargeBackContent } from "./policies/chargeback";
+export { DataRetentionAndProtectionContent } from "./policies/data-retention";
+export { ApiDocsContent } from "./policies/api-docs";
+export { AntiFraudPolicyContent } from "./policies/anti-fraud";
